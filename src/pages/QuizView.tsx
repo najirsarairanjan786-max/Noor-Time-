@@ -6,6 +6,7 @@ type ViewType = 'home' | 'calendar' | 'settings' | 'prayer' | string;
 
 interface QuizViewProps {
   setView: Dispatch<SetStateAction<ViewType>>;
+  key?: string;
 }
 
 const QUESTIONS = [

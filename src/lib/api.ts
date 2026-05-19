@@ -8,6 +8,10 @@ export interface PrayerTimings {
   Isha: string;
   Sunrise: string;
   Sunset: string;
+  Imsak?: string;
+  Midnight?: string;
+  Firstthird?: string;
+  Lastthird?: string;
 }
 
 export interface HijriDateInfo {
