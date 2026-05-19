@@ -25,8 +25,8 @@ export default function App() {
   const isFeatureView = !standardViews.includes(currentView);
 
   return (
-    <div className="min-h-screen bg-emerald-950 font-sans selection:bg-emerald-500/30">
-      <main className="min-h-[100dvh] relative overflow-hidden">
+    <div className="min-h-screen bg-slate-900 font-sans selection:bg-emerald-500/30 flex justify-center">
+      <main className="w-full max-w-md bg-emerald-950 min-h-[100dvh] relative overflow-hidden shadow-2xl">
         {/* Animated Background Elements */}
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-emerald-600/10 blur-[100px] pointer-events-none transition-colors duration-300"></div>
         <div className="absolute bottom-[20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-400/5 blur-[120px] pointer-events-none transition-colors duration-300"></div>

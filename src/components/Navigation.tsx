@@ -16,25 +16,25 @@ export function Navigation({ view, setView }: { view: ViewType, setView: Dispatc
   const activeIndex = TABS.findIndex(t => t.id === view) === -1 ? 0 : TABS.findIndex(t => t.id === view);
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 h-[96px] z-50">
+    <div className="absolute bottom-0 left-0 right-0 h-[96px] z-50">
       {/* Background Mask */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-t-[2.5rem] shadow-[0_-5px_40px_rgba(0,0,0,0.1)] bg-transparent">
         <motion.div 
           className="absolute top-0 bottom-0 pointer-events-auto"
           style={{ 
             left: 0, 
-            width: '300vw',
+            width: '300%',
             transformOrigin: 'center'
           }}
           initial={false}
-          animate={{ x: `calc(${(activeIndex + 0.5) * 20}vw - 150vw)` }}
+          animate={{ x: `calc(${(activeIndex + 0.5) * (100 / 15)}% - 50%)` }}
           transition={{ type: "spring", stiffness: 350, damping: 35 }}
         >
           {/* Left Block */}
-          <div className="absolute top-0 bottom-0 left-0 right-[calc(150vw+48px)] bg-white" />
+          <div className="absolute top-0 bottom-0 left-0 right-[calc(50%+48px)] bg-white" />
           
           {/* Center Cutout */}
-          <div className="absolute top-0 bottom-0 left-[calc(150vw-48px)] w-[96px]">
+          <div className="absolute top-0 bottom-0 left-[calc(50%-48px)] w-[96px]">
             <svg width="96" height="48" viewBox="0 0 96 48" className="absolute top-0 left-0 right-0">
               <path d="M0,0 C24,0 24,46 48,46 C72,46 72,0 96,0 V48 H0 Z" fill="white" />
             </svg>
@@ -42,7 +42,7 @@ export function Navigation({ view, setView }: { view: ViewType, setView: Dispatc
           </div>
 
           {/* Right Block */}
-          <div className="absolute top-0 bottom-0 left-[calc(150vw+48px)] right-0 bg-white" />
+          <div className="absolute top-0 bottom-0 left-[calc(50%+48px)] right-0 bg-white" />
         </motion.div>
       </div>
 

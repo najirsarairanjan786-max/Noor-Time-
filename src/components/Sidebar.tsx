@@ -65,7 +65,7 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm z-[100]"
           />
           
           {/* Drawer */}
@@ -74,7 +74,7 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 left-0 bottom-0 w-[85%] max-w-[320px] bg-emerald-950 z-[101] overflow-hidden flex flex-col shadow-2xl relative"
+            className="absolute top-0 left-0 bottom-0 w-[85%] max-w-[320px] bg-emerald-950 z-[101] overflow-hidden flex flex-col shadow-2xl"
           >
             {/* Header */}
             <div className="p-6 bg-emerald-900/50 flex items-center justify-between">
