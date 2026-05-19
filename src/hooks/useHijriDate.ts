@@ -22,11 +22,8 @@ export function useHijriDate() {
         let targetDate = currentHour >= 19 ? addDays(now, 1) : now;
         
         let offset = Number(settings.hijriOffset);
-        if (isNaN(offset)) offset = -1;
-        // Default to -1 so today is 30
-        if (offset === 0 && !localStorage.getItem('user_set_offset')) {
-          offset = -1;
-        }
+        if (isNaN(offset)) offset = 0;
+        
         if (offset !== 0) {
           targetDate = addDays(targetDate, offset);
         }

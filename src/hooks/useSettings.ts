@@ -30,14 +30,14 @@ const DEFAULT_SETTINGS: AppSettings = {
   fontSize: 'medium',
   preAlarmMinutes: 5,
   alarmSound: 'beep',
-  hijriOffset: -1,
+  hijriOffset: 0,
   customTimings: {},
   silentMode: false,
   customAlarms: {},
 };
 
 export function useSettings() {
-  const [settings, setSettings] = useLocalStorage<AppSettings>('islamic-app-settings-v6', DEFAULT_SETTINGS);
+  const [settings, setSettings] = useLocalStorage<AppSettings>('islamic-app-settings-v9', DEFAULT_SETTINGS);
 
   // Helper to request geolocation
   const requestLocation = (): Promise<void> => {

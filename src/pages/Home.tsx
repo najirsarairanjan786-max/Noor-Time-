@@ -119,7 +119,7 @@ export function Home({ setView }: HomeProps) {
                 <div className="flex items-center gap-1.5 text-[13px] font-bold drop-shadow-md">
                   <MoonStar className="w-4 h-4" />
                   <span>
-                    {hijriDate.day}, {hijriDate.month.ar}, {hijriDate.year}
+                    {hijriDate.day} {hijriDate.month.en} ({hijriDate.month.ar}) {hijriDate.year}
                   </span>
                 </div>
               ) : (

@@ -23,8 +23,12 @@ export function CalendarView() {
       setLoading(true);
       try {
         let offset = Number(settings.hijriOffset);
-        if (isNaN(offset)) offset = -1;
-        if (offset === 0 && !localStorage.getItem('user_set_offset')) offset = -1;
+        if (isNaN(offset)) offset = 0;
+
+        const now = new Date();
+        if (now.getHours() >= 19) {
+          offset += 1;
+        }
 
         const prev = subMonths(currentDate, 1);
         const next = addMonths(currentDate, 1);
