@@ -16,7 +16,7 @@ export function Navigation({ view, setView }: { view: ViewType, setView: Dispatc
   const activeIndex = TABS.findIndex(t => t.id === view) === -1 ? 0 : TABS.findIndex(t => t.id === view);
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 h-[72px] z-50">
+    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md h-[72px] z-50">
       {/* Background Mask */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-t-[2rem] shadow-[0_-5px_40px_rgba(0,0,0,0.1)] bg-transparent">
         <motion.div 
