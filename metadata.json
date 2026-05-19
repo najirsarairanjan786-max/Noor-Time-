@@ -1,0 +1,11 @@
+{
+  "name": "Islamic Dashboard",
+  "description": "Modern Islamic Home Screen with Prayer Times, Hijri Calendar, and Alarms",
+  "requestFramePermissions": [
+    "geolocation",
+    "notifications"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
