@@ -140,20 +140,20 @@ export function Home({ setView }: HomeProps) {
       <div className="max-w-lg mx-auto relative mt-4">
         <h3 className="text-slate-800 text-[17px] font-extrabold mb-3 px-1 relative z-10 text-shadow-sm">More Features</h3>
         
-        <div className="grid grid-cols-2 gap-4 pb-8">
+        <div className="grid grid-cols-2 gap-3 pb-8">
           {[
-            { label: 'Quran', icon: <Book className="w-12 h-12 opacity-80" />, color: 'bg-purple-100 text-purple-700' },
-            { label: 'Hadees', icon: <HomeIcon className="w-12 h-12 opacity-80" />, color: 'bg-orange-100 text-orange-600' },
-            { label: 'Hajj Umrah', icon: <BadgeInfo className="w-12 h-12 opacity-80" />, color: 'bg-rose-100 text-rose-700' },
-            { label: 'Durood Sharif', icon: <ShieldAlert className="w-12 h-12 opacity-80" />, color: 'bg-amber-100 text-amber-700' },
-            { label: 'Question & Answer', icon: <HelpCircle className="w-12 h-12 opacity-80" />, color: 'bg-fuchsia-100 text-fuchsia-700' },
-            { label: 'Qaza e Omri', icon: <CheckSquare className="w-12 h-12 opacity-80" />, color: 'bg-indigo-100 text-indigo-700' }
+            { label: 'Quran', icon: <Book className="w-8 h-8 opacity-80" />, color: 'bg-purple-100 text-purple-700' },
+            { label: 'Hadees', icon: <HomeIcon className="w-8 h-8 opacity-80" />, color: 'bg-orange-100 text-orange-600' },
+            { label: 'Hajj Umrah', icon: <BadgeInfo className="w-8 h-8 opacity-80" />, color: 'bg-rose-100 text-rose-700' },
+            { label: 'Durood Sharif', icon: <ShieldAlert className="w-8 h-8 opacity-80" />, color: 'bg-amber-100 text-amber-700' },
+            { label: 'Question & Answer', icon: <HelpCircle className="w-8 h-8 opacity-80" />, color: 'bg-fuchsia-100 text-fuchsia-700' },
+            { label: 'Qaza e Omri', icon: <CheckSquare className="w-8 h-8 opacity-80" />, color: 'bg-indigo-100 text-indigo-700' }
           ].map((feature, i) => (
-            <button key={i} onClick={() => setView(feature.label)} className="bg-white p-5 rounded-2xl flex flex-col items-center justify-center gap-3 text-slate-700 shadow-md border border-slate-100 hover:shadow-lg transition-shadow active:scale-95">
-              <div className={`w-20 h-20 ${feature.color} border border-white/20 rounded-2xl flex items-center justify-center shadow-inner`}>
+            <button key={i} onClick={() => setView(feature.label)} className="bg-white p-4 rounded-xl flex flex-col items-center justify-center gap-2 text-slate-700 shadow-md border border-slate-100 hover:shadow-lg transition-shadow active:scale-95">
+              <div className={`w-14 h-14 ${feature.color} border border-white/20 rounded-xl flex items-center justify-center shadow-inner`}>
                 {feature.icon}
               </div>
-              <span className="text-sm font-bold text-center leading-tight">{feature.label}</span>
+              <span className="text-sm font-semibold text-center leading-tight">{feature.label}</span>
             </button>
           ))}
         </div>

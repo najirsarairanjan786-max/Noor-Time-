@@ -16,9 +16,9 @@ export function Navigation({ view, setView }: { view: ViewType, setView: Dispatc
   const activeIndex = TABS.findIndex(t => t.id === view) === -1 ? 0 : TABS.findIndex(t => t.id === view);
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 h-[96px] z-50">
+    <div className="absolute bottom-0 left-0 right-0 h-[72px] z-50">
       {/* Background Mask */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-t-[2.5rem] shadow-[0_-5px_40px_rgba(0,0,0,0.1)] bg-transparent">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-t-[2rem] shadow-[0_-5px_40px_rgba(0,0,0,0.1)] bg-transparent">
         <motion.div 
           className="absolute top-0 bottom-0 pointer-events-auto"
           style={{ 
@@ -31,18 +31,18 @@ export function Navigation({ view, setView }: { view: ViewType, setView: Dispatc
           transition={{ type: "spring", stiffness: 350, damping: 35 }}
         >
           {/* Left Block */}
-          <div className="absolute top-0 bottom-0 left-0 right-[calc(50%+48px)] bg-white" />
+          <div className="absolute top-0 bottom-0 left-0 right-[calc(50%+36px)] bg-white" />
           
           {/* Center Cutout */}
-          <div className="absolute top-0 bottom-0 left-[calc(50%-48px)] w-[96px]">
-            <svg width="96" height="48" viewBox="0 0 96 48" className="absolute top-0 left-0 right-0">
-              <path d="M0,0 C24,0 24,46 48,46 C72,46 72,0 96,0 V48 H0 Z" fill="white" />
+          <div className="absolute top-0 bottom-0 left-[calc(50%-36px)] w-[72px]">
+            <svg width="72" height="36" viewBox="0 0 72 36" className="absolute top-0 left-0 right-0">
+              <path d="M0,0 C18,0 18,34 36,34 C54,34 54,0 72,0 V36 H0 Z" fill="white" />
             </svg>
-            <div className="absolute top-[47px] bottom-0 left-0 right-0 bg-white" />
+            <div className="absolute top-[35px] bottom-0 left-0 right-0 bg-white" />
           </div>
 
           {/* Right Block */}
-          <div className="absolute top-0 bottom-0 left-[calc(50%+48px)] right-0 bg-white" />
+          <div className="absolute top-0 bottom-0 left-[calc(50%+36px)] right-0 bg-white" />
         </motion.div>
       </div>
 
@@ -60,10 +60,10 @@ export function Navigation({ view, setView }: { view: ViewType, setView: Dispatc
                {isActive && (
                   <motion.div 
                     layoutId="bubble"
-                    className="absolute w-[68px] h-[68px] bg-[#c83271] rounded-full shadow-[0_8px_16px_rgba(200,50,113,0.4)] z-10"
+                    className="absolute w-[50px] h-[50px] bg-[#c83271] rounded-full shadow-[0_8px_16px_rgba(200,50,113,0.4)] z-10"
                     initial={false}
                     transition={{ type: "spring", stiffness: 350, damping: 35 }}
-                    style={{ top: "-34px" }}
+                    style={{ top: "-25px" }}
                   />
                )}
                
@@ -71,15 +71,15 @@ export function Navigation({ view, setView }: { view: ViewType, setView: Dispatc
                <motion.div 
                  initial={false}
                  animate={{ 
-                   y: isActive ? -34 : 16, 
+                   y: isActive ? -25 : 12, 
                  }}
                  transition={{ type: "spring", stiffness: 350, damping: 35 }}
-                 className="absolute top-[0px] z-20 w-[68px] h-[68px] flex flex-col items-center justify-center"
+                 className="absolute top-[0px] z-20 w-[50px] h-[50px] flex flex-col items-center justify-center"
                >
                   <tab.icon 
                      className={`transition-colors duration-200 ${isActive ? 'text-white' : 'text-slate-800'}`} 
                      strokeWidth={isActive ? 2.5 : 2}
-                     size={38}
+                     size={24}
                   />
                </motion.div>
             </div>

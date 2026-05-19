@@ -173,7 +173,7 @@ export function PrayerTimesList({ timings, setView }: { timings: PrayerTimings |
               <div key={prayer.name} className="flex flex-row items-center justify-between p-4 group hover:bg-slate-50 transition-colors">
                 <div className="flex items-center space-x-3 w-1/4">
                   {isFajr ? <span className="text-slate-400 text-lg">⏱️</span> : idx === 3 ? <span className="text-slate-400 text-lg">🌒</span> : <span className="text-slate-400 text-lg">🌘</span>}
-                  <span className="font-bold text-[15px] font-sans text-slate-800">{prayer.name}</span>
+                  <span className="font-medium text-[15px] font-sans text-slate-800">{prayer.name}</span>
                 </div>
                 
                 <div className="flex items-center justify-end space-x-2 flex-1 text-right">
@@ -183,7 +183,7 @@ export function PrayerTimesList({ timings, setView }: { timings: PrayerTimings |
                         type="time" 
                         value={editingTime}
                         onChange={(e) => setEditingTime(e.target.value)}
-                        className="p-1 rounded border border-slate-300 text-sm font-bold text-slate-800"
+                        className="p-1 rounded border border-slate-300 text-sm font-medium text-slate-800"
                         autoFocus
                       />
                       <button onClick={() => handleSaveEdit(prayer.name)} className="text-emerald-600 hover:bg-emerald-50 p-1 rounded-full text-center">
@@ -191,12 +191,12 @@ export function PrayerTimesList({ timings, setView }: { timings: PrayerTimings |
                       </button>
                     </div>
                   ) : (
-                    <div className="font-bold text-[15px] text-slate-800 tracking-tight flex items-center group/edit gap-2">
+                    <div className="font-medium text-[15px] text-slate-800 tracking-tight flex items-center group/edit gap-2">
                       <button onClick={() => handleEditClick(prayer.name, prayer.time)} className="opacity-0 group-hover/edit:opacity-100 transition-opacity text-slate-400 hover:text-slate-600">
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
                       <span>
-                        {format(timeObj, 'hh:mm:ss')} <span className="text-[12px] text-slate-400 font-semibold">{format(timeObj, 'a')}</span>
+                        {format(timeObj, 'hh:mm')} <span className="text-[12px] text-slate-500 font-medium">{format(timeObj, 'a')}</span>
                       </span>
                     </div>
                   )}
@@ -204,8 +204,8 @@ export function PrayerTimesList({ timings, setView }: { timings: PrayerTimings |
                   {isFajr && !editingPrayer && (
                     <div className="hidden sm:flex text-slate-400 items-center justify-center px-1">
                       —
-                      <span className="font-bold text-[15px] text-[#cc0000] ml-2 tracking-tight">
-                        {format(endTimeObj, 'hh:mm:ss')} <span className="text-[12px] text-[#cc0000] font-semibold">{format(endTimeObj, 'a')}</span>
+                      <span className="font-medium text-[15px] text-[#cc0000] ml-2 tracking-tight">
+                        {format(endTimeObj, 'hh:mm')} <span className="text-[12px] text-[#cc0000] font-medium">{format(endTimeObj, 'a')}</span>
                       </span>
                     </div>
                   )}

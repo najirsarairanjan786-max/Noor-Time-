@@ -98,17 +98,17 @@ export function CalendarView() {
           </div>
         )}
 
-        <div className="grid grid-cols-7 gap-1.5 md:gap-2 mb-2">
+        <div className="grid grid-cols-7 gap-1 md:gap-1.5 mb-2">
           {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => (
-            <div key={d} className="text-center text-base md:text-xl font-bold text-pink-400/80 p-2">
+            <div key={d} className="text-center text-sm md:text-base font-semibold text-pink-400/80 p-1">
               {d}
             </div>
           ))}
         </div>
 
-        <div className="grid grid-cols-7 gap-1.5 md:gap-2">
+        <div className="grid grid-cols-7 gap-1 md:gap-1.5">
           {blanks.map(b => (
-            <div key={`blank-${b}`} className="aspect-square p-2"></div>
+            <div key={`blank-${b}`} className="aspect-square p-1.5"></div>
           ))}
           {calendarData.map((day, idx) => {
             const isToday = day.gregorian.date === format(new Date(), 'dd-MM-yyyy');
@@ -120,21 +120,21 @@ export function CalendarView() {
                 key={day.gregorian.date}
                 onClick={() => hasEvents && setSelectedEvent({ date: day.gregorian.date, events: day.hijri.holidays })}
                 className={cn(
-                  "aspect-square p-2 md:p-3 flex flex-col items-center justify-center rounded-xl relative cursor-pointer transition-all",
+                  "aspect-square p-1 md:p-2 flex flex-col items-center justify-center rounded-xl relative cursor-pointer transition-all",
                   isToday ? "bg-pink-500/80 text-white shadow-md border border-pink-400/50" : "hover:bg-pink-800/50 bg-pink-900/20 text-pink-100",
                   hasEvents && !isToday && "border border-pink-400/30"
                 )}
               >
-                <span className={cn("text-lg md:text-2xl font-medium", isToday && "font-bold")}>
+                <span className={cn("text-base md:text-lg font-medium", isToday && "font-bold")}>
                   {day.gregorian.day}
                 </span>
-                <span className={cn("text-sm md:text-base font-serif opacity-70", isToday && "opacity-100")}>
+                <span className={cn("text-xs md:text-sm font-serif opacity-70", isToday && "opacity-100")}>
                   {arabicHijriDay}
                 </span>
                 {hasEvents && (
                   <>
                     <div className="absolute top-1 right-1 w-1 h-1 md:w-1.5 md:h-1.5 bg-pink-300 rounded-full animate-pulse"></div>
-                    <span className="absolute bottom-0.5 md:bottom-1 text-[7px] md:text-[9px] text-pink-200 truncate w-full text-center px-0.5 leading-none">
+                    <span className="absolute bottom-0 text-[8px] md:text-[10px] text-pink-200 truncate w-full text-center px-0.5 leading-none">
                       {day.hijri.holidays[0]}
                     </span>
                   </>
