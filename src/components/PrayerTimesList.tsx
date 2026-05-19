@@ -111,8 +111,8 @@ export function PrayerTimesList({ timings, setView }: { timings: PrayerTimings |
             />
           </svg>
           <div className="flex flex-col items-center justify-center text-slate-800 z-10 w-full">
-            <span className="text-[13px] uppercase font-bold tracking-widest text-slate-900">{nextPrayerName}</span>
-            <span className="text-2xl font-black mt-0 text-slate-800">{format(nextPrayerTimeObj, 'hh:mm')}</span>
+            <span className="text-xs uppercase font-bold tracking-widest text-slate-900">{nextPrayerName}</span>
+            <span className="text-xl font-bold mt-0 text-slate-800">{format(nextPrayerTimeObj, 'hh:mm')}</span>
           </div>
         </div>
 
@@ -153,8 +153,8 @@ export function PrayerTimesList({ timings, setView }: { timings: PrayerTimings |
 
       {/* Auto Location Banner */}
       <div className="bg-[#cc0000] text-white text-center py-3 rounded-xl mb-4 mx-2">
-        <div className="text-2xl font-black tracking-widest uppercase">NAMAZ TIME</div>
-        <div className="text-3xl font-black font-arabic mt-1">أوقات الصلاة</div>
+        <div className="text-[17px] font-black tracking-widest uppercase">NAMAZ TIME</div>
+        <div className="text-2xl font-black font-arabic mt-1">أوقات الصلاة</div>
       </div>
 
       {/* Prayer Times List Card */}
@@ -173,13 +173,13 @@ export function PrayerTimesList({ timings, setView }: { timings: PrayerTimings |
               <div key={prayer.name} className="flex flex-row items-center justify-between p-4 group hover:bg-slate-50 transition-colors">
                 <div className="flex items-center space-x-3 w-1/4">
                   {isFajr ? <span className="text-slate-400 text-lg">⏱️</span> : idx === 3 ? <span className="text-slate-400 text-lg">🌒</span> : <span className="text-slate-400 text-lg">🌘</span>}
-                  <span className="font-medium text-[15px] font-sans text-slate-800">{prayer.name}</span>
+                  <span className="font-semibold text-sm font-sans text-slate-800">{prayer.name}</span>
                 </div>
                 
                 <div className="flex items-center justify-end space-x-2 flex-1 text-right">
                   {editingPrayer === prayer.name ? (
                     <div className="flex items-center gap-2">
-                      <input 
+                       <input 
                         type="time" 
                         value={editingTime}
                         onChange={(e) => setEditingTime(e.target.value)}
@@ -191,12 +191,12 @@ export function PrayerTimesList({ timings, setView }: { timings: PrayerTimings |
                       </button>
                     </div>
                   ) : (
-                    <div className="font-medium text-[15px] text-slate-800 tracking-tight flex items-center group/edit gap-2">
+                    <div className="font-semibold text-sm text-slate-800 tracking-tight flex items-center group/edit gap-2">
                       <button onClick={() => handleEditClick(prayer.name, prayer.time)} className="opacity-0 group-hover/edit:opacity-100 transition-opacity text-slate-400 hover:text-slate-600">
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
                       <span>
-                        {format(timeObj, 'hh:mm')} <span className="text-[12px] text-slate-500 font-medium">{format(timeObj, 'a')}</span>
+                        {format(timeObj, 'hh:mm')} <span className="text-[11px] text-slate-500 font-medium">{format(timeObj, 'a')}</span>
                       </span>
                     </div>
                   )}
@@ -204,8 +204,8 @@ export function PrayerTimesList({ timings, setView }: { timings: PrayerTimings |
                   {isFajr && !editingPrayer && (
                     <div className="hidden sm:flex text-slate-400 items-center justify-center px-1">
                       —
-                      <span className="font-medium text-[15px] text-[#cc0000] ml-2 tracking-tight">
-                        {format(endTimeObj, 'hh:mm')} <span className="text-[12px] text-[#cc0000] font-medium">{format(endTimeObj, 'a')}</span>
+                      <span className="font-semibold text-sm text-[#cc0000] ml-2 tracking-tight">
+                        {format(endTimeObj, 'hh:mm')} <span className="text-[11px] text-[#cc0000] font-medium">{format(endTimeObj, 'a')}</span>
                       </span>
                     </div>
                   )}

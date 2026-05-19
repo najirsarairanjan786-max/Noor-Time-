@@ -77,7 +77,7 @@ export function CalendarView() {
           <ChevronLeft className="w-6 h-6 text-pink-200" />
         </button>
         <div className="text-center">
-          <h2 className="text-2xl font-bold font-sans tracking-tight text-white">
+          <h2 className="text-xl font-bold font-sans tracking-tight text-white">
             {format(currentDate, 'MMMM yyyy')}
           </h2>
           {calendarData.length > 0 && (
@@ -150,9 +150,9 @@ export function CalendarView() {
         <div className="mt-4">
           <button 
             onClick={() => setIsEventsOpen(!isEventsOpen)}
-            className="w-full bg-pink-900/60 backdrop-blur-lg border border-pink-500/20 shadow-2xl rounded-2xl p-5 flex justify-center items-center hover:bg-pink-800/40 transition-colors"
+            className="w-full bg-red-600 backdrop-blur-lg shadow-2xl rounded-2xl p-5 flex justify-center items-center hover:bg-red-700 transition-colors"
           >
-            <h3 className="text-xl font-bold text-pink-100 text-center">Khushi Ka Din 🎉</h3>
+            <h3 className="text-lg font-bold text-white text-center">Khushi Ka Din 🎉</h3>
           </button>
           
           <AnimatePresence>
@@ -163,17 +163,17 @@ export function CalendarView() {
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="bg-pink-900/60 backdrop-blur-lg border border-pink-500/20 shadow-2xl rounded-2xl p-4 mt-2">
+                <div className="bg-white/10 backdrop-blur-lg border border-white/20 shadow-2xl rounded-2xl p-4 mt-2">
                   <div className="space-y-2">
                     {calendarData
                       .filter(d => d.hijri.holidays.length > 0)
                       .map(day => (
-                        <div key={`event-${day.gregorian.date}`} className="flex justify-between items-center bg-pink-800/30 px-3 py-2 rounded-lg text-sm">
-                          <div className="flex flex-col md:flex-row gap-1 md:gap-2 text-pink-100">
-                            <span className="font-medium bg-pink-900/50 px-2 py-0.5 rounded text-[10px] md:text-xs text-center">{day.gregorian.day} {day.gregorian.month.en}</span>
-                            <span className="font-serif bg-pink-900/50 px-2 py-0.5 rounded text-[10px] md:text-xs text-center">{day.hijri.day} {day.hijri.month.en}</span>
+                        <div key={`event-${day.gregorian.date}`} className="flex justify-between items-center bg-white/10 px-3 py-2 rounded-lg text-sm border border-white/10">
+                          <div className="flex flex-col md:flex-row gap-1 md:gap-2 text-white">
+                            <span className="font-medium bg-black/20 px-2 py-0.5 rounded text-[10px] md:text-xs text-center">{day.gregorian.day} {day.gregorian.month.en}</span>
+                            <span className="font-serif bg-black/20 px-2 py-0.5 rounded text-[10px] md:text-xs text-center">{day.hijri.day} {day.hijri.month.en}</span>
                           </div>
-                          <span className="font-medium text-pink-300 text-right text-[10px] md:text-xs leading-tight ml-2">
+                          <span className="font-medium text-white text-right text-[10px] md:text-xs leading-tight ml-2">
                             {day.hijri.holidays.join(', ')}
                           </span>
                         </div>
@@ -192,22 +192,22 @@ export function CalendarView() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-pink-950/80 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
             onClick={() => setSelectedEvent(null)}
           >
-            <div className="bg-pink-900/60 backdrop-blur-lg border border-pink-500/20 shadow-2xl rounded-2xl p-8 max-w-sm w-full text-center" onClick={e => e.stopPropagation()}>
-              <h3 className="text-xl font-bold text-white mb-2">Islamic Events</h3>
-              <p className="text-pink-300 text-sm mb-4">{selectedEvent.date}</p>
+            <div className="bg-white backdrop-blur-lg border border-white/50 shadow-2xl rounded-2xl p-8 max-w-sm w-full text-center" onClick={e => e.stopPropagation()}>
+              <h3 className="text-lg font-bold text-slate-800 mb-2">Islamic Events</h3>
+              <p className="text-slate-500 text-sm mb-4">{selectedEvent.date}</p>
               <div className="space-y-2">
                 {selectedEvent.events.map((evt, i) => (
-                  <div key={i} className="bg-pink-800/50 px-4 py-3 rounded-lg text-pink-50 font-medium">
+                  <div key={i} className="bg-slate-50 border border-slate-200 px-4 py-3 rounded-lg text-slate-700 font-medium">
                     {evt}
                   </div>
                 ))}
               </div>
               <button 
                 onClick={() => setSelectedEvent(null)}
-                className="mt-6 px-6 py-2 bg-pink-600 hover:bg-pink-500 text-white rounded-full transition-colors w-full"
+                className="mt-6 px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-full transition-colors w-full"
               >
                 Close
               </button>
