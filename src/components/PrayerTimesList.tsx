@@ -1,6 +1,6 @@
 import { PrayerTimings } from '../lib/api';
-import { Volume2, VolumeX, Compass, BookOpen, MapPin, Search, Pencil, Check, Clock, Sun, Sunrise, HelpCircle, AlarmClock, X } from 'lucide-react';
-import { parse, format, isAfter, isBefore, addDays, addMinutes, subMinutes, differenceInMinutes } from 'date-fns';
+import { Volume2, VolumeX, Compass, BookOpen, MapPin, Search, Pencil, Check, Clock, Sun, Sunrise, HelpCircle, AlarmClock, X, CloudSun, Cloud, CloudFog, CloudRain, Snowflake, CloudLightning } from 'lucide-react';
+import { parse, format, isAfter, isBefore, addDays, addMinutes, subMinutes, differenceInMinutes, parseISO } from 'date-fns';
 import { cn } from '../lib/utils';
 import { useSettings } from '../hooks/useSettings';
 import { useLocalStorage } from 'usehooks-ts';
@@ -8,6 +8,18 @@ import { useState, useEffect } from 'react';
 import { Dispatch, SetStateAction } from 'react';
 
 type ViewType = 'home' | 'calendar' | 'settings' | 'prayer' | string;
+
+const getWeatherInfo = (code: number) => {
+  if (code === 0) return { desc: 'Clear', icon: <Sun className="w-5 h-5 text-yellow-500" /> };
+  if (code >= 1 && code <= 3) return { desc: 'Cloudy', icon: <Cloud className="w-5 h-5 text-slate-400" /> };
+  if (code >= 45 && code <= 48) return { desc: 'Fog', icon: <CloudFog className="w-5 h-5 text-slate-400" /> };
+  if (code >= 51 && code <= 67) return { desc: 'Rain', icon: <CloudRain className="w-5 h-5 text-blue-400" /> };
+  if (code >= 71 && code <= 77) return { desc: 'Snow', icon: <Snowflake className="w-5 h-5 text-sky-300" /> };
+  if (code >= 80 && code <= 82) return { desc: 'Shower', icon: <CloudRain className="w-5 h-5 text-blue-500" /> };
+  if (code >= 85 && code <= 86) return { desc: 'Snow', icon: <Snowflake className="w-5 h-5 text-sky-300" /> };
+  if (code >= 95 && code <= 99) return { desc: 'Storm', icon: <CloudLightning className="w-5 h-5 text-purple-500" /> };
+  return { desc: 'Clear', icon: <Sun className="w-5 h-5 text-yellow-500" /> };
+};
 
 export function PrayerTimesList({ timings, setView }: { timings: PrayerTimings | null, setView?: Dispatch<SetStateAction<ViewType>> }) {
   const { settings, setSettings, requestLocation } = useSettings();
@@ -25,6 +37,36 @@ export function PrayerTimesList({ timings, setView }: { timings: PrayerTimings |
   const [tempHour, setTempHour] = useState(7);
   const [tempMinute, setTempMinute] = useState(59);
   const [tempPeriod, setTempPeriod] = useState<'AM'|'PM'>('PM');
+  const [currentTemp, setCurrentTemp] = useState<number | null>(null);
+  const [weatherDesc, setWeatherDesc] = useState<string>('');
+  const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
+  const [dailyWeather, setDailyWeather] = useState<any>(null);
+
+  useEffect(() => {
+    if (!settings.location) return;
+    const {lat, lng} = settings.location;
+    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.current_weather) {
+          setCurrentTemp(data.current_weather.temperature);
+          const code = data.current_weather.weathercode;
+          let desc = 'Clear';
+          if (code >= 1 && code <= 3) desc = 'Cloudy';
+          else if (code >= 45 && code <= 48) desc = 'Fog';
+          else if (code >= 51 && code <= 67) desc = 'Rain';
+          else if (code >= 71 && code <= 77) desc = 'Snow';
+          else if (code >= 80 && code <= 82) desc = 'Shower';
+          else if (code >= 85 && code <= 86) desc = 'Snow';
+          else if (code >= 95 && code <= 99) desc = 'Storm';
+          setWeatherDesc(desc);
+        }
+        if (data && data.daily) {
+          setDailyWeather(data.daily);
+        }
+      })
+      .catch(err => console.error("Could not fetch weather", err));
+  }, [settings.location]);
 
   // Sync temp state when opening modal
   useEffect(() => {
@@ -176,6 +218,18 @@ export function PrayerTimesList({ timings, setView }: { timings: PrayerTimings |
             <span className="text-[11px] font-semibold text-slate-800">Quran</span>
           </button>
           
+          <div className="h-full w-px bg-slate-200"></div>
+
+          <button onClick={() => setIsWeatherModalOpen(true)} className="flex flex-col items-center gap-1 hover:opacity-80 transition-opacity">
+            <div className="w-10 h-10 rounded-full bg-sky-50 flex items-center justify-center">
+              {dailyWeather ? getWeatherInfo(dailyWeather.weathercode[0]).icon : <CloudSun className="w-5 h-5 text-sky-500" />}
+            </div>
+            <span className="text-[11px] font-semibold text-slate-800 flex flex-col items-center leading-[1.1]">
+              <span>{currentTemp !== null ? `${Math.round(currentTemp)}°` : '--°'}</span>
+              {weatherDesc && <span className="text-[9px] font-medium text-slate-500">{weatherDesc}</span>}
+            </span>
+          </button>
+          
           {/* Silent Mode sticks out slightly */}
           <button onClick={handleGlobalSilentToggle} className="flex flex-col items-center gap-1 relative z-10 -mr-4 ml-2 hover:opacity-80 transition-opacity">
             <div className={cn(
@@ -325,6 +379,77 @@ export function PrayerTimesList({ timings, setView }: { timings: PrayerTimings |
           </button>
         </div>
       </div>
+
+      {/* Weather Modal */}
+      {isWeatherModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-[32px] w-full max-w-sm shadow-2xl p-6 relative">
+            <button onClick={() => setIsWeatherModalOpen(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+              <X className="w-5 h-5" />
+            </button>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center">
+                <CloudSun className="w-5 h-5 text-sky-600" />
+              </div>
+              <h2 className="text-xl font-bold text-slate-800">7-Day Forecast</h2>
+            </div>
+            
+            <div className="space-y-4">
+              {dailyWeather ? (
+                dailyWeather.time.map((dateStr: string, idx: number) => {
+                  const date = parseISO(dateStr);
+                  const isToday = idx === 0;
+                  const dayName = isToday ? 'Today' : format(date, 'EEEE');
+                  const wInfo = getWeatherInfo(dailyWeather.weathercode[idx]);
+                  const maxTemp = Math.round(dailyWeather.temperature_2m_max[idx]);
+                  const minTemp = Math.round(dailyWeather.temperature_2m_min[idx]);
+                  const precipProb = dailyWeather.precipitation_probability_max?.[idx] || 0;
+                  
+                  return (
+                    <div key={idx} className="flex items-center justify-between">
+                      <div className="w-24 font-medium text-[15px] text-slate-700">
+                        {dayName}
+                      </div>
+                      <div className="flex items-center gap-2 flex-1">
+                        <div className="w-8 flex justify-center">
+                          {wInfo.icon}
+                        </div>
+                        <span className="text-sm font-medium text-slate-600 w-12">{wInfo.desc}</span>
+                        {precipProb > 0 && (
+                          <span className="text-xs font-semibold text-blue-500 w-10 text-right">{precipProb}%</span>
+                        )}
+                        {precipProb === 0 && <span className="w-10"></span>}
+                      </div>
+                      <div className="flex items-center gap-3 font-semibold text-[15px]">
+                        <span className="text-slate-400 w-6 text-right">{minTemp}°</span>
+                        <span className="text-slate-800 w-6 text-right">{maxTemp}°</span>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="text-center text-slate-500 py-4">Loading weather data...</div>
+              )}
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-slate-100">
+              <a
+                href={settings.location ? `https://www.google.com/search?q=${encodeURIComponent(`weather in ${settings.location.name}`)}` : "https://www.google.com/search?q=weather"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-[#1c1c1e] hover:bg-black text-white py-3.5 rounded-2xl font-medium text-[15px] transition-colors flex items-center justify-center gap-2"
+              >
+                <span>View Live on Google</span>
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Reminder Modal */}
       {isReminderOpen && (
