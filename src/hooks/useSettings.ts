@@ -6,7 +6,7 @@ export interface AppSettings {
   autoLocation: boolean;
   method: number; // Calculation method
   school: number; // Asr calculation method (0: Shafi, 1: Hanafi)
-  theme: 'dark' | 'light';
+  theme: 'dark' | 'light' | 'ocean' | 'desert' | 'forest' | 'sunset';
   language: 'en' | 'ur';
   alarmsEnabled: boolean;
   fontSize: 'small' | 'medium' | 'large';

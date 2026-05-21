@@ -3,12 +3,14 @@ import { useSettings } from '../hooks/useSettings';
 import { Moon, Bell, MapPin, Globe, Palette, Plus, Trash, Clock } from 'lucide-react';
 
 import { useState } from 'react';
+import { ThemeModal } from '../components/ThemeModal';
 
 export function SettingsView() {
   const { settings, setSettings, requestLocation } = useSettings();
   const [isUpdating, setIsUpdating] = useState(false);
   const [newAlarmName, setNewAlarmName] = useState('');
   const [newAlarmTime, setNewAlarmTime] = useState('');
+  const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
 
   const addCustomAlarm = () => {
     if (newAlarmName && newAlarmTime) {
@@ -30,12 +32,6 @@ export function SettingsView() {
       delete newCustomAlarms[name];
       return { ...p, customAlarms: newCustomAlarms };
     });
-  };
-
-  const toggleTheme = () => {
-    const newTheme = settings.theme === 'dark' ? 'light' : 'dark';
-    setSettings(p => ({ ...p, theme: newTheme }));
-    document.documentElement.setAttribute('data-theme', newTheme);
   };
 
   const handleGpsUpdate = async () => {
@@ -251,7 +247,7 @@ export function SettingsView() {
           </select>
         </div>
 
-        <div className="p-4 flex items-center justify-between cursor-pointer hover:bg-emerald-800/20 rounded-b-xl transition" onClick={toggleTheme}>
+        <div className="p-4 flex items-center justify-between cursor-pointer hover:bg-emerald-800/20 rounded-b-xl transition" onClick={() => setIsThemeModalOpen(true)}>
           <div className="flex items-center gap-3 text-emerald-100">
             <Palette className="w-5 h-5 text-emerald-400" />
             <div className="font-medium">Theme Style</div>
@@ -261,6 +257,7 @@ export function SettingsView() {
           </div>
         </div>
       </div>
+      <ThemeModal isOpen={isThemeModalOpen} onClose={() => setIsThemeModalOpen(false)} />
     </motion.div>
   );
 }

@@ -35,6 +35,66 @@
   --color-white-override: #064e3b;
 }
 
+:root[data-theme="ocean"] {
+  --em-50: #f0f9ff;
+  --em-100: #e0f2fe;
+  --em-200: #bae6fd;
+  --em-300: #7dd3fc;
+  --em-400: #38bdf8;
+  --em-500: #0ea5e9;
+  --em-600: #0284c7;
+  --em-700: #0369a1;
+  --em-800: #075985;
+  --em-900: #0c4a6e;
+  --em-950: #082f49;
+  --color-white-override: #ffffff;
+}
+
+:root[data-theme="desert"] {
+  --em-50: #fffbeb;
+  --em-100: #fef3c7;
+  --em-200: #fde68a;
+  --em-300: #fcd34d;
+  --em-400: #fbbf24;
+  --em-500: #f59e0b;
+  --em-600: #d97706;
+  --em-700: #b45309;
+  --em-800: #92400e;
+  --em-900: #78350f;
+  --em-950: #451a03;
+  --color-white-override: #ffffff;
+}
+
+:root[data-theme="forest"] {
+  --em-50: #f1f8f3;
+  --em-100: #def0e3;
+  --em-200: #bee1c8;
+  --em-300: #93cba5;
+  --em-400: #62ad7c;
+  --em-500: #418f5d;
+  --em-600: #307348;
+  --em-700: #275b3b;
+  --em-800: #214930;
+  --em-900: #1d3e2a;
+  --em-950: #0f2216;
+  --color-white-override: #ffffff;
+}
+
+:root[data-theme="sunset"] {
+  --em-50: #fdf2f8;
+  --em-100: #fce7f3;
+  --em-200: #fbcfe8;
+  --em-300: #f9a8d4;
+  --em-400: #f472b6;
+  --em-500: #ec4899;
+  --em-600: #db2777;
+  --em-700: #be185d;
+  --em-800: #9d174d;
+  --em-900: #831843;
+  --em-950: #500724;
+  --color-white-override: #ffffff;
+}
+
 body {
   @apply bg-emerald-950 text-emerald-50;
   /* Islamic geometric subtle pattern */

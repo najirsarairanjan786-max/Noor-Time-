@@ -9,6 +9,7 @@ import { format } from 'date-fns';
 import { useState, useEffect } from 'react';
 import { Menu, Moon, Sun, MoonStar, CheckSquare, Search, Book, HelpCircle, ShieldAlert, BadgeInfo, Home as HomeIcon, Clock } from 'lucide-react';
 import { type Dispatch, type SetStateAction } from 'react';
+import { ThemeModal } from '../components/ThemeModal';
 
 type ViewType = 'home' | 'calendar' | 'settings' | 'prayer';
 
@@ -22,6 +23,7 @@ export function Home({ setView }: HomeProps) {
   const { timings, loading: dataLoading } = useData(settings.location, settings.method ?? 1, settings.school ?? 1);
   const { hijriDate } = useHijriDate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
 
   // Initialize Alarm System
   useAlarmSystem(timings);
@@ -38,12 +40,6 @@ export function Home({ setView }: HomeProps) {
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
-
-  const toggleTheme = () => {
-    const newTheme = settings.theme === 'dark' ? 'light' : 'dark';
-    setSettings(p => ({ ...p, theme: newTheme }));
-    document.documentElement.setAttribute('data-theme', newTheme);
-  };
 
   const handleLocationUpdate = async () => {
     try {
@@ -98,7 +94,7 @@ export function Home({ setView }: HomeProps) {
 
           <div className="flex justify-between items-start mt-4">
             <button 
-              onClick={toggleTheme}
+              onClick={() => setIsThemeModalOpen(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full border border-white/40 text-xs font-semibold transition drop-shadow-md"
             >
               <Moon className="w-4 h-4 fill-white" />
@@ -161,6 +157,7 @@ export function Home({ setView }: HomeProps) {
       </div>
       
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} setView={setView} />
+      <ThemeModal isOpen={isThemeModalOpen} onClose={() => setIsThemeModalOpen(false)} />
     </motion.div>
   );
 }
