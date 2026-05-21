@@ -1,16 +1,21 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { Settings as SettingsIcon, CalendarDays, BookOpen, Clock, MoonStar } from 'lucide-react';
 import { Dispatch, SetStateAction } from 'react';
+import { useSettings } from '../hooks/useSettings';
+import { useTranslation } from '../lib/i18n';
 
 type ViewType = 'home' | 'calendar' | 'settings' | 'prayer' | 'daily' | string;
 
 export function Navigation({ view, setView }: { view: ViewType, setView: Dispatch<SetStateAction<ViewType>> }) {
+  const { settings } = useSettings();
+  const { t } = useTranslation(settings.language);
+
   const TABS = [
-    { id: 'home', icon: MoonStar, label: 'Rohani Ilaj' },
-    { id: 'prayer', icon: BookOpen, label: 'Tajweed' },
-    { id: 'calendar', icon: CalendarDays, label: 'Calendar' },
-    { id: 'settings', icon: SettingsIcon, label: 'Settings' },
-    { id: 'daily', icon: Clock, label: 'Daily' },
+    { id: 'home', icon: MoonStar, label: t('home') },
+    { id: 'prayer', icon: BookOpen, label: t('tajweed') },
+    { id: 'calendar', icon: CalendarDays, label: t('calendar') },
+    { id: 'settings', icon: SettingsIcon, label: t('settings') },
+    { id: 'daily', icon: Clock, label: t('more') },
   ];
 
   const activeIndex = TABS.findIndex(t => t.id === view) === -1 ? 0 : TABS.findIndex(t => t.id === view);

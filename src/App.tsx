@@ -6,11 +6,13 @@ import { PrayerDetails } from './pages/PrayerDetails';
 import { FeatureView } from './pages/FeatureView';
 import { QuranView } from './pages/QuranView';
 import { QuizView } from './pages/QuizView';
+import { QiblaDirectionView } from './pages/QiblaDirectionView';
+import { LanguagesView } from './pages/LanguagesView';
 import { Navigation } from './components/Navigation';
 import { AnimatePresence } from 'motion/react';
 import { useSettings } from './hooks/useSettings';
 
-export type ViewType = 'home' | 'calendar' | 'settings' | 'prayer' | 'Quran' | 'Question & Answer' | string;
+export type ViewType = 'home' | 'calendar' | 'settings' | 'prayer' | 'Quran' | 'Question & Answer' | 'qibla' | 'languages' | string;
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewType>('home');
@@ -21,7 +23,7 @@ export default function App() {
   }, [settings.theme]);
 
   // Standard views
-  const standardViews = ['home', 'calendar', 'settings', 'prayer', 'Quran', 'Question & Answer'];
+  const standardViews = ['home', 'calendar', 'settings', 'prayer', 'Quran', 'Question & Answer', 'qibla', 'languages'];
   const isFeatureView = !standardViews.includes(currentView);
 
   return (
@@ -32,13 +34,15 @@ export default function App() {
         <div className="absolute bottom-[20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-400/5 blur-[120px] pointer-events-none transition-colors duration-300"></div>
         
         <AnimatePresence mode="wait">
-          {currentView === 'home' && <Home setView={setCurrentView} key="home" />}
-          {currentView === 'calendar' && <CalendarView key="calendar" />}
-          {currentView === 'settings' && <SettingsView key="settings" />}
-          {currentView === 'prayer' && <PrayerDetails key="prayer" />}
-          {currentView === 'Quran' && <QuranView setView={setCurrentView} key="quran" />}
-          {currentView === 'Question & Answer' && <QuizView setView={setCurrentView} key="quiz" />}
-          {isFeatureView && <FeatureView title={currentView} setView={setCurrentView} key="feature" />}
+          {currentView === 'home' && <Home setView={setCurrentView} />}
+          {currentView === 'calendar' && <CalendarView />}
+          {currentView === 'settings' && <SettingsView />}
+          {currentView === 'prayer' && <PrayerDetails />}
+          {currentView === 'Quran' && <QuranView setView={setCurrentView} />}
+          {currentView === 'Question & Answer' && <QuizView setView={setCurrentView} />}
+          {currentView === 'qibla' && <QiblaDirectionView setView={setCurrentView} />}
+          {currentView === 'languages' && <LanguagesView setView={setCurrentView} />}
+          {isFeatureView && <FeatureView title={currentView} setView={setCurrentView} />}
         </AnimatePresence>
 
         <Navigation view={currentView} setView={setCurrentView} />

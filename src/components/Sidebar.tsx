@@ -3,12 +3,14 @@ import {
   BookOpen, MessageCircle, Settings, Globe, HeartHandshake, MapPin, 
   Cloud, Calculator, Compass, VolumeX, CalendarDays, Heart, Share2,
   Lightbulb, CalendarCheck, Radio, Star, Bell, Mail, Smartphone, ThumbsUp, X,
-  BookA
+  BookA, Bookmark
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { type Dispatch, type SetStateAction, useState } from 'react';
+import { useSettings } from '../hooks/useSettings';
+import { useTranslation } from '../lib/i18n';
 
-type ViewType = 'home' | 'calendar' | 'settings' | 'prayer';
+type ViewType = 'home' | 'calendar' | 'settings' | 'prayer' | 'languages' | string;
 
 interface SidebarProps {
   isOpen: boolean;
@@ -16,34 +18,36 @@ interface SidebarProps {
   setView: Dispatch<SetStateAction<ViewType>>;
 }
 
-const menuItems = [
-  { icon: BookOpen, label: 'Al Quran', view: 'prayer' as ViewType },
-  { icon: BookA, label: 'Tajweed' },
-  { icon: MessageCircle, label: 'Question and Answer' },
-  { icon: Settings, label: 'Settings', view: 'settings' as ViewType },
-  { icon: Globe, label: 'Languages', view: 'settings' as ViewType },
-  { icon: HeartHandshake, label: 'Donate Us' },
-  { icon: MapPin, label: 'Location Options', view: 'settings' as ViewType },
-  { icon: Cloud, label: 'Sync To Drive' },
-  { icon: Calculator, label: 'Qaza Namaz Calculator' },
-  { icon: Compass, label: 'Qibla Direction' },
-  { icon: VolumeX, label: 'Silent Mode' },
-  { icon: CalendarDays, label: 'Monthly Prayer Times', view: 'calendar' as ViewType },
-  { icon: Heart, label: 'Rohani Ilaj' },
-  { icon: Calculator, label: 'Tasbih' },
-  { icon: Lightbulb, label: 'Inspiration' },
-  { icon: CalendarCheck, label: 'Hijri Calendar', view: 'calendar' as ViewType },
-  { icon: Radio, label: 'Madani Radio' },
-  { icon: Star, label: 'Favorite Post' },
-  { icon: Bell, label: 'Notification' },
-  { icon: Mail, label: 'Contact Us' },
-  { icon: Smartphone, label: 'More Apps' },
-  { icon: Share2, label: 'Share' },
-  { icon: ThumbsUp, label: 'Submit Review' },
-];
-
 export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const { settings } = useSettings();
+  const { t, isRTL } = useTranslation(settings.language);
+
+  const menuItems = [
+    { icon: BookOpen, label: t('alQuran') || 'Al Quran', view: 'prayer' as ViewType },
+    { icon: BookA, label: t('tajweed') || 'Tajweed' },
+    { icon: MessageCircle, label: t('qa') || 'Question and Answer' },
+    { icon: Settings, label: t('settings') || 'Settings', view: 'settings' as ViewType },
+    { icon: Globe, label: t('languages') || 'Languages', view: 'languages' as ViewType },
+    { icon: HeartHandshake, label: t('donate') || 'Donate Us' },
+    { icon: MapPin, label: t('location') || 'Location Options', view: 'settings' as ViewType },
+    { icon: Cloud, label: t('sync') || 'Sync To Drive' },
+    { icon: Calculator, label: t('qazaCalculator') || 'Qaza Namaz Calculator' },
+    { icon: Compass, label: t('qiblaDirection') || 'Qibla Direction', view: 'qibla' as ViewType },
+    { icon: VolumeX, label: t('silentMode') || 'Silent Mode', isSilentMode: true },
+    { icon: CalendarDays, label: t('monthlyPrayerTimes') || 'Monthly Prayer Times', view: 'calendar' as ViewType },
+    { icon: Heart, label: t('rohaniIlaj') || 'Rohani Ilaj' },
+    { icon: Star, label: t('tasbih') || 'Tasbih' },
+    { icon: Lightbulb, label: t('inspiration') || 'Inspiration' },
+    { icon: CalendarCheck, label: t('hijriCalendar') || 'Hijri Calendar', view: 'calendar' as ViewType },
+    { icon: Radio, label: t('madaniRadio') || 'Madani Radio' },
+    { icon: Bookmark, label: t('favoritePost') || 'Favorite Post' },
+    { icon: Bell, label: t('notification') || 'Notification' },
+    { icon: Mail, label: t('contactUs') || 'Contact Us' },
+    { icon: Smartphone, label: t('moreApps') || 'More Apps' },
+    { icon: Share2, label: t('share') || 'Share' },
+    { icon: ThumbsUp, label: t('submitReview') || 'Submit Review' },
+  ];
 
   const handleItemClick = (item: typeof menuItems[0]) => {
     if (item.view) {
@@ -94,9 +98,16 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
                   <button 
                     key={index}
                     onClick={() => handleItemClick(item)}
-                    className="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-emerald-800/40 transition-colors text-emerald-100 group active:scale-95 transition-transform"
+                    className={cn(
+                      "w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-colors group active:scale-95 transition-transform", 
+                      isRTL && "flex-row-reverse text-right",
+                      item.isSilentMode ? "hover:bg-rose-900/40 text-rose-300/80" : "hover:bg-emerald-800/40 text-emerald-100"
+                    )}
                   >
-                    <item.icon className="w-5 h-5 text-emerald-500 group-hover:text-emerald-300 transition-colors" />
+                    <item.icon className={cn(
+                      "w-5 h-5 transition-colors",
+                      item.isSilentMode ? "text-rose-400 group-hover:text-rose-300" : "text-emerald-500 group-hover:text-emerald-300"
+                    )} />
                     <span className="font-medium text-[15px]">{item.label}</span>
                   </button>
                 ))}
