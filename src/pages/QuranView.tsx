@@ -173,11 +173,12 @@ export function QuranView({ setView }: QuranViewProps) {
                     <span className="text-xs text-emerald-600">{currentPageIndex + 1} / {pages.length}</span>
                   </div>
                   
-                  <div className="flex-1 space-y-6 text-center leading-loose" dir="rtl">
+                  <div className="flex-1 space-y-6 leading-loose" dir="rtl">
                     {pages[currentPageIndex].ayahs.map((ayah: any) => (
-                      <span key={ayah.number} className="text-3xl lg:text-4xl leading-[2.5] text-slate-800 font-arabic font-medium font-serif inline">
-                        {ayah.text} <span className="inline-flex items-center justify-center w-8 h-8 lg:w-10 lg:h-10 rounded-full border border-emerald-300 bg-emerald-50 text-emerald-700 text-sm lg:text-base mx-2">{ayah.numberInSurah}</span>
-                      </span>
+                      <div key={ayah.number} className="text-3xl lg:text-4xl leading-[2.5] text-slate-800 font-arabic font-medium font-serif flex items-start justify-start gap-4 pb-6 border-b border-slate-100/50 last:border-0 hover:bg-slate-50/50 p-2 rounded-xl transition-colors">
+                        <span className="shrink-0 mt-2 flex items-center justify-center w-8 h-8 lg:w-10 lg:h-10 rounded-full border border-emerald-300 bg-emerald-50 text-emerald-700 text-sm lg:text-base leading-none font-sans font-bold">{ayah.numberInSurah}</span>
+                        <span className="flex-1 text-right break-words">{ayah.text}</span>
+                      </div>
                     ))}
                   </div>
 

@@ -3,7 +3,7 @@ import {
   BookOpen, MessageCircle, Settings, Globe, HeartHandshake, MapPin, 
   Cloud, Calculator, Compass, VolumeX, CalendarDays, Heart, Share2,
   Lightbulb, CalendarCheck, Radio, Star, Bell, Mail, Smartphone, ThumbsUp, X,
-  BookA, Bookmark
+  BookA, Bookmark, BookText
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { type Dispatch, type SetStateAction, useState } from 'react';
@@ -24,29 +24,30 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
   const { t, isRTL } = useTranslation(settings.language);
 
   const menuItems = [
-    { icon: BookOpen, label: t('alQuran') || 'Al Quran', view: 'prayer' as ViewType },
-    { icon: BookA, label: t('tajweed') || 'Tajweed' },
-    { icon: MessageCircle, label: t('qa') || 'Question and Answer' },
-    { icon: Settings, label: t('settings') || 'Settings', view: 'settings' as ViewType },
-    { icon: Globe, label: t('languages') || 'Languages', view: 'languages' as ViewType },
-    { icon: HeartHandshake, label: t('donate') || 'Donate Us' },
-    { icon: MapPin, label: t('location') || 'Location Options', view: 'settings' as ViewType },
-    { icon: Cloud, label: t('sync') || 'Sync To Drive' },
-    { icon: Calculator, label: t('qazaCalculator') || 'Qaza Namaz Calculator' },
-    { icon: Compass, label: t('qiblaDirection') || 'Qibla Direction', view: 'qibla' as ViewType },
-    { icon: VolumeX, label: t('silentMode') || 'Silent Mode', isSilentMode: true },
-    { icon: CalendarDays, label: t('monthlyPrayerTimes') || 'Monthly Prayer Times', view: 'calendar' as ViewType },
-    { icon: Heart, label: t('rohaniIlaj') || 'Rohani Ilaj' },
-    { icon: Star, label: t('tasbih') || 'Tasbih' },
-    { icon: Lightbulb, label: t('inspiration') || 'Inspiration' },
-    { icon: CalendarCheck, label: t('hijriCalendar') || 'Hijri Calendar', view: 'calendar' as ViewType },
-    { icon: Radio, label: t('madaniRadio') || 'Madani Radio' },
-    { icon: Bookmark, label: t('favoritePost') || 'Favorite Post' },
-    { icon: Bell, label: t('notification') || 'Notification' },
-    { icon: Mail, label: t('contactUs') || 'Contact Us' },
-    { icon: Smartphone, label: t('moreApps') || 'More Apps' },
-    { icon: Share2, label: t('share') || 'Share' },
-    { icon: ThumbsUp, label: t('submitReview') || 'Submit Review' },
+    { icon: BookOpen, label: t('alQuran') || 'Al Quran', view: 'Quran' as ViewType, color: 'text-pink-400' },
+    { icon: BookA, label: t('tajweed') || 'Tajweed', color: 'text-yellow-500' },
+    { icon: BookText, label: t('hadees') || 'Hadees', color: 'text-orange-400' },
+    { icon: MessageCircle, label: t('qa') || 'Question and Answer', color: 'text-amber-500' },
+    { icon: Settings, label: t('settings') || 'Settings', view: 'settings' as ViewType, color: 'text-red-500' },
+    { icon: Globe, label: t('languages') || 'Languages', view: 'languages' as ViewType, color: 'text-blue-400' },
+    { icon: HeartHandshake, label: t('donate') || 'Donate Us', color: 'text-fuchsia-400' },
+    { icon: MapPin, label: t('location') || 'Location Options', view: 'settings' as ViewType, color: 'text-yellow-400' },
+    { icon: Cloud, label: t('sync') || 'Sync To Drive', color: 'text-green-500' },
+    { icon: Calculator, label: t('qazaCalculator') || 'Qaza Namaz Calculator', color: 'text-blue-500' },
+    { icon: Compass, label: t('qiblaDirection') || 'Qibla Direction', view: 'qibla' as ViewType, color: 'text-cyan-400' },
+    { icon: VolumeX, label: t('silentMode') || 'Silent Mode', isSilentMode: true, color: 'text-purple-400' },
+    { icon: CalendarDays, label: t('monthlyPrayerTimes') || 'Monthly Prayer Times', view: 'calendar' as ViewType, color: 'text-emerald-500' },
+    { icon: Heart, label: t('rohaniIlaj') || 'Rohani Ilaj', color: 'text-yellow-500' },
+    { icon: Star, label: t('tasbih') || 'Tasbih', color: 'text-green-600' },
+    { icon: Lightbulb, label: t('inspiration') || 'Inspiration', color: 'text-orange-500' },
+    { icon: CalendarCheck, label: t('hijriCalendar') || 'Hijri Calendar', view: 'calendar' as ViewType, color: 'text-fuchsia-500' },
+    { icon: Radio, label: t('madaniRadio') || 'Madani Radio', color: 'text-orange-500' },
+    { icon: Bookmark, label: t('favoritePost') || 'Favorite Post', color: 'text-slate-400' },
+    { icon: Bell, label: t('notification') || 'Notification', color: 'text-indigo-400' },
+    { icon: Mail, label: t('contactUs') || 'Contact Us', color: 'text-red-400' },
+    { icon: Smartphone, label: t('moreApps') || 'More Apps', color: 'text-orange-600' },
+    { icon: Share2, label: t('share') || 'Share', color: 'text-yellow-400' },
+    { icon: ThumbsUp, label: t('submitReview') || 'Submit Review', color: 'text-emerald-400' },
   ];
 
   const handleItemClick = (item: typeof menuItems[0]) => {
@@ -106,7 +107,7 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
                   >
                     <item.icon className={cn(
                       "w-5 h-5 transition-colors",
-                      item.isSilentMode ? "text-rose-400 group-hover:text-rose-300" : "text-emerald-500 group-hover:text-emerald-300"
+                      item.color || (item.isSilentMode ? "text-rose-400 group-hover:text-rose-300" : "text-emerald-500 group-hover:text-emerald-300")
                     )} />
                     <span className="font-medium text-[15px]">{item.label}</span>
                   </button>

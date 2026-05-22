@@ -39,7 +39,7 @@ export const translations = {
     location: "Location Options",
     sync: "Sync To Drive",
     prayerTimes: "Prayer Times",
-    alQuran: "Al Quran",
+    alQuran: "Quran",
     qazaCalculator: "Qaza Namaz Calculator",
     qiblaDirection: "Qibla Direction",
     silentMode: "Silent Mode",

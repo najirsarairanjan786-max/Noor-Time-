@@ -7,7 +7,7 @@ import { PrayerTimesList } from '../components/PrayerTimesList';
 import { Sidebar } from '../components/Sidebar';
 import { format } from 'date-fns';
 import { useState, useEffect } from 'react';
-import { Menu, Moon, Sun, MoonStar, CheckSquare, Search, Book, HelpCircle, ShieldAlert, BadgeInfo, Home as HomeIcon, Clock, Compass } from 'lucide-react';
+import { Menu, Moon, Sun, MoonStar, CheckSquare, Search, Book, HelpCircle, ShieldAlert, BadgeInfo, Home as HomeIcon, Clock, Compass, BookOpen, BookA, Heart, CalendarDays, Star, MessageCircle, Radio, Share2, Smartphone, BookText } from 'lucide-react';
 import { type Dispatch, type SetStateAction } from 'react';
 import { ThemeModal } from '../components/ThemeModal';
 import { useTranslation } from '../lib/i18n';
@@ -135,30 +135,33 @@ export function Home({ setView }: HomeProps) {
         <PrayerTimesList timings={timings} setView={setView} />
         
         {/* More Features Row */}
-      <div className="max-w-lg mx-auto relative mt-4">
-        <h3 className="text-slate-800 text-[17px] font-extrabold mb-3 px-1 relative z-10 text-shadow-sm">{t('more')} Features</h3>
-        
+        <div className="max-w-lg mx-auto relative mt-4">
+          <h3 className="text-slate-800 text-[17px] font-extrabold mb-3 px-1 relative z-10 text-shadow-sm">{t('more')} Features</h3>
+          
           <div className="grid grid-cols-2 gap-3 pb-8">
-          {[
-            { label: 'Qibla Finder', i18nKey: 'qiblaFinder', icon: <Compass className="w-8 h-8 opacity-80" />, color: 'bg-teal-100 text-teal-700' },
-            { label: 'Live Clock', i18nKey: 'liveClock', icon: <Clock className="w-8 h-8 opacity-80" />, color: 'bg-emerald-100 text-emerald-700' },
-            { label: 'Languages', i18nKey: 'languages', icon: <Menu className="w-8 h-8 opacity-80" />, color: 'bg-red-100 text-red-700' },
-            { label: 'Settings', i18nKey: 'settings', icon: <Menu className="w-8 h-8 opacity-80" />, color: 'bg-slate-200 text-slate-700' }
-          ].map((feature, i) => (
-            <button key={i} onClick={() => {
-              if (feature.label === 'Qibla Finder') setView('qibla' as any);
-              else if (feature.label === 'Live Clock') setView('clock' as any);
-              else if (feature.label === 'Languages') setView('languages' as any);
-              else setView('settings' as any);
-            }} className="bg-white p-4 rounded-xl flex flex-col items-center justify-center gap-2 text-slate-700 shadow-md border border-slate-100 hover:shadow-lg transition-shadow active:scale-95">
-              <div className={`w-14 h-14 ${feature.color} border border-white/20 rounded-xl flex items-center justify-center shadow-inner`}>
-                {feature.icon}
-              </div>
-              <span className="text-sm font-semibold text-center leading-tight">{feature.i18nKey && t(feature.i18nKey as any) !== feature.i18nKey ? t(feature.i18nKey as any) : feature.label}</span>
-            </button>
-          ))}
+            {[
+              { label: 'Quran', i18nKey: 'alQuran', icon: <BookOpen className="w-7 h-7 text-[#786b9e]" strokeWidth={1.5}/>, bg: 'bg-[#eeeef6]', text: 'text-[#786b9e]' },
+              { label: 'Hadees', i18nKey: 'hadees', icon: <BookText className="w-7 h-7 text-[#e98a4d]" strokeWidth={1.5}/>, bg: 'bg-[#fef1e5]', text: 'text-[#e98a4d]' },
+              { label: 'Question &\nAnswer', i18nKey: 'qa', icon: <MessageCircle className="w-7 h-7 text-[#926caa]" strokeWidth={1.5}/>, bg: 'bg-[#f5f2f8]', text: 'text-[#926caa]' },
+              { label: 'Radio', i18nKey: 'madaniRadio', icon: <Radio className="w-7 h-7 text-[#a16bae]" strokeWidth={1.5}/>, bg: 'bg-[#f8eff8]', text: 'text-[#a16bae]' },
+              { label: 'Tajweed', i18nKey: 'tajweed', icon: <BookA className="w-7 h-7 text-[#7da65e]" strokeWidth={1.5}/>, bg: 'bg-[#edf6e9]', text: 'text-[#7da65e]' },
+              { label: 'Share\nPrayer Time', i18nKey: 'share', icon: <CalendarDays className="w-7 h-7 text-[#7d9961]" strokeWidth={1.5}/>, bg: 'bg-[#f4f7ed]', text: 'text-[#7d9961]' },
+              { label: 'Tasbih', i18nKey: 'tasbih', icon: <Star className="w-7 h-7 text-[#a78b94]" strokeWidth={1.5}/>, bg: 'bg-[#f6f0f2]', text: 'text-[#a78b94]' },
+              { label: 'Daily', i18nKey: 'daily', icon: <Clock className="w-7 h-7 text-[#9a9e6b]" strokeWidth={1.5}/>, bg: 'bg-[#f5f6ed]', text: 'text-[#9a9e6b]' },
+              { label: 'More Apps', i18nKey: 'moreApps', icon: <Smartphone className="w-7 h-7 text-[#9a9e6b]" strokeWidth={1.5}/>, bg: 'bg-[#f5f6ed]', text: 'text-[#9a9e6b]' },
+            ].map((feature, i) => (
+              <button key={i} onClick={() => {
+                if (feature.label === 'Quran') setView('Quran' as any);
+                else setView('home' as any);
+              }} className="bg-white p-2.5 rounded-[16px] flex items-center justify-start gap-3 shadow-sm border border-slate-100/80 hover:shadow-md transition-shadow active:scale-95 text-left h-[72px]">
+                <div className={`w-[52px] h-[52px] ${feature.bg} rounded-[14px] flex items-center justify-center shrink-0`}>
+                  {feature.icon}
+                </div>
+                <span className={`text-[15px] font-extrabold ${feature.text} leading-[1.1] pr-1 whitespace-pre-line tracking-tight`}>{feature.i18nKey && t(feature.i18nKey as any) !== feature.i18nKey ? t(feature.i18nKey as any) : feature.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
       </div>
       
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} setView={setView} />

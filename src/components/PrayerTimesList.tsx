@@ -176,9 +176,13 @@ export function PrayerTimesList({
     );
   }
 
+  const isFriday = now.getDay() === 5; // 0 is Sunday, 5 is Friday
+
   const prayers = [
     { name: "Fajr", label: t('fajr'), time: settings.customTimings?.["Fajr"] || timings.Fajr },
-    { name: "Zuhr", label: t('dhuhr'), time: settings.customTimings?.["Zuhr"] || timings.Dhuhr },
+    isFriday
+      ? { name: "Jumma", label: t('jumma'), time: settings.customTimings?.["Jumma"] || timings.Dhuhr }
+      : { name: "Zuhr", label: t('dhuhr'), time: settings.customTimings?.["Zuhr"] || timings.Dhuhr },
     {
       name: `Asr${schoolName}`,
       label: t('asr'),
@@ -194,18 +198,16 @@ export function PrayerTimesList({
       label: t('isha'),
       time: settings.customTimings?.[`Isha${schoolName}`] || timings.Isha,
     },
-    { name: "Jumma", label: t('jumma'), time: settings.customTimings?.["Jumma"] || timings.Dhuhr },
   ];
 
   let nextPrayerIndex = prayers.findIndex((p, idx) => {
-    if (idx === 5) return false; // Ignore Jumma for sequential logic
     const prayerTime = parse(p.time.split(" ")[0], "HH:mm", now);
     return isAfter(prayerTime, now);
   });
 
   if (nextPrayerIndex === -1) nextPrayerIndex = 0;
 
-  const currentPrayerIndex = nextPrayerIndex === 0 ? 4 : nextPrayerIndex - 1;
+  const currentPrayerIndex = nextPrayerIndex === 0 ? prayers.length - 1 : nextPrayerIndex - 1;
 
   const fajrTime = timings
     ? parse(timings.Fajr.split(" ")[0], "HH:mm", now)
@@ -437,16 +439,27 @@ export function PrayerTimesList({
         </div>
       </div>
 
-      {/* Auto Location Banner */}
-      <div className="bg-[#cc0000] text-white text-center py-3 rounded-xl mb-4 mx-2">
-        <div className="text-[17px] font-black tracking-widest uppercase">
-          NAMAZ TIME
+      {/* Auto Location & Hajj Banner */}
+      <div className="mb-4 space-y-2 mt-4 mx-2">
+        <div className="bg-[#e6eff5] w-full h-[60px] rounded-lg relative overflow-hidden flex items-center justify-start shadow-sm border border-slate-100">
+          <div className="pl-4 flex items-end gap-1 z-10 relative">
+            <div className="flex flex-col items-start leading-[1.1]">
+               <span className="text-[#195a8f] font-black text-[18px] tracking-tight">HAJJ <span className="font-serif italic font-light">&</span></span>
+               <span className="text-[#195a8f] font-black text-[22px] tracking-tighter">UMRAH</span>
+            </div>
+            <span className="text-[#195a8f] font-semibold text-[13px] tracking-widest mb-1 ml-1">SECTION</span>
+          </div>
+          
+          {/* Background overlay graphic */}
+          <div className="absolute right-0 top-0 bottom-0 w-[55%] pointer-events-none overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-[#e6eff5] via-[#e6eff5]/50 to-transparent z-10"></div>
+            <img src="https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?auto=format&fit=crop&q=100&w=2000&h=600" alt="Kaaba 4K" className="w-full h-full object-cover object-center relative z-0" />
+          </div>
         </div>
-        <div className="text-2xl font-black font-arabic mt-1">أوقات الصلاة</div>
       </div>
 
       {/* Prayer Times List Card */}
-      <div className="bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden mb-8 relative pb-16">
+      <div className="bg-white rounded-[20px] shadow-md border border-slate-100 overflow-hidden mb-8 relative">
         <div className="flex flex-col gap-1 px-3 py-2 text-slate-700 w-full min-h-[300px]">
           {activeTab === "fard"
             ? prayers.map((prayer, idx) => {
@@ -618,30 +631,21 @@ export function PrayerTimesList({
               })}
         </div>
 
-        {/* Times Toggle */}
-        <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-white rounded-full p-1 shadow-[0_5px_15px_rgba(0,0,0,0.08)] flex border border-slate-100 mb-8">
-          <button
-            onClick={() => setActiveTab("fard")}
-            className={cn(
-              "px-6 py-2 rounded-full text-sm font-semibold transition-colors",
-              activeTab === "fard"
-                ? "bg-[#8db69b] text-white shadow-sm"
-                : "text-slate-500 hover:bg-slate-50",
-            )}
-          >
-            Fard Times
-          </button>
-          <button
-            onClick={() => setActiveTab("other")}
-            className={cn(
-              "px-6 py-2 rounded-full text-sm font-semibold transition-colors",
-              activeTab === "other"
-                ? "bg-[#8db69b] text-white shadow-sm"
-                : "text-slate-500 hover:bg-slate-50",
-            )}
-          >
-            Other Times
-          </button>
+        {/* Fard Times Toggle on divider line */}
+        <div className="border-t border-slate-100 mt-2 relative py-4">
+          <div className="absolute -top-4 right-4 bg-white rounded-full p-0.5 shadow-sm border border-slate-200">
+            <button
+              onClick={() => setActiveTab(activeTab === "fard" ? "other" : "fard")}
+              className={cn(
+                "px-5 py-1.5 rounded-full text-[13px] font-semibold transition-colors",
+                activeTab === "fard"
+                  ? "bg-[#7ba689] text-white shadow-sm"
+                  : "bg-slate-50 text-slate-500 hover:bg-slate-100",
+              )}
+            >
+              {activeTab === "fard" ? "Fard Times" : "Other Times"}
+            </button>
+          </div>
         </div>
       </div>
 
