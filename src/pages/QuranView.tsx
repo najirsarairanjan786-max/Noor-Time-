@@ -109,7 +109,7 @@ export function QuranView({ setView }: QuranViewProps) {
     if (selectedPara !== null || selectedSurah !== null) {
       const id = selectedPara !== null ? selectedPara : selectedSurah;
       const type = selectedPara !== null ? "juz" : "surah";
-      const cacheKey = `quran_${type}_${id}`;
+      const cacheKey = `quran_${type}_${id}_with_hindi`;
       const cachedData = localStorage.getItem(cacheKey);
 
       if (cachedData) {
@@ -124,16 +124,35 @@ export function QuranView({ setView }: QuranViewProps) {
       }
 
       setLoading(true);
-      fetch(`https://api.alquran.cloud/v1/${type}/${id}/quran-uthmani`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data && data.data) {
+      Promise.all([
+        fetch(`https://api.alquran.cloud/v1/${type}/${id}/quran-uthmani`).then(
+          (res) => res.json(),
+        ),
+        fetch(`https://api.alquran.cloud/v1/${type}/${id}/hi.hindi`).then(
+          (res) => res.json(),
+        ),
+      ])
+        .then(([uthmaniData, hindiData]) => {
+          if (uthmaniData?.data && hindiData?.data) {
+            // Merge Hindi text into uthmani ayahs
+            const ayahsWithTranslation = uthmaniData.data.ayahs.map(
+              (ayah: any, index: number) => {
+                return {
+                  ...ayah,
+                  hindiText: hindiData.data.ayahs[index]?.text || "",
+                };
+              },
+            );
+            const mergedData = {
+              ...uthmaniData.data,
+              ayahs: ayahsWithTranslation,
+            };
             try {
-              localStorage.setItem(cacheKey, JSON.stringify(data.data));
+              localStorage.setItem(cacheKey, JSON.stringify(mergedData));
             } catch (e) {
               console.warn("Could not cache data", e);
             }
-            processData(data.data);
+            processData(mergedData);
           }
           setLoading(false);
         })
@@ -282,18 +301,29 @@ export function QuranView({ setView }: QuranViewProps) {
             </div>
           ) : pages.length > 0 ? (
             <div className="flex flex-col" dir="rtl">
-              <div className="p-4 sm:p-6 mb-2">
+              <div className="p-4 sm:p-6 mb-2 flex flex-col gap-6">
                 {pages[currentPageIndex].ayahs.map((ayah: any, idx: number) => (
-                  <span
+                  <div
                     key={ayah.number}
-                    className="inline font-arabic text-2xl md:text-3xl leading-[2.2] md:leading-[2.5] text-black"
+                    className="flex flex-col border-b border-gray-100 pb-6 last:border-b-0"
                   >
-                    {ayah.text}
-
-                    <span className="inline-flex items-center justify-center text-black font-sans mx-1">
-                      ({ayah.numberInSurah})
-                    </span>
-                  </span>
+                    <div className="text-right">
+                      <span className="inline font-arabic text-2xl md:text-3xl leading-[2.2] md:leading-[2.5] text-black">
+                        {ayah.text}
+                        <span className="inline-flex items-center justify-center text-black font-sans mx-1">
+                          ({ayah.numberInSurah})
+                        </span>
+                      </span>
+                    </div>
+                    {ayah.hindiText && (
+                      <div
+                        dir="ltr"
+                        className="text-left mt-3 font-sans text-[15px] text-gray-700 leading-relaxed"
+                      >
+                        {ayah.hindiText}
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
 
@@ -418,7 +448,7 @@ export function QuranView({ setView }: QuranViewProps) {
               <path d="m8 11 4 4 4-4" />
             </svg>
             <span className="text-[12px] font-bold mt-1 tracking-tight">
-              Translation
+              Hindi
             </span>
           </button>
           <button className="flex flex-col items-center justify-center p-2 min-w-[64px] active:scale-95 transition-transform">
@@ -602,7 +632,7 @@ export function QuranView({ setView }: QuranViewProps) {
                     <div className="w-full h-[1.5px] bg-[#fb6060] mb-2 rounded-full hidden"></div>
                     <hr className="w-[85%] border-black mb-1.5 border-[0.5px]" />
                     <span className="font-extrabold text-black text-[15px] tracking-tight">
-                      Translation
+                      Hindi Translation
                     </span>
                   </div>
                 </div>
