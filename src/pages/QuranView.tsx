@@ -49,9 +49,13 @@ const PARAS_DATA = [
 ];
 
 export function QuranView({ setView }: QuranViewProps) {
-  const [activeTab, setActiveTab] = useState<"QURAN" | "SURAH" | "PARAH">(
-    "QURAN",
+  const [activeTab, setActiveTab] = useState<
+    "QURAN" | "SURAH" | "PARAH" | "TRANSLATION"
+  >("QURAN");
+  const [translationSubTab, setTranslationSubTab] = useState<"SURAH" | "PARAH">(
+    "SURAH",
   );
+  const [isTranslationMode, setIsTranslationMode] = useState<boolean>(false);
   const [selectedPara, setSelectedPara] = useState<number | null>(null);
   const [selectedSurah, setSelectedSurah] = useState<number | null>(null);
   const [paraData, setParaData] = useState<any>(null);
@@ -109,7 +113,7 @@ export function QuranView({ setView }: QuranViewProps) {
     if (selectedPara !== null || selectedSurah !== null) {
       const id = selectedPara !== null ? selectedPara : selectedSurah;
       const type = selectedPara !== null ? "juz" : "surah";
-      const cacheKey = `quran_${type}_${id}_with_hindi`;
+      const cacheKey = `quran_${type}_${id}${isTranslationMode ? "_with_hindi" : ""}`;
       const cachedData = localStorage.getItem(cacheKey);
 
       if (cachedData) {
@@ -124,42 +128,59 @@ export function QuranView({ setView }: QuranViewProps) {
       }
 
       setLoading(true);
-      Promise.all([
-        fetch(`https://api.alquran.cloud/v1/${type}/${id}/quran-uthmani`).then(
-          (res) => res.json(),
-        ),
-        fetch(`https://api.alquran.cloud/v1/${type}/${id}/hi.hindi`).then(
-          (res) => res.json(),
-        ),
-      ])
-        .then(([uthmaniData, hindiData]) => {
-          if (uthmaniData?.data && hindiData?.data) {
-            // Merge Hindi text into uthmani ayahs
-            const ayahsWithTranslation = uthmaniData.data.ayahs.map(
-              (ayah: any, index: number) => {
-                return {
+      if (isTranslationMode) {
+        Promise.all([
+          fetch(
+            `https://api.alquran.cloud/v1/${type}/${id}/quran-uthmani`,
+          ).then((res) => res.json()),
+          fetch(`https://api.alquran.cloud/v1/${type}/${id}/hi.hindi`).then(
+            (res) => res.json(),
+          ),
+        ])
+          .then(([uthmaniData, hindiData]) => {
+            if (uthmaniData?.data && hindiData?.data) {
+              const ayahsWithTranslation = uthmaniData.data.ayahs.map(
+                (ayah: any, index: number) => ({
                   ...ayah,
                   hindiText: hindiData.data.ayahs[index]?.text || "",
-                };
-              },
-            );
-            const mergedData = {
-              ...uthmaniData.data,
-              ayahs: ayahsWithTranslation,
-            };
-            try {
-              localStorage.setItem(cacheKey, JSON.stringify(mergedData));
-            } catch (e) {
-              console.warn("Could not cache data", e);
+                }),
+              );
+              const mergedData = {
+                ...uthmaniData.data,
+                ayahs: ayahsWithTranslation,
+              };
+              try {
+                localStorage.setItem(cacheKey, JSON.stringify(mergedData));
+              } catch (e) {
+                console.warn("Could not cache data", e);
+              }
+              processData(mergedData);
             }
-            processData(mergedData);
-          }
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.error(err);
-          setLoading(false);
-        });
+            setLoading(false);
+          })
+          .catch((err) => {
+            console.error(err);
+            setLoading(false);
+          });
+      } else {
+        fetch(`https://api.alquran.cloud/v1/${type}/${id}/quran-uthmani`)
+          .then((res) => res.json())
+          .then((data) => {
+            if (data && data.data) {
+              try {
+                localStorage.setItem(cacheKey, JSON.stringify(data.data));
+              } catch (e) {
+                console.warn("Could not cache data", e);
+              }
+              processData(data.data);
+            }
+            setLoading(false);
+          })
+          .catch((err) => {
+            console.error(err);
+            setLoading(false);
+          });
+      }
     } else {
       setParaData(null);
       setPages([]);
@@ -301,30 +322,44 @@ export function QuranView({ setView }: QuranViewProps) {
             </div>
           ) : pages.length > 0 ? (
             <div className="flex flex-col" dir="rtl">
-              <div className="p-4 sm:p-6 mb-2 flex flex-col gap-6">
-                {pages[currentPageIndex].ayahs.map((ayah: any, idx: number) => (
-                  <div
-                    key={ayah.number}
-                    className="flex flex-col border-b border-gray-100 pb-6 last:border-b-0"
-                  >
-                    <div className="text-right">
-                      <span className="inline font-arabic text-2xl md:text-3xl leading-[2.2] md:leading-[2.5] text-black">
-                        {ayah.text}
-                        <span className="inline-flex items-center justify-center text-black font-sans mx-1">
-                          ({ayah.numberInSurah})
-                        </span>
-                      </span>
-                    </div>
-                    {ayah.hindiText && (
+              <div className="p-4 sm:p-6 mb-2">
+                {pages[currentPageIndex].ayahs.map((ayah: any, idx: number) => {
+                  if (ayah.hindiText) {
+                    return (
                       <div
-                        dir="ltr"
-                        className="text-left mt-3 font-sans text-[15px] text-gray-700 leading-relaxed"
+                        key={ayah.number}
+                        className="flex flex-col border-b border-gray-100 pb-6 mb-6 last:border-b-0 last:mb-0"
                       >
-                        {ayah.hindiText}
+                        <div className="text-right">
+                          <span className="inline font-arabic text-2xl md:text-3xl leading-[2.2] md:leading-[2.5] text-black">
+                            {ayah.text}
+                            <span className="inline-flex items-center justify-center text-black font-sans mx-1">
+                              ({ayah.numberInSurah})
+                            </span>
+                          </span>
+                        </div>
+                        <div
+                          dir="ltr"
+                          className="text-left mt-3 font-sans text-[15px] text-gray-700 leading-relaxed"
+                        >
+                          {ayah.hindiText}
+                        </div>
                       </div>
-                    )}
-                  </div>
-                ))}
+                    );
+                  }
+                  return (
+                    <span
+                      key={ayah.number}
+                      className="inline font-arabic text-2xl md:text-3xl leading-[2.2] md:leading-[2.5] text-black"
+                    >
+                      {ayah.text}
+
+                      <span className="inline-flex items-center justify-center text-black font-sans mx-1">
+                        ({ayah.numberInSurah})
+                      </span>
+                    </span>
+                  );
+                })}
               </div>
 
               {/* End of Surah / Ruku marker */}
@@ -448,7 +483,7 @@ export function QuranView({ setView }: QuranViewProps) {
               <path d="m8 11 4 4 4-4" />
             </svg>
             <span className="text-[12px] font-bold mt-1 tracking-tight">
-              Hindi
+              Translation
             </span>
           </button>
           <button className="flex flex-col items-center justify-center p-2 min-w-[64px] active:scale-95 transition-transform">
@@ -614,7 +649,10 @@ export function QuranView({ setView }: QuranViewProps) {
               {/* Grid */}
               <div className="grid grid-cols-2 gap-[14px]">
                 {/* Card 1 */}
-                <div className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm border-b-[8px] border-[#fb6060] text-center gap-2 active:scale-95 transition-transform h-[170px]">
+                <div
+                  onClick={() => setActiveTab("TRANSLATION")}
+                  className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm border-b-[8px] border-[#fb6060] text-center gap-2 active:scale-95 transition-transform h-[170px] cursor-pointer"
+                >
                   <div className="flex-1 flex items-center justify-center mb-1 relative mt-2">
                     <BookOpen
                       className="w-[84px] h-[84px] text-[#fb6060]"
@@ -632,7 +670,7 @@ export function QuranView({ setView }: QuranViewProps) {
                     <div className="w-full h-[1.5px] bg-[#fb6060] mb-2 rounded-full hidden"></div>
                     <hr className="w-[85%] border-black mb-1.5 border-[0.5px]" />
                     <span className="font-extrabold text-black text-[15px] tracking-tight">
-                      Hindi Translation
+                      Translation
                     </span>
                   </div>
                 </div>
@@ -981,13 +1019,196 @@ export function QuranView({ setView }: QuranViewProps) {
                 </div>
               </div>
             </>
+          ) : activeTab === "TRANSLATION" ? (
+            <div className="flex flex-col gap-[14px]">
+              <div className="flex bg-[#e4e4e4] rounded-full p-1.5 shadow-sm mb-2 max-w-[300px] mx-auto w-full">
+                <button
+                  onClick={() => setTranslationSubTab("SURAH")}
+                  className={`flex-1 py-1.5 rounded-full font-bold text-[13px] transition-colors shadow-sm ${
+                    translationSubTab === "SURAH"
+                      ? "bg-[#df4b4b] text-white shadow-md border-b-2 border-[#b93b3b]"
+                      : "text-[#df4b4b] bg-transparent shadow-none"
+                  }`}
+                >
+                  Surah
+                </button>
+                <button
+                  onClick={() => setTranslationSubTab("PARAH")}
+                  className={`flex-1 py-1.5 rounded-full font-bold text-[13px] transition-colors shadow-sm ${
+                    translationSubTab === "PARAH"
+                      ? "bg-[#df4b4b] text-white shadow-md border-b-2 border-[#b93b3b]"
+                      : "text-[#df4b4b] bg-transparent shadow-none"
+                  }`}
+                >
+                  Parah
+                </button>
+              </div>
+
+              {translationSubTab === "PARAH" ? (
+                <div className="grid grid-cols-2 gap-[14px]" dir="rtl">
+                  {PARAS_DATA.map((parah) => (
+                    <div
+                      key={parah.id}
+                      dir="ltr"
+                      onClick={() => {
+                        setIsTranslationMode(true);
+                        setSelectedPara(parah.id);
+                      }}
+                      className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 flex flex-col justify-between relative overflow-hidden h-[160px] active:scale-95 transition-transform border-b-[4px] cursor-pointer border-[#fb6060]"
+                    >
+                      {/* Top Right Decoration */}
+                      <svg
+                        className="absolute -top-2 -right-2 w-12 h-12 text-[#df4b4b] opacity-80 pointer-events-none"
+                        viewBox="0 0 50 50"
+                        fill="currentColor"
+                      >
+                        <path
+                          d="M 50 0 L 50 20 Q 30 20 20 30 Q 15 40 10 50 L 0 50 Q 8 30 20 20 Q 30 8 50 0 Z"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                        />
+                        <path
+                          d="M 45 5 Q 35 15 25 25"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          fill="none"
+                        />
+                        <circle cx="40" cy="10" r="3" />
+                        <circle cx="30" cy="8" r="2" />
+                        <circle cx="42" cy="18" r="2" />
+                      </svg>
+
+                      {/* Bottom Left Decoration */}
+                      <svg
+                        className="absolute bottom-0 left-0 w-12 h-12 text-[#df4b4b] opacity-80 pointer-events-none transform rotate-180"
+                        viewBox="0 0 50 50"
+                        fill="currentColor"
+                      >
+                        <path
+                          d="M 50 0 L 50 20 Q 30 20 20 30 Q 15 40 10 50 L 0 50 Q 8 30 20 20 Q 30 8 50 0 Z"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                        />
+                        <path
+                          d="M 45 5 Q 35 15 25 25"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          fill="none"
+                        />
+                        <circle cx="40" cy="10" r="3" />
+                        <circle cx="30" cy="8" r="2" />
+                        <circle cx="42" cy="18" r="2" />
+                      </svg>
+
+                      <div className="flex justify-between items-start z-10 relative">
+                        <div className="w-7 h-7 bg-[#df4b4b] text-white rounded-full flex items-center justify-center font-bold text-sm shadow-sm">
+                          {parah.id}
+                        </div>
+                      </div>
+
+                      <div className="flex-1 flex items-center justify-center text-center z-10 relative leading-[1.2]">
+                        <span className="font-arabic font-bold text-2xl text-black">
+                          {parah.name}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-end items-center gap-1 z-10 relative mt-auto pt-2">
+                        <span className="font-bold text-black text-[16px]">
+                          {parah.rukus}
+                        </span>
+                        <div className="bg-[#df4b4b] text-white text-[11px] font-bold px-1.5 py-0.5 rounded-sm tracking-tight border-b-2 border-r-2 border-[#b93b3b]">
+                          Total Ruku
+                        </div>
+                        <BookOpen
+                          className="w-[18px] h-[18px] text-[#df4b4b]"
+                          strokeWidth={2}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col gap-[14px]">
+                  {surahs.map((surah) => (
+                    <div
+                      key={surah.number}
+                      onClick={() => {
+                        setIsTranslationMode(true);
+                        setSelectedSurah(surah.number);
+                      }}
+                      className="bg-[linear-gradient(to_bottom,white,#fff8f8)] rounded-[12px] shadow-sm border border-[#fb6060] p-3 pt-3 flex flex-col gap-3 relative active:scale-95 transition-transform cursor-pointer"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-2.5">
+                          <div className="relative w-10 h-10 flex items-center justify-center text-black">
+                            <span className="absolute inset-0 border-[2.5px] border-[#df4b4b] rounded-full rotate-45 transform: rotate(45deg) opacity-40"></span>
+                            <span className="font-bold text-[14px] leading-none mb-0.5 z-10">
+                              {surah.number}
+                            </span>
+                            <BookOpen className="w-9 h-9 absolute text-[#df4b4b] opacity-10" />
+                          </div>
+                          <div className="flex flex-col">
+                            <h3 className="font-extrabold text-[16px] tracking-tight text-black leading-none">
+                              {surah.englishName}
+                            </h3>
+                            <span className="text-[12px] text-gray-500 font-bold tracking-tight mt-0.5">
+                              {surah.englishNameTranslation}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end">
+                          <span className="font-arabic text-xl font-bold text-[#df4b4b] leading-none mb-1 text-right">
+                            {surah.name}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 justify-between flex-wrap hidden">
+                        <div className="flex justify-between w-full">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-extrabold text-black text-[13px]">
+                              {surah.revelationType === "Meccan"
+                                ? "Meccan"
+                                : "Medinan"}
+                            </span>
+                            <span className="bg-[#df4b4b] text-white text-[12px] font-bold px-1.5 py-0.5 rounded-[4px] leading-none tracking-tight">
+                              Origin
+                            </span>
+                            <BookOpen
+                              className="w-[18px] h-[18px] text-[#df4b4b]"
+                              strokeWidth={2}
+                            />
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-extrabold text-black text-[13px]">
+                              {surah.numberOfAyahs.toString().padStart(2, "0")}
+                            </span>
+                            <span className="bg-[#df4b4b] text-white text-[12px] font-bold px-1.5 py-0.5 rounded-[4px] leading-none tracking-tight">
+                              Total Verses
+                            </span>
+                            <BookOpen
+                              className="w-[18px] h-[18px] text-[#df4b4b]"
+                              strokeWidth={2}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           ) : activeTab === "PARAH" ? (
             <div className="grid grid-cols-2 gap-[14px]" dir="rtl">
               {PARAS_DATA.map((parah) => (
                 <div
                   key={parah.id}
                   dir="ltr"
-                  onClick={() => setSelectedPara(parah.id)}
+                  onClick={() => {
+                    setIsTranslationMode(false);
+                    setSelectedPara(parah.id);
+                  }}
                   className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 flex flex-col justify-between relative overflow-hidden h-[160px] active:scale-95 transition-transform border-b-[4px] cursor-pointer"
                 >
                   {/* Top Right Decoration */}
@@ -1068,7 +1289,10 @@ export function QuranView({ setView }: QuranViewProps) {
               {surahs.map((surah) => (
                 <div
                   key={surah.number}
-                  onClick={() => setSelectedSurah(surah.number)}
+                  onClick={() => {
+                    setIsTranslationMode(false);
+                    setSelectedSurah(surah.number);
+                  }}
                   className="bg-white rounded-[12px] shadow-sm border border-gray-100 p-3 pt-3 flex flex-col gap-3 relative active:scale-95 transition-transform cursor-pointer"
                 >
                   {/* Top Row */}
