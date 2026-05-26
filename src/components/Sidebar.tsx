@@ -30,7 +30,7 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
     { icon: MessageCircle, label: t('qa') || 'Question and Answer', color: 'text-amber-500' },
     { icon: Settings, label: t('settings') || 'Settings', view: 'settings' as ViewType, color: 'text-red-500' },
     { icon: Globe, label: t('languages') || 'Languages', view: 'languages' as ViewType, color: 'text-blue-400' },
-    { icon: HeartHandshake, label: t('donate') || 'Donate Us', color: 'text-fuchsia-400' },
+    { icon: HeartHandshake, label: t('donate') || 'Donate Us', view: 'donate' as ViewType, color: 'text-fuchsia-400' },
     { icon: MapPin, label: t('location') || 'Location Options', view: 'settings' as ViewType, color: 'text-yellow-400' },
     { icon: Cloud, label: t('sync') || 'Sync To Drive', color: 'text-green-500' },
     { icon: Calculator, label: t('qazaCalculator') || 'Qaza Namaz Calculator', color: 'text-blue-500' },
@@ -46,7 +46,7 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
     { icon: Bell, label: t('notification') || 'Notification', color: 'text-indigo-400' },
     { icon: Mail, label: t('contactUs') || 'Contact Us', color: 'text-red-400' },
     { icon: Smartphone, label: t('moreApps') || 'More Apps', color: 'text-orange-600' },
-    { icon: Share2, label: t('share') || 'Share', color: 'text-yellow-400' },
+    { icon: Share2, label: t('share') || 'Share', view: 'share' as ViewType, color: 'text-yellow-400' },
     { icon: ThumbsUp, label: t('submitReview') || 'Submit Review', color: 'text-emerald-400' },
   ];
 

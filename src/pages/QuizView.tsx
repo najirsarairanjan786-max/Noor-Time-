@@ -69,6 +69,114 @@ const QUESTIONS = [
       { en: "Six", hi: "छह", ar: "ست" }
     ],
     correctIndex: 2
+  },
+  {
+    questionEn: "Who was the first prophet in Islam?",
+    questionHi: "इस्लाम के पहले नबी कौन थे?",
+    questionAr: "من هو أول نبي في الإسلام؟",
+    options: [
+      { en: "Prophet Muhammad (PBUH)", hi: "हज़रत मुहम्मद (PBUH)", ar: "النبي محمد" },
+      { en: "Prophet Ibrahim (AS)", hi: "हज़रत इब्राहीम (AS)", ar: "إبراهيم" },
+      { en: "Prophet Musa (AS)", hi: "हज़रत मूसा (AS)", ar: "موسى" },
+      { en: "Prophet Adam (AS)", hi: "हज़रत आदम (AS)", ar: "آدم" }
+    ],
+    correctIndex: 3
+  },
+  {
+    questionEn: "What is the direction that Muslims face when they pray?",
+    questionHi: "मुसलमान नमाज़ के दौरान किस दिशा की ओर मुँह करते हैं?",
+    questionAr: "ما هو الاتجاه الذي يواجهه المسلمون في الصلاة؟",
+    options: [
+      { en: "East", hi: "पूर्व", ar: "الشرق" },
+      { en: "The Qibla (Kaaba)", hi: "क़िबला (काबा)", ar: "القبلة (الكعبة)" },
+      { en: "North", hi: "उत्तर", ar: "الشمال" },
+      { en: "Al-Aqsa Mosque", hi: "अल-अक्सा मस्जिद", ar: "المسجد الأقصى" }
+    ],
+    correctIndex: 1
+  },
+  {
+    questionEn: "In which city was Prophet Muhammad (PBUH) born?",
+    questionHi: "हज़रत मुहम्मद (PBUH) का जन्म किस शहर में हुआ था?",
+    questionAr: "في أي مدينة ولد النبي محمد (صلى الله عليه وسلم)؟",
+    options: [
+      { en: "Madinah", hi: "मदीना", ar: "المدينة" },
+      { en: "Jerusalem", hi: "यरूशलेम", ar: "القدس" },
+      { en: "Makkah", hi: "मक्का", ar: "مكة" },
+      { en: "Damascus", hi: "दमिश्क", ar: "دمشق" }
+    ],
+    correctIndex: 2
+  },
+  {
+    questionEn: "Who was the first Caliph of Islam?",
+    questionHi: "इस्लाम के पहले खलीफा कौन थे?",
+    questionAr: "من هو أول خليفة في الإسلام؟",
+    options: [
+      { en: "Umar ibn Al-Khattab", hi: "उमर इब्न अल-खत्ताब", ar: "عمر بن الخطاب" },
+      { en: "Ali ibn Abi Talib", hi: "अली इब्न अबी तालिब", ar: "علي بن أبي طالب" },
+      { en: "Uthman ibn Affan", hi: "उस्मान इब्न अफ्फान", ar: "عثمان بن عفان" },
+      { en: "Abu Bakr As-Siddiq", hi: "अबू बकर अस-सिद्दीक", ar: "أبو بكر الصديق" }
+    ],
+    correctIndex: 3
+  },
+  {
+    questionEn: "Which Surah is known as the 'Heart of the Quran'?",
+    questionHi: "किस सूरह को 'कुरान का दिल' कहा जाता है?",
+    questionAr: "أي سورة تسمى 'قلب القرآن'؟",
+    options: [
+      { en: "Surah Al-Mulk", hi: "सूरह अल-मुल्क", ar: "سورة الملك" },
+      { en: "Surah Yaseen", hi: "सूरह यासीन", ar: "سورة يس" },
+      { en: "Surah Ar-Rahman", hi: "सूरह अर-रहमान", ar: "سورة الرحمن" },
+      { en: "Surah Al-Kahf", hi: "सूरह अल-कहफ", ar: "سورة الكهف" }
+    ],
+    correctIndex: 1
+  },
+  {
+    questionEn: "What is the name of the cave where the first revelation was received?",
+    questionHi: "उस गुफा का नाम क्या है जहां सबसे पहली वही (प्रकाशना) प्राप्त हुई थी?",
+    questionAr: "ما اسم الغار الذي نزل فيه الوحي لأول مرة؟",
+    options: [
+      { en: "Cave Thawr", hi: "गारे सौर", ar: "غار ثور" },
+      { en: "Cave Uhud", hi: "गारे उहुद", ar: "غار أحد" },
+      { en: "Cave Hira", hi: "गारे हिरा", ar: "غار حراء" },
+      { en: "Cave Safa", hi: "गारे सफा", ar: "غار صفا" }
+    ],
+    correctIndex: 2
+  },
+  {
+    questionEn: "How many Surahs (chapters) are there in the Holy Quran?",
+    questionHi: "पवित्र कुरान में कितनी सूरह (अध्याय) हैं?",
+    questionAr: "كم عدد السور في القرآن الكريم؟",
+    options: [
+      { en: "114", hi: "114", ar: "114" },
+      { en: "99", hi: "99", ar: "99" },
+      { en: "120", hi: "120", ar: "120" },
+      { en: "100", hi: "100", ar: "100" }
+    ],
+    correctIndex: 0
+  },
+  {
+    questionEn: "Which angel will blow the Trumpet on the Day of Judgment?",
+    questionHi: "क़यामत के दिन कौन सा फरिश्ता सूर (तुरही) फूंकेगा?",
+    questionAr: "من هو الملك الذي سينفخ في الصور يوم القيامة؟",
+    options: [
+      { en: "Jibra'il", hi: "हज़रत जिब्राईल", ar: "جبريل" },
+      { en: "Israfil", hi: "हज़रत इस्राफील", ar: "إسرافيل" },
+      { en: "Mika'il", hi: "हज़रत मीकाईल", ar: "ميكائيل" },
+      { en: "Izra'il", hi: "हज़रत इज़राईल", ar: "عزرائيل" }
+    ],
+    correctIndex: 1
+  },
+  {
+    questionEn: "What is the shortest Surah in the Holy Quran?",
+    questionHi: "पवित्र कुरान की सबसे छोटी सूरह कौन सी है?",
+    questionAr: "ما هي أقصر سورة في القرآن الكريم؟",
+    options: [
+      { en: "Surah Al-Asr", hi: "सूरह अल-अस्र", ar: "سورة العصر" },
+      { en: "Surah Al-Ikhlas", hi: "सूरह अल-इखलास", ar: "سورة الإخلاص" },
+      { en: "Surah Al-Kawthar", hi: "सूरह अल-कौसर", ar: "سورة الكوثر" },
+      { en: "Surah An-Nas", hi: "सूरह अन-नास", ar: "سورة الناس" }
+    ],
+    correctIndex: 2
   }
 ];
 

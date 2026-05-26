@@ -5,8 +5,17 @@ import {
   Search,
   Loader2,
   CheckCircle2,
+  Play,
+  Pause,
 } from "lucide-react";
-import { Dispatch, SetStateAction, useState, useEffect } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+} from "react";
 
 type ViewType = "home" | "calendar" | "settings" | "prayer" | "Quran" | string;
 
@@ -66,6 +75,103 @@ export function QuranView({ setView }: QuranViewProps) {
   );
   const [currentPageIndex, setCurrentPageIndex] = useState<number>(0);
   const [surahs, setSurahs] = useState<any[]>([]);
+  const [playingAyahIndex, setPlayingAyahIndex] = useState<number | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    audioRef.current = new Audio();
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.removeAttribute("src");
+      }
+    };
+  }, []);
+
+  const allAyahs = pages.flatMap((p) => p.ayahs);
+
+  const performPlay = (audio: HTMLAudioElement) => {
+    // Attempt play without catching globally in a way that hides errors
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch((e) => console.error("Audio playback failed", e));
+    }
+  };
+
+  const playAyahIndex = useCallback(
+    (index: number) => {
+      if (index >= allAyahs.length || index < 0) {
+        setIsPlaying(false);
+        setPlayingAyahIndex(null);
+        return;
+      }
+
+      const audio = audioRef.current;
+      if (!audio) return;
+
+      audio.pause();
+
+      const ayahToPlay = allAyahs[index];
+      audio.src = `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${ayahToPlay.number}.mp3`;
+
+      // Determine which page this ayah belongs to and navigate to it automatically
+      let globalCounter = 0;
+      let targetPage = 0;
+      for (let p = 0; p < pages.length; p++) {
+        if (index < globalCounter + pages[p].ayahs.length) {
+          targetPage = p;
+          break;
+        }
+        globalCounter += pages[p].ayahs.length;
+      }
+      setCurrentPageIndex(targetPage);
+
+      // Auto-scroll logic: Delay slightly to allow render
+      setTimeout(() => {
+        const elm = document.getElementById(`ayah-${ayahToPlay.number}`);
+        if (elm) elm.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 200);
+
+      performPlay(audio);
+      setPlayingAyahIndex(index);
+      setIsPlaying(true);
+
+      audio.onended = () => {
+        playAyahIndex(index + 1);
+      };
+      audio.onerror = () => {
+        setIsPlaying(false);
+        setPlayingAyahIndex(null);
+      };
+    },
+    [allAyahs, pages],
+  );
+
+  const togglePlay = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (isPlaying) {
+      audio.pause();
+      setIsPlaying(false);
+    } else {
+      if (playingAyahIndex !== null && audio.src) {
+        performPlay(audio);
+        setIsPlaying(true);
+      } else if (allAyahs.length > 0) {
+        playAyahIndex(0);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    setIsPlaying(false);
+    setPlayingAyahIndex(null);
+  }, [selectedPara, selectedSurah, isTranslationMode]);
 
   useEffect(() => {
     fetch("https://api.alquran.cloud/v1/surah")
@@ -185,7 +291,7 @@ export function QuranView({ setView }: QuranViewProps) {
       setParaData(null);
       setPages([]);
     }
-  }, [selectedPara, selectedSurah]);
+  }, [selectedPara, selectedSurah, isTranslationMode]);
 
   if (selectedPara !== null || selectedSurah !== null) {
     const currentSurahInfo = surahs.find((s) => s.number === selectedSurah);
@@ -323,15 +429,24 @@ export function QuranView({ setView }: QuranViewProps) {
           ) : pages.length > 0 ? (
             <div className="flex flex-col" dir="rtl">
               <div className="p-4 sm:p-6 mb-2">
-                {pages[currentPageIndex].ayahs.map((ayah: any, idx: number) => {
+                {pages[currentPageIndex].ayahs.map((ayah: any) => {
+                  const currentGlobalIndex = allAyahs.findIndex(
+                    (a) => a.number === ayah.number,
+                  );
+                  const isAyahPlaying = playingAyahIndex === currentGlobalIndex;
+
                   if (ayah.hindiText) {
                     return (
                       <div
                         key={ayah.number}
-                        className="flex flex-col border-b border-gray-100 pb-6 mb-6 last:border-b-0 last:mb-0"
+                        id={`ayah-${ayah.number}`}
+                        className={`flex flex-col border-b border-gray-100 pb-6 mb-6 last:border-b-0 last:mb-0 transition-colors ${isAyahPlaying ? "bg-[#df4b4b]/5 p-2 rounded" : ""}`}
                       >
                         <div className="text-right">
-                          <span className="inline font-arabic text-2xl md:text-3xl leading-[2.2] md:leading-[2.5] text-black">
+                          <span
+                            onClick={() => playAyahIndex(currentGlobalIndex)}
+                            className={`inline font-arabic text-2xl md:text-3xl leading-[2.2] md:leading-[2.5] text-black cursor-pointer px-1 rounded transition-colors ${isAyahPlaying ? "bg-[#df4b4b]/20" : "hover:bg-gray-50"}`}
+                          >
                             {ayah.text}
                             <span className="inline-flex items-center justify-center text-black font-sans mx-1">
                               ({ayah.numberInSurah})
@@ -350,7 +465,9 @@ export function QuranView({ setView }: QuranViewProps) {
                   return (
                     <span
                       key={ayah.number}
-                      className="inline font-arabic text-2xl md:text-3xl leading-[2.2] md:leading-[2.5] text-black"
+                      id={`ayah-${ayah.number}`}
+                      onClick={() => playAyahIndex(currentGlobalIndex)}
+                      className={`inline font-arabic text-2xl md:text-3xl leading-[2.2] md:leading-[2.5] text-black cursor-pointer px-1 rounded transition-colors ${isAyahPlaying ? "bg-[#df4b4b]/20" : "hover:bg-gray-50"}`}
                     >
                       {ayah.text}
 
@@ -467,7 +584,23 @@ export function QuranView({ setView }: QuranViewProps) {
 
         {/* Bottom Red Navigation Bar for Reader */}
         <div className="fixed bottom-0 left-0 right-0 bg-[#df4b4b] text-white flex justify-around items-center py-2 px-2 z-50 rounded-t-3xl shadow-[0_-4px_10px_rgba(0,0,0,0.1)]">
-          <button className="flex flex-col items-center justify-center p-2 min-w-[64px] active:scale-95 transition-transform">
+          <button
+            onClick={togglePlay}
+            className="flex flex-col items-center justify-center p-2 min-w-[64px] active:scale-95 transition-transform"
+          >
+            {isPlaying ? (
+              <Pause className="w-6 h-6" />
+            ) : (
+              <Play className="w-6 h-6" />
+            )}
+            <span className="text-[12px] font-bold mt-1 tracking-tight">
+              {isPlaying ? "Pause" : "Play"}
+            </span>
+          </button>
+          <button
+            onClick={() => setIsTranslationMode((prev) => !prev)}
+            className={`flex flex-col items-center justify-center p-2 min-w-[64px] active:scale-95 transition-transform ${isTranslationMode ? "bg-[#c53939] rounded-lg" : ""}`}
+          >
             <svg
               width="24"
               height="24"

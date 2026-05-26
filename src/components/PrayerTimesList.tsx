@@ -124,14 +124,19 @@ export function PrayerTimesList({
   const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
   const [isQiblaModalOpen, setIsQiblaModalOpen] = useState(false);
   const [dailyWeather, setDailyWeather] = useState<any>(null);
+  const [weatherError, setWeatherError] = useState<boolean>(false);
 
   useEffect(() => {
     if (!settings.location) return;
     const { lat, lng } = settings.location;
+    setWeatherError(false);
     fetch(
       `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto`,
     )
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("Weather request failed");
+        return res.json();
+      })
       .then((data) => {
         if (data && data.current_weather) {
           setCurrentTemp(data.current_weather.temperature);
@@ -150,7 +155,10 @@ export function PrayerTimesList({
           setDailyWeather(data.daily);
         }
       })
-      .catch((err) => console.error("Could not fetch weather", err));
+      .catch((err) => {
+        setWeatherError(true);
+        // Suppress console error in preview environments
+      });
   }, [settings.location]);
 
   // Sync temp state when opening modal
@@ -179,23 +187,35 @@ export function PrayerTimesList({
   const isFriday = now.getDay() === 5; // 0 is Sunday, 5 is Friday
 
   const prayers = [
-    { name: "Fajr", label: t('fajr'), time: settings.customTimings?.["Fajr"] || timings.Fajr },
+    {
+      name: "Fajr",
+      label: t("fajr"),
+      time: settings.customTimings?.["Fajr"] || timings.Fajr,
+    },
     isFriday
-      ? { name: "Jumma", label: t('jumma'), time: settings.customTimings?.["Jumma"] || timings.Dhuhr }
-      : { name: "Zuhr", label: t('dhuhr'), time: settings.customTimings?.["Zuhr"] || timings.Dhuhr },
+      ? {
+          name: "Jumma",
+          label: t("jumma"),
+          time: settings.customTimings?.["Jumma"] || timings.Dhuhr,
+        }
+      : {
+          name: "Zuhr",
+          label: t("dhuhr"),
+          time: settings.customTimings?.["Zuhr"] || timings.Dhuhr,
+        },
     {
       name: `Asr${schoolName}`,
-      label: t('asr'),
+      label: t("asr"),
       time: settings.customTimings?.[`Asr${schoolName}`] || timings.Asr,
     },
     {
       name: "Maghrib",
-      label: t('maghrib'),
+      label: t("maghrib"),
       time: settings.customTimings?.["Maghrib"] || timings.Maghrib,
     },
     {
       name: `Isha${schoolName}`,
-      label: t('isha'),
+      label: t("isha"),
       time: settings.customTimings?.[`Isha${schoolName}`] || timings.Isha,
     },
   ];
@@ -207,7 +227,8 @@ export function PrayerTimesList({
 
   if (nextPrayerIndex === -1) nextPrayerIndex = 0;
 
-  const currentPrayerIndex = nextPrayerIndex === 0 ? prayers.length - 1 : nextPrayerIndex - 1;
+  const currentPrayerIndex =
+    nextPrayerIndex === 0 ? prayers.length - 1 : nextPrayerIndex - 1;
 
   const fajrTime = timings
     ? parse(timings.Fajr.split(" ")[0], "HH:mm", now)
@@ -372,7 +393,7 @@ export function PrayerTimesList({
               <Compass className="w-5 h-5" />
             </div>
             <span className="text-[11px] font-semibold text-slate-800">
-              {t('qiblaFinder')}
+              {t("qiblaFinder")}
             </span>
           </button>
 
@@ -386,7 +407,7 @@ export function PrayerTimesList({
               <BookOpen className="w-5 h-5" />
             </div>
             <span className="text-[11px] font-semibold text-slate-800">
-              {t('quran')}
+              {t("quran")}
             </span>
           </button>
 
@@ -444,16 +465,26 @@ export function PrayerTimesList({
         <div className="bg-[#e6eff5] w-full h-[60px] rounded-lg relative overflow-hidden flex items-center justify-start shadow-sm border border-slate-100">
           <div className="pl-4 flex items-end gap-1 z-10 relative">
             <div className="flex flex-col items-start leading-[1.1]">
-               <span className="text-[#195a8f] font-black text-[18px] tracking-tight">HAJJ <span className="font-serif italic font-light">&</span></span>
-               <span className="text-[#195a8f] font-black text-[22px] tracking-tighter">UMRAH</span>
+              <span className="text-[#195a8f] font-black text-[18px] tracking-tight">
+                HAJJ <span className="font-serif italic font-light">&</span>
+              </span>
+              <span className="text-[#195a8f] font-black text-[22px] tracking-tighter">
+                UMRAH
+              </span>
             </div>
-            <span className="text-[#195a8f] font-semibold text-[13px] tracking-widest mb-1 ml-1">SECTION</span>
+            <span className="text-[#195a8f] font-semibold text-[13px] tracking-widest mb-1 ml-1">
+              SECTION
+            </span>
           </div>
-          
+
           {/* Background overlay graphic */}
           <div className="absolute right-0 top-0 bottom-0 w-[55%] pointer-events-none overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-[#e6eff5] via-[#e6eff5]/50 to-transparent z-10"></div>
-            <img src="https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?auto=format&fit=crop&q=100&w=2000&h=600" alt="Kaaba 4K" className="w-full h-full object-cover object-center relative z-0" />
+            <img
+              src="https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?auto=format&fit=crop&q=100&w=2000&h=600"
+              alt="Kaaba 4K"
+              className="w-full h-full object-cover object-center relative z-0"
+            />
           </div>
         </div>
       </div>
@@ -495,7 +526,7 @@ export function PrayerTimesList({
                         </span>
                         {isCurrent && (
                           <span className="text-[9px] bg-[#265e28] text-white px-2 py-0.5 rounded-full ml-2 font-bold tracking-wider uppercase">
-                            {t('now')}
+                            {t("now")}
                           </span>
                         )}
                       </div>
@@ -524,7 +555,7 @@ export function PrayerTimesList({
                             onClick={() =>
                               handleEditClick(prayer.name, prayer.time)
                             }
-                            className="opacity-0 group-hover/edit:opacity-100 transition-opacity text-slate-400 hover:text-slate-600"
+                            className="text-slate-400 hover:text-slate-600 transition-colors"
                           >
                             <Pencil className="w-3.5 h-3.5" />
                           </button>
@@ -635,7 +666,9 @@ export function PrayerTimesList({
         <div className="border-t border-slate-100 mt-2 relative py-4">
           <div className="absolute -top-4 right-4 bg-white rounded-full p-0.5 shadow-sm border border-slate-200">
             <button
-              onClick={() => setActiveTab(activeTab === "fard" ? "other" : "fard")}
+              onClick={() =>
+                setActiveTab(activeTab === "fard" ? "other" : "fard")
+              }
               className={cn(
                 "px-5 py-1.5 rounded-full text-[13px] font-semibold transition-colors",
                 activeTab === "fard"
@@ -717,6 +750,11 @@ export function PrayerTimesList({
                     </div>
                   );
                 })
+              ) : weatherError ? (
+                <div className="text-center text-red-400 py-4 font-medium text-sm">
+                  Failed to load weather data. Please check your network
+                  connection.
+                </div>
               ) : (
                 <div className="text-center text-slate-500 py-4">
                   Loading weather data...

@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { addDays, getHours } from 'date-fns';
-import { fetchHijriDate, HijriDateInfo } from '../lib/api';
-import { useSettings } from './useSettings';
+import { useState, useEffect } from "react";
+import { addDays, getHours } from "date-fns";
+import { fetchHijriDate, HijriDateInfo } from "../lib/api";
+import { useSettings } from "./useSettings";
 
 export function useHijriDate() {
   const { settings } = useSettings();
@@ -16,18 +16,17 @@ export function useHijriDate() {
         setLoading(true);
         const now = new Date();
         const currentHour = getHours(now);
-        
-        // As per user request: Urdu tarikh (Hijri date) changes at 7:00 PM (19:00) local time
-        // If hour is 19 (7 PM) or later, we use tomorrow's date for calculation
+
+        // Hijri date changes at Maghrib, approximately 7 PM (19:00).
         let targetDate = currentHour >= 19 ? addDays(now, 1) : now;
-        
-        let offset = Number(settings.hijriOffset);
-        if (isNaN(offset)) offset = 0;
-        
+
+        let offset = Number(settings.hijriOffset) - 1;
+        if (isNaN(offset)) offset = -1;
+
         if (offset !== 0) {
           targetDate = addDays(targetDate, offset);
         }
-        
+
         const data = await fetchHijriDate(targetDate);
         if (isMounted) {
           setHijriDate(data);

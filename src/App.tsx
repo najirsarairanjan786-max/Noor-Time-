@@ -8,11 +8,13 @@ import { QuranView } from './pages/QuranView';
 import { QuizView } from './pages/QuizView';
 import { QiblaDirectionView } from './pages/QiblaDirectionView';
 import { LanguagesView } from './pages/LanguagesView';
+import { DonateView } from './pages/DonateView';
+import { ShareView } from './pages/ShareView';
 import { Navigation } from './components/Navigation';
 import { AnimatePresence } from 'motion/react';
 import { useSettings } from './hooks/useSettings';
 
-export type ViewType = 'home' | 'calendar' | 'settings' | 'prayer' | 'Quran' | 'Question & Answer' | 'qibla' | 'languages' | string;
+export type ViewType = 'home' | 'calendar' | 'settings' | 'prayer' | 'Quran' | 'Question & Answer' | 'qibla' | 'languages' | 'donate' | 'share' | string;
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewType>('home');
@@ -23,7 +25,7 @@ export default function App() {
   }, [settings.theme]);
 
   // Standard views
-  const standardViews = ['home', 'calendar', 'settings', 'prayer', 'Quran', 'Question & Answer', 'qibla', 'languages'];
+  const standardViews = ['home', 'calendar', 'settings', 'prayer', 'Quran', 'Question & Answer', 'qibla', 'languages', 'donate', 'share'];
   const isFeatureView = !standardViews.includes(currentView);
 
   return (
@@ -42,6 +44,8 @@ export default function App() {
           {currentView === 'Question & Answer' && <QuizView setView={setCurrentView} />}
           {currentView === 'qibla' && <QiblaDirectionView setView={setCurrentView} />}
           {currentView === 'languages' && <LanguagesView setView={setCurrentView} />}
+          {currentView === 'donate' && <DonateView setView={setCurrentView} />}
+          {currentView === 'share' && <ShareView setView={setCurrentView} />}
           {isFeatureView && <FeatureView title={currentView} setView={setCurrentView} />}
         </AnimatePresence>
 
