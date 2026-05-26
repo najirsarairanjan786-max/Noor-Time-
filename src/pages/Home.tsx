@@ -6,7 +6,7 @@ import { useHijriDate } from "../hooks/useHijriDate";
 import { PrayerTimesList } from "../components/PrayerTimesList";
 import { Sidebar } from "../components/Sidebar";
 import { format } from "date-fns";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Menu,
   Moon,
@@ -84,10 +84,10 @@ export function Home({ setView }: HomeProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="pb-32 w-full min-h-screen bg-slate-50"
+      className="pb-24 w-full min-h-screen bg-slate-50"
     >
       {/* Top Header Background Area */}
-      <div className="relative pt-6 pb-20 px-4 w-full text-white">
+      <div className="relative pt-4 pb-14 px-4 w-full text-white">
         {/* Decorative Background */}
         <div className="absolute inset-0 bg-[#2b3c5a] z-0 overflow-hidden">
           <div
@@ -136,15 +136,15 @@ export function Home({ setView }: HomeProps) {
             </button>
 
             <div className="flex flex-col items-end">
-              <div className="text-right mb-2 text-white">
+              <div className="text-right mb-1.5 text-white">
                 <div
-                  className="text-[36px] font-bold tracking-tight drop-shadow-md leading-none mb-1.5"
+                  className="text-[30px] font-bold tracking-tight drop-shadow-md leading-none mb-1"
                   dir="ltr"
                 >
                   {format(time, "hh:mm:ss a")}
                 </div>
                 <div
-                  className="text-[14px] font-medium opacity-90 drop-shadow-md text-right"
+                  className="text-[13px] font-medium opacity-90 drop-shadow-md text-right"
                   dir="ltr"
                 >
                   {format(time, "EEEE, d MMM yyyy")}
@@ -152,9 +152,9 @@ export function Home({ setView }: HomeProps) {
               </div>
 
               {hijriDate ? (
-                <div className="flex items-start gap-1.5 text-[15px] font-bold drop-shadow-md text-white mt-1">
+                <div className="flex items-start gap-1 text-[13px] font-bold drop-shadow-md text-white mt-0.5">
                   <MoonStar
-                    className="w-[18px] h-[18px] mt-0.5 text-white"
+                    className="w-[16px] h-[16px] mt-0.5 text-white"
                     strokeWidth={2.2}
                   />
                   <div className="flex flex-col" dir="ltr">
@@ -162,15 +162,15 @@ export function Home({ setView }: HomeProps) {
                       {hijriDate.day} {hijriDate.month.en} ({hijriDate.month.ar}
                       )
                     </span>
-                    <span className="text-[14px] leading-tight">
+                    <span className="text-[12px] leading-tight">
                       {hijriDate.year}
                     </span>
                   </div>
                 </div>
               ) : (
-                <div className="flex items-start gap-1.5 text-[15px] font-bold drop-shadow-md text-white mt-1">
+                <div className="flex items-start gap-1 text-[13px] font-bold drop-shadow-md text-white mt-0.5">
                   <MoonStar
-                    className="w-[18px] h-[18px] mt-0.5 text-white"
+                    className="w-[16px] h-[16px] mt-0.5 text-white"
                     strokeWidth={2.2}
                   />
                   <div className="flex flex-col" dir="ltr">
@@ -191,7 +191,7 @@ export function Home({ setView }: HomeProps) {
                         ),
                       )}
                     </span>
-                    <span className="text-[14px] leading-tight">
+                    <span className="text-[12px] leading-tight">
                       {new Intl.DateTimeFormat("en-US-u-ca-islamic", {
                         year: "numeric",
                       })
@@ -331,15 +331,16 @@ export function Home({ setView }: HomeProps) {
                   if (feature.label === "Quran") setView("Quran" as any);
                   else setView("home" as any);
                 }}
-                className="bg-white p-2.5 rounded-[16px] flex items-center justify-start gap-3 shadow-sm border border-slate-100/80 hover:shadow-md transition-shadow active:scale-95 text-left h-[72px]"
+                className="bg-white p-2 rounded-[14px] flex items-center justify-start gap-2.5 shadow-sm border border-slate-100/80 hover:shadow-md transition-shadow active:scale-95 text-left h-[60px]"
               >
                 <div
-                  className={`w-[52px] h-[52px] ${feature.bg} rounded-[14px] flex items-center justify-center shrink-0`}
+                  className={`w-[44px] h-[44px] ${feature.bg} rounded-[12px] flex items-center justify-center shrink-0`}
                 >
-                  {feature.icon}
+                  {/* Clone element to override w-7 to w-5 */}
+                  {React.cloneElement(feature.icon as React.ReactElement, { className: (feature.icon as React.ReactElement).props.className.replace('w-7 h-7', 'w-5 h-5') })}
                 </div>
                 <span
-                  className={`text-[15px] font-extrabold ${feature.text} leading-[1.1] pr-1 whitespace-pre-line tracking-tight`}
+                  className={`text-[13px] font-extrabold ${feature.text} leading-[1.1] pr-1 whitespace-pre-line tracking-tight`}
                 >
                   {feature.i18nKey &&
                   t(feature.i18nKey as any) !== feature.i18nKey

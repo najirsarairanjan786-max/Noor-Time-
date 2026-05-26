@@ -347,35 +347,35 @@ export function PrayerTimesList({
   return (
     <div className="w-full max-w-lg mx-auto">
       {/* Dashboard Top Widget */}
-      <div className="bg-white rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.1)] p-4 pr-1 mb-3 flex items-center justify-between relative mt-[-2.5rem] min-h-[7rem]">
+      <div className="bg-white rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.1)] p-3 pr-1 mb-3 flex items-center justify-between relative mt-[-2.5rem] min-h-[6.5rem]">
         {/* Next Prayer Circular Progress */}
-        <div className="relative w-28 h-28 flex items-center justify-center shrink-0">
+        <div className="relative w-20 h-20 flex items-center justify-center shrink-0 ml-1">
           <svg className="absolute inset-0 w-full h-full -rotate-90">
             <circle
-              cx="56"
-              cy="56"
-              r="50"
+              cx="40"
+              cy="40"
+              r="34"
               stroke="#f1f5f9"
-              strokeWidth="8"
+              strokeWidth="6"
               fill="none"
             />
             <circle
-              cx="56"
-              cy="56"
-              r="50"
+              cx="40"
+              cy="40"
+              r="34"
               stroke="#64748b"
-              strokeWidth="8"
+              strokeWidth="6"
               fill="none"
-              strokeDasharray="314"
-              strokeDashoffset="120"
+              strokeDasharray="213"
+              strokeDashoffset="80"
               className="text-slate-400"
             />
           </svg>
           <div className="flex flex-col items-center justify-center text-slate-800 z-10 w-full">
-            <span className="text-xs uppercase font-bold tracking-widest text-slate-900">
+            <span className="text-[10px] uppercase font-bold tracking-widest text-slate-900 mt-1">
               {prayers[nextPrayerIndex].label}
             </span>
-            <span className="text-xl font-bold mt-0 text-slate-800">
+            <span className="text-sm font-bold mt-0 text-slate-800 leading-none">
               {format(nextPrayerTimeObj, "hh:mm")}
             </span>
           </div>
@@ -506,7 +506,7 @@ export function PrayerTimesList({
                   <div
                     key={prayer.name}
                     className={cn(
-                      "flex flex-row items-center justify-between p-4 rounded-xl transition-colors",
+                      "flex flex-row items-center justify-between p-2.5 rounded-xl transition-colors",
                       isCurrent
                         ? "bg-[#e8f3ec] shadow-sm border border-[#d2e5da]"
                         : "hover:bg-slate-50 border border-transparent",
@@ -601,7 +601,7 @@ export function PrayerTimesList({
                 return (
                   <div
                     key={ot.name}
-                    className="flex flex-row items-center justify-between p-4 group hover:bg-slate-50 transition-colors"
+                    className="flex flex-row items-center justify-between p-2.5 group hover:bg-slate-50 transition-colors"
                   >
                     <div className="flex items-center space-x-3 w-1/2">
                       <span className="text-slate-400 text-lg">{ot.icon}</span>
