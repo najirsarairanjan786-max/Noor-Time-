@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { useData } from "../hooks/useData";
 import { useSettings } from "../hooks/useSettings";
 import { useAlarmSystem } from "../hooks/useAlarmSystem";
@@ -84,6 +84,7 @@ export function Home({ setView }: HomeProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
+      onDoubleClick={() => setView('home2')}
       className="pb-24 w-full min-h-screen bg-slate-50"
     >
       {/* Top Header Background Area */}
@@ -329,6 +330,7 @@ export function Home({ setView }: HomeProps) {
                 key={i}
                 onClick={() => {
                   if (feature.label === "Quran") setView("Quran" as any);
+                  else if (feature.label === "Daily") setView("daily" as any);
                   else setView("home" as any);
                 }}
                 className="bg-white p-2 rounded-[14px] flex items-center justify-start gap-2.5 shadow-sm border border-slate-100/80 hover:shadow-md transition-shadow active:scale-95 text-left h-[60px]"

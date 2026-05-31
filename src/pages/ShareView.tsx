@@ -13,7 +13,11 @@ export function ShareView({ setView }: ShareViewProps) {
         title: 'Prayer Times App',
         text: 'Check out this amazing Prayer Times app!',
         url: window.location.href,
-      }).catch(console.error);
+      }).catch((error) => {
+        if (error.name !== 'AbortError' && !error.message?.includes('canceled')) {
+          console.error('Error sharing:', error);
+        }
+      });
     } else {
       // Fallback
       alert('Sharing is not supported on this browser.');

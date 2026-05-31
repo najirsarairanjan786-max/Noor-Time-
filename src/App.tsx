@@ -10,11 +10,13 @@ import { QiblaDirectionView } from './pages/QiblaDirectionView';
 import { LanguagesView } from './pages/LanguagesView';
 import { DonateView } from './pages/DonateView';
 import { ShareView } from './pages/ShareView';
+import { DailyView } from './pages/DailyView';
+import { Home2 } from './pages/Home2';
 import { Navigation } from './components/Navigation';
 import { AnimatePresence } from 'motion/react';
 import { useSettings } from './hooks/useSettings';
 
-export type ViewType = 'home' | 'calendar' | 'settings' | 'prayer' | 'Quran' | 'Question & Answer' | 'qibla' | 'languages' | 'donate' | 'share' | string;
+export type ViewType = 'home' | 'home2' | 'calendar' | 'settings' | 'prayer' | 'Quran' | 'Question & Answer' | 'qibla' | 'languages' | 'donate' | 'share' | 'daily' | string;
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewType>('home');
@@ -25,7 +27,7 @@ export default function App() {
   }, [settings.theme]);
 
   // Standard views
-  const standardViews = ['home', 'calendar', 'settings', 'prayer', 'Quran', 'Question & Answer', 'qibla', 'languages', 'donate', 'share'];
+  const standardViews = ['home', 'home2', 'calendar', 'settings', 'prayer', 'Quran', 'Question & Answer', 'qibla', 'languages', 'donate', 'share', 'daily'];
   const isFeatureView = !standardViews.includes(currentView);
 
   return (
@@ -37,6 +39,7 @@ export default function App() {
         
         <AnimatePresence mode="wait">
           {currentView === 'home' && <Home setView={setCurrentView} />}
+          {currentView === 'home2' && <Home2 setView={setCurrentView} />}
           {currentView === 'calendar' && <CalendarView />}
           {currentView === 'settings' && <SettingsView />}
           {currentView === 'prayer' && <PrayerDetails />}
@@ -46,6 +49,7 @@ export default function App() {
           {currentView === 'languages' && <LanguagesView setView={setCurrentView} />}
           {currentView === 'donate' && <DonateView setView={setCurrentView} />}
           {currentView === 'share' && <ShareView setView={setCurrentView} />}
+          {currentView === 'daily' && <DailyView setView={setCurrentView} />}
           {isFeatureView && <FeatureView title={currentView} setView={setCurrentView} />}
         </AnimatePresence>
 

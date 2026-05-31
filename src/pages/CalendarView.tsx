@@ -137,16 +137,23 @@ export function CalendarView() {
         )}
 
         <div className="grid grid-cols-7 gap-1 md:gap-1.5 mb-2" dir="rtl">
-          {["اتوار", "پیر", "منگل", "بدھ", "جمعرات", "جمعہ", "ہفتہ"].map(
-            (d) => (
-              <div
-                key={d}
-                className="text-center text-sm md:text-base font-semibold text-pink-400/80 p-1 font-arabic"
-              >
-                {d}
-              </div>
-            ),
-          )}
+          {[
+            { ur: "اتوار", en: "Sun" },
+            { ur: "پیر", en: "Mon" },
+            { ur: "منگل", en: "Tue" },
+            { ur: "بدھ", en: "Wed" },
+            { ur: "جمعرات", en: "Thu" },
+            { ur: "جمعہ", en: "Fri" },
+            { ur: "ہفتہ", en: "Sat" },
+          ].map((d) => (
+            <div
+              key={d.en}
+              className="text-center font-semibold text-pink-400/80 p-1 flex flex-col items-center justify-center leading-tight"
+            >
+              <span className="text-xs md:text-sm font-arabic">{d.ur}</span>
+              <span className="text-[10px] md:text-xs text-pink-200/70 font-sans mt-0.5">{d.en}</span>
+            </div>
+          ))}
         </div>
 
         <div className="grid grid-cols-7 gap-1 md:gap-1.5" dir="rtl">
