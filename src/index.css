@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;600;700&family=VT323&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -120,4 +120,8 @@ body {
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   @apply bg-emerald-700/80;
+}
+
+.font-digital {
+  font-family: 'VT323', monospace;
 }
