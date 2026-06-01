@@ -84,7 +84,6 @@ export function Home({ setView }: HomeProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      onDoubleClick={() => setView('home2')}
       className="pb-24 w-full min-h-screen bg-slate-50"
     >
       {/* Top Header Background Area */}
