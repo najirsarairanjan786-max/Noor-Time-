@@ -108,15 +108,13 @@ export function Home2({ setView }: Home2Props) {
           {/* Left Column */}
           <div className="w-[36%] flex flex-col gap-2 h-full justify-between">
              
-             {/* Box 1: Day & Time */}
+             {/* Box 1: Day */}
              <div className="bg-[#1b4365] rounded-xl p-2 pb-1 shadow-lg border-2 border-[#122e41]">
-                <div className="flex justify-between items-center px-1 mb-1 gap-1">
-                   <LED text={dayName.substring(0, 4)} color="red" className="text-2xl sm:text-4xl" />
-                   <LED text={`${formatDig(time.getHours())}:${formatDig(time.getMinutes())}`} color="red" className="text-3xl sm:text-5xl" />
+                <div className="flex justify-center items-center px-1 mb-1 gap-1">
+                   <LED text={dayName} color="red" className="text-2xl sm:text-4xl" />
                 </div>
-                <div className="flex justify-between px-2 text-[8px] sm:text-[10px] font-bold text-white tracking-wider mt-1">
+                <div className="flex justify-center px-2 text-[8px] sm:text-[10px] font-bold text-white tracking-wider mt-1">
                    <span>DAY</span>
-                   <span className="flex items-center gap-1">TIME <span className="font-arabic font-normal text-xs sm:text-sm">وقت</span></span>
                 </div>
              </div>
 

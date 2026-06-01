@@ -83,17 +83,32 @@ export function useAlarmSystem(timings: PrayerTimings | null) {
     try {
       let soundUrl = 'https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3';
       
+      const ALL_SOUNDS: Record<string, string> = {
+        'beep': 'https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3',
+        'chime': 'https://assets.mixkit.co/sfx/preview/mixkit-positive-notification-951.mp3',
+        'azan-mecca': 'https://media.blubrry.com/muslim_central_quran/podcasts.qurancentral.com/makkah-adhan/Makkah-Adhan-01.mp3',
+        'azan-medina': 'https://media.blubrry.com/muslim_central_quran/podcasts.qurancentral.com/madinah-adhan/Madinah-Adhan-01.mp3',
+        'azan-al-aqsa': 'https://archive.org/download/AdhanAlAqsa/Adhan%20Al%20Aqsa.mp3',
+        'azan-mishary': 'https://archive.org/download/AdhanMishary/Adhan%20Mishary.mp3',
+      };
+      
       if (!isPreAlarm) {
-        if (settings.alarmSound === 'azan-mecca') {
-          soundUrl = 'https://media.blubrry.com/muslim_central_quran/podcasts.qurancentral.com/makkah-adhan/Makkah-Adhan-01.mp3';
-        } else if (settings.alarmSound === 'azan-medina') {
-          soundUrl = 'https://media.blubrry.com/muslim_central_quran/podcasts.qurancentral.com/madinah-adhan/Madinah-Adhan-01.mp3';
-        } else if (settings.alarmSound === 'chime') {
-          soundUrl = 'https://assets.mixkit.co/sfx/preview/mixkit-positive-notification-951.mp3';
+        // Extract base prayer name to check against specific settings
+        const basePrayerMatch = prayerName.match(/(Fajr|Zuhr|Asr|Maghrib|Isha)/i);
+        const basePrayer = basePrayerMatch ? basePrayerMatch[0] : '';
+        
+        let selectedSound = settings.alarmSound; 
+        if (basePrayer && settings.prayerAlarmSounds && settings.prayerAlarmSounds[basePrayer]) {
+            const specificSound = settings.prayerAlarmSounds[basePrayer];
+            if (specificSound !== 'default') {
+                selectedSound = specificSound as any;
+            }
         }
+        
+        soundUrl = ALL_SOUNDS[selectedSound] || ALL_SOUNDS['beep'];
       } else {
         // Pre-alarms always play a gentle chime
-        soundUrl = 'https://assets.mixkit.co/sfx/preview/mixkit-positive-notification-951.mp3';
+        soundUrl = ALL_SOUNDS['chime'];
       }
 
       const audio = new Audio(soundUrl);

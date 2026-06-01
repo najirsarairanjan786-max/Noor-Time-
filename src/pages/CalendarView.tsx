@@ -33,7 +33,6 @@ export function CalendarView() {
     date: string;
     events: string[];
   } | null>(null);
-  const [isEventsOpen, setIsEventsOpen] = useState(false);
 
   useEffect(() => {
     async function fetchMonth() {
@@ -136,7 +135,7 @@ export function CalendarView() {
           </div>
         )}
 
-        <div className="grid grid-cols-7 gap-1 md:gap-1.5 mb-2" dir="rtl">
+        <div className="grid grid-cols-7 gap-1 md:gap-1.5 mb-2" dir="ltr">
           {[
             { ur: "اتوار", en: "Sun" },
             { ur: "پیر", en: "Mon" },
@@ -156,7 +155,7 @@ export function CalendarView() {
           ))}
         </div>
 
-        <div className="grid grid-cols-7 gap-1 md:gap-1.5" dir="rtl">
+        <div className="grid grid-cols-7 gap-1 md:gap-1.5" dir="ltr">
           {blanks.map((b) => (
             <div key={`blank-${b}`} className="aspect-square p-1.5"></div>
           ))}
@@ -188,22 +187,26 @@ export function CalendarView() {
                   hasEvents && !isToday && "border border-pink-400/30",
                 )}
               >
-                <span
-                  className={cn(
-                    "text-base md:text-lg font-medium",
-                    isToday && "font-bold",
-                  )}
-                >
-                  {day.gregorian.day}
-                </span>
-                <span
-                  className={cn(
-                    "text-xs md:text-sm font-serif opacity-70",
-                    isToday && "opacity-100",
-                  )}
-                >
-                  {arabicHijriDay}
-                </span>
+                <div className="absolute top-1 left-1 md:top-1.5 md:left-1.5 leading-none">
+                  <span
+                    className={cn(
+                      "text-[9px] md:text-xs font-sans opacity-70",
+                      isToday ? "opacity-100 text-white" : "text-pink-200"
+                    )}
+                  >
+                    {day.gregorian.day}
+                  </span>
+                </div>
+                <div className="mt-2 md:mt-3 flex items-center justify-center">
+                  <span
+                    className={cn(
+                      "text-lg md:text-2xl font-arabic leading-none",
+                      isToday ? "font-bold text-white text-shadow" : "text-pink-50"
+                    )}
+                  >
+                    {arabicHijriDay}
+                  </span>
+                </div>
                 {hasEvents && (
                   <>
                     <div className="absolute top-1 right-1 w-1 h-1 md:w-1.5 md:h-1.5 bg-pink-300 rounded-full animate-pulse"></div>
@@ -218,63 +221,59 @@ export function CalendarView() {
         </div>
       </div>
 
-      {/* List of events this month */}
-      {calendarData.some((d) => d.hijri.holidays.length > 0) && (
-        <div className="mt-4">
-          <button
-            onClick={() => setIsEventsOpen(!isEventsOpen)}
-            className="w-full bg-red-600 backdrop-blur-lg shadow-2xl rounded-2xl p-5 flex justify-center items-center hover:bg-red-700 transition-colors"
-          >
-            <h3 className="text-lg font-bold text-white text-center">
-              Khushi Ka Din 🎉
-            </h3>
-          </button>
+      <div className="mt-6 mb-8 w-full max-w-lg mx-auto">
+        <h3 className="text-xl font-bold text-white mb-4 px-2 text-center">Islamic Events</h3>
+        <div className="space-y-3">
+          {calendarData
+            .filter((day) => day.hijri.holidays.length > 0)
+            .map((day) => {
+              const arabicHijriDay = day.hijri.day
+                .toString()
+                .split("")
+                .map((d) => "۰۱۲۳۴۵۶۷۸۹"[parseInt(d)])
+                .join("");
+              const arabicHijriYear = day.hijri.year
+                .toString()
+                .split("")
+                .map((d) => "۰۱۲۳۴۵۶۷۸۹"[parseInt(d)])
+                .join("");
 
-          <AnimatePresence>
-            {isEventsOpen && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden"
-              >
-                <div className="bg-white/10 backdrop-blur-lg border border-white/20 shadow-2xl rounded-2xl p-4 mt-2">
-                  <div className="space-y-2">
-                    {calendarData
-                      .filter((d) => d.hijri.holidays.length > 0)
-                      .map((day) => (
-                        <div
-                          key={`event-${day.gregorian.date}`}
-                          className="flex justify-between items-center bg-white/10 px-3 py-2 rounded-lg text-sm border border-white/10"
-                        >
-                          <div className="flex flex-col md:flex-row gap-1 md:gap-2 text-white">
-                            <span className="font-medium bg-black/20 px-2 py-0.5 rounded text-[10px] md:text-xs text-center">
-                              {day.gregorian.day} {day.gregorian.month.en}
-                            </span>
-                            <span
-                              className="font-serif bg-black/20 px-2 py-0.5 rounded text-[10px] md:text-xs text-center font-arabic"
-                              dir="rtl"
-                            >
-                              {day.hijri.day
-                                .toString()
-                                .split("")
-                                .map((d) => "۰۱۲۳۴۵۶۷۸۹"[parseInt(d)])
-                                .join("")}{" "}
-                              {day.hijri.month.ar}
-                            </span>
-                          </div>
-                          <span className="font-medium text-white text-right text-[10px] md:text-xs leading-tight ml-2">
-                            {day.hijri.holidays.join(", ")}
-                          </span>
-                        </div>
-                      ))}
+              return (
+                <div
+                  key={`event-list-${day.gregorian.date}`}
+                  className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 flex flex-col gap-3 shadow-lg"
+                >
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="font-medium text-pink-100 bg-black/20 px-3 py-1.5 rounded-lg whitespace-nowrap">
+                      {day.gregorian.day} {day.gregorian.month.en}
+                    </span>
+                    <span
+                      className="font-arabic font-medium text-pink-50 bg-black/20 px-3 py-1.5 rounded-lg whitespace-nowrap"
+                      dir="rtl"
+                    >
+                      {arabicHijriDay} {day.hijri.month.ar} {arabicHijriYear}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {day.hijri.holidays.map((h, i) => (
+                      <span
+                        key={i}
+                        className="text-white font-bold text-sm bg-pink-500/80 border border-pink-400/50 px-4 py-1.5 rounded-full text-center w-full shadow-sm"
+                      >
+                        {h}
+                      </span>
+                    ))}
                   </div>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              );
+            })}
+          {calendarData.filter((day) => day.hijri.holidays.length > 0).length === 0 && (
+            <p className="text-pink-200/70 text-center py-4 bg-white/5 rounded-2xl border border-white/10">
+              No events this month.
+            </p>
+          )}
         </div>
-      )}
+      </div>
 
       <AnimatePresence>
         {selectedEvent && (

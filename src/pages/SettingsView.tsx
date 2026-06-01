@@ -122,8 +122,10 @@ export function SettingsView() {
               >
                 <option value="beep">Beep</option>
                 <option value="chime">Chime</option>
-                <option value="azan-mecca">Azan (Mecca)</option>
-                <option value="azan-medina">Azan (Medina)</option>
+                <option value="azan-mecca">Makkah Adhan</option>
+                <option value="azan-medina">Madinah Adhan</option>
+                <option value="azan-al-aqsa">Al-Aqsa Adhan</option>
+                <option value="azan-mishary">Mishary Adhan</option>
               </select>
             </div>
 
@@ -141,6 +143,35 @@ export function SettingsView() {
                 <option value={10}>10 mins before</option>
                 <option value={15}>15 mins before</option>
               </select>
+            </div>
+            
+            <div className="p-4 flex flex-col gap-2 border-b border-emerald-800/40 bg-emerald-900/10">
+              <div className="flex items-center gap-3 text-emerald-100 ml-8 mb-2">
+                <Bell className="w-4 h-4 text-emerald-400" />
+                <div className="font-medium text-sm">Prayer Specific Sounds</div>
+              </div>
+              
+              {['Fajr', 'Zuhr', 'Asr', 'Maghrib', 'Isha'].map(prayer => (
+                <div key={prayer} className="flex items-center justify-between ml-12 mr-4 bg-emerald-950 p-2 rounded-lg border border-emerald-800/50">
+                  <span className="text-emerald-100 text-sm w-16">{prayer}</span>
+                  <select 
+                    value={settings.prayerAlarmSounds?.[prayer] || "default"}
+                    onChange={(e) => setSettings(p => ({
+                      ...p, 
+                      prayerAlarmSounds: { ...(p.prayerAlarmSounds || {}), [prayer]: e.target.value } 
+                    }))}
+                    className="bg-emerald-950 border-none text-emerald-300 text-xs text-right outline-none cursor-pointer flex-1"
+                  >
+                    <option value="default">App Default</option>
+                    <option value="beep">Beep</option>
+                    <option value="chime">Chime</option>
+                    <option value="azan-mecca">Makkah Adhan</option>
+                    <option value="azan-medina">Madinah Adhan</option>
+                    <option value="azan-al-aqsa">Al-Aqsa Adhan</option>
+                    <option value="azan-mishary">Mishary Adhan</option>
+                  </select>
+                </div>
+              ))}
             </div>
             
             <div className="p-4 flex flex-col border-b border-emerald-800/40 bg-emerald-900/10">
