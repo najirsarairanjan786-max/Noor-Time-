@@ -208,9 +208,6 @@ export function Home2({ setView }: Home2Props) {
                
                {/* Center text */}
                <div className="flex flex-col items-center mt-2">
-                  <h1 className="text-white font-arabic text-2xl sm:text-4xl font-bold drop-shadow-md pb-1" style={{textShadow: '0 2px 4px rgba(0,0,0,0.5)'}}>
-                     لا إله إلا الله محمد رسول الله
-                  </h1>
                </div>
 
                {/* Right icon circle */}
