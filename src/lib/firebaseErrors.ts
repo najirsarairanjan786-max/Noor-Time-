@@ -43,6 +43,12 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
     operationType,
     path
   }
+  if (errInfo.error.includes('offline') || errInfo.error.includes('unavailable') || errInfo.error.includes('fetch')) {
+    console.warn('Firestore Offline/Transient Warning: ', JSON.stringify(errInfo));
+    // Don't throw for offline/transient errors so the app continues
+    return;
+  }
+  
   console.error('Firestore Error: ', JSON.stringify(errInfo));
   throw new Error(JSON.stringify(errInfo));
 }

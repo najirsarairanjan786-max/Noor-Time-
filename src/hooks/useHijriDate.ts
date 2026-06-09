@@ -33,7 +33,7 @@ export function useHijriDate() {
           setLoading(false);
         }
       } catch (error) {
-        console.error("Failed to load Hijri Date", error);
+        console.warn("Could not load Hijri Date. Retrying later.", error);
         if (isMounted) setLoading(false);
       }
     }

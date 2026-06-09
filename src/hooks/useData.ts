@@ -28,7 +28,7 @@ export function useData(location: Location | null, method: number = 1, school: n
           setLoading(false);
         }
       } catch (error) {
-        console.error("Failed to load prayer times", error);
+        console.warn("Could not load prayer times. Retrying later.", error);
         if (isMounted) setLoading(false);
       }
     }
