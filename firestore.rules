@@ -5,29 +5,69 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    function isSignedIn() {
-      return request.auth != null;
+    // Auth & Identity Validation
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    
+    // Type checking
+    function isValidId(id) { 
+        return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
     }
 
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
+    function isValidUser(data, userId) {
+      return data.keys().hasAll(['uid']) &&
+             data.keys().size() <= 4 &&
+             data.uid == userId &&
+             data.uid == request.auth.uid &&
+             (data.get('email', '') is string) &&
+             (data.get('createdAt', request.time) == request.time) &&
+             (data.get('updatedAt', request.time) == request.time);
+    }
+             
+    function isValidUserSettings(data) {
+      return data.size() >= 0 &&
+             (!('autoLocation' in data) || data.autoLocation is bool) &&
+             (!('method' in data) || data.method is number) &&
+             (!('school' in data) || data.school is number) &&
+             (!('theme' in data) || data.theme is string && data.theme.size() <= 20) &&
+             (!('language' in data) || data.language is string && data.language.size() <= 10) &&
+             (!('alarmsEnabled' in data) || data.alarmsEnabled is bool) &&
+             (!('fontSize' in data) || data.fontSize is string && data.fontSize.size() <= 10) &&
+             (!('preAlarmMinutes' in data) || data.preAlarmMinutes is number) &&
+             (!('alarmSound' in data) || data.alarmSound is string && data.alarmSound.size() <= 30) &&
+             (!('hijriOffset' in data) || data.hijriOffset is number) &&
+             (!('silentMode' in data) || data.silentMode is bool) &&
+             (!('updatedAt' in data) || data.updatedAt == request.time);
     }
 
-    function incoming() {
-      return request.resource.data;
-    }
-
-    function isValidUser(data) {
-      return data.keys().hasAll(['email', 'createdAt']) &&
-        data.keys().size() == 2 &&
-        data.email is string && data.email.size() <= 256 &&
-        data.createdAt == request.time;
+    function isValidDailyTracker(data, userId) {
+      return data.keys().hasAll(['userId', 'date', 'updatedAt']) &&
+             data.userId == userId &&
+             data.userId == request.auth.uid &&
+             data.date is string && data.date.size() <= 20 &&
+             data.updatedAt == request.time &&
+             (!('prayers' in data) || data.prayers is map);
     }
 
     match /users/{userId} {
       allow get: if isOwner(userId);
-      allow create: if isOwner(userId) && isValidUser(incoming());
-      allow update, list, delete: if false;
+      allow create: if isValidId(userId) && isOwner(userId) && isValidUser(incoming(), userId) && incoming().createdAt == request.time;
+      allow update: if isValidId(userId) && isOwner(userId) && isValidUser(incoming(), userId) && incoming().updatedAt == request.time && incoming().uid == existing().uid && incoming().get('createdAt', existing().createdAt) == existing().createdAt;
+      allow delete: if isOwner(userId);
+
+      match /settings/{docId} {
+        allow read: if isOwner(userId);
+        allow write: if isValidId(docId) && isOwner(userId) && isValidUserSettings(incoming());
+      }
+      
+      match /trackers/{trackerDate} {
+        allow read, list: if isOwner(userId);
+        allow create: if isValidId(trackerDate) && isOwner(userId) && isValidDailyTracker(incoming(), userId) && incoming().updatedAt == request.time;
+        allow update: if isValidId(trackerDate) && isOwner(userId) && isValidDailyTracker(incoming(), userId) && incoming().updatedAt == request.time && incoming().userId == existing().userId && incoming().date == existing().date;
+        allow delete: if isOwner(userId);
+      }
     }
   }
 }

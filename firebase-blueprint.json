@@ -2,26 +2,80 @@
   "entities": {
     "User": {
       "title": "User",
-      "description": "User profile document",
+      "description": "A user of the application",
       "type": "object",
       "properties": {
-        "email": {
-          "type": "string"
-        },
-        "createdAt": {
-          "type": "number",
-          "description": "Timestamp of creation"
-        }
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["email", "createdAt"]
+      "required": ["uid"]
+    },
+    "UserSettings": {
+      "title": "UserSettings",
+      "description": "Application settings for a user",
+      "type": "object",
+      "properties": {
+        "location": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" },
+            "name": { "type": "string" }
+          }
+        },
+        "autoLocation": { "type": "boolean" },
+        "method": { "type": "number" },
+        "school": { "type": "number" },
+        "theme": { "type": "string" },
+        "language": { "type": "string" },
+        "alarmsEnabled": { "type": "boolean" },
+        "fontSize": { "type": "string" },
+        "preAlarmMinutes": { "type": "number" },
+        "alarmSound": { "type": "string" },
+        "hijriOffset": { "type": "number" },
+        "customTimings": { "type": "object" },
+        "silentMode": { "type": "boolean" },
+        "customAlarms": { "type": "object" },
+        "prayerAlarmSounds": { "type": "object" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "DailyTracker": {
+      "title": "DailyTracker",
+      "description": "A user's tracker for daily prayers",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "date": { "type": "string", "description": "Format YYYY-MM-DD" },
+        "prayers": {
+          "type": "object",
+          "properties": {
+            "Fajr": { "type": "boolean" },
+            "Zuhr": { "type": "boolean" },
+            "Asr": { "type": "boolean" },
+            "Maghrib": { "type": "boolean" },
+            "Isha": { "type": "boolean" }
+          }
+        },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "date", "updatedAt"]
     }
   },
   "firestore": {
     "/users/{userId}": {
-      "schema": {
-        "$ref": "#/entities/User"
-      },
-      "description": "User profiles"
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profile documents"
+    },
+    "/users/{userId}/settings/default": {
+      "schema": { "$ref": "#/entities/UserSettings" },
+      "description": "User settings document"
+    },
+    "/users/{userId}/trackers/{trackerDate}": {
+      "schema": { "$ref": "#/entities/DailyTracker" },
+      "description": "User daily tracker documents"
     }
   }
 }

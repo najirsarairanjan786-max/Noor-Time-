@@ -10,6 +10,8 @@ import { type Dispatch, type SetStateAction, useState } from 'react';
 import { useSettings } from '../hooks/useSettings';
 import { useTranslation } from '../lib/i18n';
 
+import { useAuth } from '../hooks/useAuth';
+
 type ViewType = 'home' | 'calendar' | 'settings' | 'prayer' | 'languages' | string;
 
 interface SidebarProps {
@@ -22,6 +24,7 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const { settings } = useSettings();
   const { t, isRTL } = useTranslation(settings.language);
+  const { user, signIn, logOut } = useAuth();
 
   const menuItems = [
     { icon: BookOpen, label: t('alQuran') || 'Al Quran', view: 'Quran' as ViewType, color: 'text-pink-400' },
@@ -83,7 +86,14 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
           >
             {/* Header */}
             <div className="p-6 bg-emerald-900/50 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-white tracking-wide">PrayerTimes</h2>
+              <div className="flex flex-col gap-1">
+                <h2 className="text-2xl font-bold text-white tracking-wide">PrayerTimes</h2>
+                {user ? (
+                  <button onClick={logOut} className="text-xs text-emerald-200 text-left hover:text-white transition-colors">Sign Out ({user.displayName || user.email})</button>
+                ) : (
+                  <button onClick={signIn} className="text-xs text-emerald-200 text-left hover:text-white border border-emerald-500/30 px-2 py-1 rounded-md transition-colors w-max">Sign In with Google</button>
+                )}
+              </div>
               <button 
                 onClick={onClose}
                 className="p-2 rounded-full hover:bg-white/10 transition-colors text-emerald-100"

@@ -1,12 +1,14 @@
 import { motion } from 'motion/react';
 import { useSettings } from '../hooks/useSettings';
 import { Moon, Bell, MapPin, Globe, Palette, Plus, Trash, Clock } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
 import { useState } from 'react';
 import { ThemeModal } from '../components/ThemeModal';
 
 export function SettingsView() {
   const { settings, setSettings, requestLocation } = useSettings();
+  const { user, signIn, logOut } = useAuth();
   const [isUpdating, setIsUpdating] = useState(false);
   const [newAlarmName, setNewAlarmName] = useState('');
   const [newAlarmTime, setNewAlarmTime] = useState('');
@@ -278,13 +280,43 @@ export function SettingsView() {
           </select>
         </div>
 
-        <div className="p-4 flex items-center justify-between cursor-pointer hover:bg-emerald-800/20 rounded-b-xl transition" onClick={() => setIsThemeModalOpen(true)}>
+        <div className="p-4 flex items-center justify-between cursor-pointer hover:bg-emerald-800/20 transition" onClick={() => setIsThemeModalOpen(true)}>
           <div className="flex items-center gap-3 text-emerald-100">
             <Palette className="w-5 h-5 text-emerald-400" />
             <div className="font-medium">Theme Style</div>
           </div>
           <div className="px-4 py-1.5 bg-emerald-950 border border-emerald-800 rounded-full text-sm text-emerald-300 opacity-80 capitalize">
             {settings.theme} Mode
+          </div>
+        </div>
+        
+        <div className="p-4 flex flex-col border-t border-emerald-800/40 rounded-b-xl">
+          <h3 className="text-emerald-100 font-medium mb-3 flex items-center gap-2">
+            <Globe className="w-5 h-5 text-emerald-400" /> Database Sync
+          </h3>
+          <div className="bg-emerald-950/50 p-3 rounded-lg border border-emerald-800/50">
+            {user ? (
+              <div className="flex flex-col gap-3">
+                <p className="text-xs text-emerald-300 font-medium">Logged in as {user.email}</p>
+                <div className="flex gap-2">
+                   <button onClick={logOut} className="py-2 px-4 bg-emerald-900/50 text-red-400 text-xs font-semibold rounded hover:bg-red-900/30 hover:text-red-300 transition-colors border border-red-500/10 flex-1">
+                     Sign Out
+                   </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <p className="text-xs text-emerald-400/80 mb-1 leading-relaxed">
+                  Sign in to seamlessly synchronize your app preferences, alarms, and daily trackers across multiple devices via Firebase.
+                </p>
+                <button 
+                  onClick={signIn} 
+                  className="py-2 px-4 bg-emerald-600 text-white text-xs font-bold rounded-lg overflow-hidden hover:bg-emerald-500 transition-colors shadow-md shadow-emerald-900/20 w-full"
+                >
+                  Sign in with Google
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

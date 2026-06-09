@@ -13,14 +13,17 @@ import { ShareView } from './pages/ShareView';
 import { DailyView } from './pages/DailyView';
 import { Home2 } from './pages/Home2';
 import { Navigation } from './components/Navigation';
+import { LocationPrompt } from './components/LocationPrompt';
 import { AnimatePresence } from 'motion/react';
 import { useSettings } from './hooks/useSettings';
+import { useDataSync } from './hooks/useDataSync';
 
 export type ViewType = 'home' | 'home2' | 'calendar' | 'settings' | 'prayer' | 'Quran' | 'Question & Answer' | 'qibla' | 'languages' | 'donate' | 'share' | 'daily' | string;
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewType>('home');
   const { settings } = useSettings();
+  useDataSync();
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', settings.theme);
@@ -53,6 +56,7 @@ export default function App() {
           {isFeatureView && <FeatureView title={currentView} setView={setCurrentView} />}
         </AnimatePresence>
 
+        <LocationPrompt />
         <Navigation view={currentView} setView={setCurrentView} />
       </main>
     </div>
