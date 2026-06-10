@@ -29,7 +29,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   language: "en",
   alarmsEnabled: true,
   fontSize: "medium",
-  preAlarmMinutes: 5,
+  preAlarmMinutes: 10,
   alarmSound: "beep",
   prayerAlarmSounds: {},
   hijriOffset: 0,

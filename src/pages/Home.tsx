@@ -84,20 +84,43 @@ export function Home({ setView }: HomeProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="pb-24 w-full min-h-screen bg-slate-50"
+      className="pb-24 w-full min-h-screen relative overflow-hidden"
     >
-      {/* Top Header Background Area */}
-      <div className="relative pt-4 pb-14 px-4 w-full text-white">
-        {/* Decorative Background */}
-        <div className="absolute inset-0 bg-[#2b3c5a] z-0 overflow-hidden">
-          <div
-            className="absolute inset-0 opacity-20 bg-cover bg-center mix-blend-overlay"
-            style={{
-              backgroundImage:
-                'url("https://images.unsplash.com/photo-1594145695029-bdad519e95ce?auto=format&fit=crop&q=80&w=800")',
-            }}
-          />
-        </div>
+      {/* 3D Professional Background Image - Animated */}
+      <div className="fixed inset-0 z-[-1] bg-[#050B14] overflow-hidden">
+        <motion.div 
+          className="absolute inset-[-10%] bg-cover bg-center bg-no-repeat opacity-60"
+          animate={{
+            scale: [1, 1.15, 1],
+            x: [0, -30, 0],
+            y: [0, -15, 0],
+          }}
+          transition={{
+            duration: 35,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          style={{
+            backgroundImage: 'url("https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop")',
+          }}
+        />
+        {/* Animated Particles Overlay */}
+        <motion.div 
+          className="absolute inset-0 opacity-30 mix-blend-screen"
+          animate={{
+            backgroundPosition: ["0% 0%", "100% 100%"],
+          }}
+          transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+          style={{
+            backgroundImage: 'url("https://www.transparenttextures.com/patterns/stardust.png")',
+          }}
+        />
+        {/* Dark subtle overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#050B14]/70 via-[#050B14]/40 to-[#050B14]/90 pointer-events-none" />
+      </div>
+
+      {/* Top Header Area */}
+      <div className="relative pt-4 pb-14 px-4 w-full text-white z-10">
 
         {/* Top Bar content relative to bg */}
         <div className="relative z-10 max-w-lg mx-auto">
@@ -222,107 +245,74 @@ export function Home({ setView }: HomeProps) {
 
         {/* More Features Row */}
         <div className="max-w-lg mx-auto relative mt-4">
-          <h3 className="text-slate-800 text-[17px] font-extrabold mb-3 px-1 relative z-10 text-shadow-sm">
+          <h3 className="text-white text-[17px] font-extrabold mb-3 px-1 relative z-10 text-shadow-sm">
             {t("more")} Features
           </h3>
 
-          <div className="grid grid-cols-2 gap-3 pb-8">
+          <div className="grid grid-cols-4 gap-y-6 gap-x-2 pb-8">
             {[
               {
                 label: "Quran",
                 i18nKey: "alQuran",
-                icon: (
-                  <BookOpen
-                    className="w-7 h-7 text-[#786b9e]"
-                    strokeWidth={1.5}
-                  />
-                ),
-                bg: "bg-[#eeeef6]",
-                text: "text-[#786b9e]",
+                icon: <BookOpen />,
+                glowText: "text-blue-400",
+                glowBg: "bg-blue-500",
               },
               {
                 label: "Hadees",
                 i18nKey: "hadees",
-                icon: (
-                  <BookText
-                    className="w-7 h-7 text-[#e98a4d]"
-                    strokeWidth={1.5}
-                  />
-                ),
-                bg: "bg-[#fef1e5]",
-                text: "text-[#e98a4d]",
+                icon: <BookText />,
+                glowText: "text-orange-400",
+                glowBg: "bg-orange-500",
               },
               {
                 label: "Question &\nAnswer",
                 i18nKey: "qa",
-                icon: (
-                  <MessageCircle
-                    className="w-7 h-7 text-[#926caa]"
-                    strokeWidth={1.5}
-                  />
-                ),
-                bg: "bg-[#f5f2f8]",
-                text: "text-[#926caa]",
+                icon: <MessageCircle />,
+                glowText: "text-purple-400",
+                glowBg: "bg-purple-500",
               },
               {
                 label: "Radio",
                 i18nKey: "madaniRadio",
-                icon: (
-                  <Radio className="w-7 h-7 text-[#a16bae]" strokeWidth={1.5} />
-                ),
-                bg: "bg-[#f8eff8]",
-                text: "text-[#a16bae]",
+                icon: <Radio />,
+                glowText: "text-pink-400",
+                glowBg: "bg-pink-500",
               },
               {
                 label: "Tajweed",
                 i18nKey: "tajweed",
-                icon: (
-                  <BookA className="w-7 h-7 text-[#7da65e]" strokeWidth={1.5} />
-                ),
-                bg: "bg-[#edf6e9]",
-                text: "text-[#7da65e]",
+                icon: <BookA />,
+                glowText: "text-emerald-400",
+                glowBg: "bg-emerald-500",
               },
               {
-                label: "Share\nPrayer Time",
+                label: "Share",
                 i18nKey: "share",
-                icon: (
-                  <CalendarDays
-                    className="w-7 h-7 text-[#7d9961]"
-                    strokeWidth={1.5}
-                  />
-                ),
-                bg: "bg-[#f4f7ed]",
-                text: "text-[#7d9961]",
+                icon: <CalendarDays />,
+                glowText: "text-cyan-400",
+                glowBg: "bg-cyan-500",
               },
               {
                 label: "Tasbih",
                 i18nKey: "tasbih",
-                icon: (
-                  <Star className="w-7 h-7 text-[#a78b94]" strokeWidth={1.5} />
-                ),
-                bg: "bg-[#f6f0f2]",
-                text: "text-[#a78b94]",
+                icon: <Star />,
+                glowText: "text-rose-400",
+                glowBg: "bg-rose-500",
               },
               {
                 label: "Daily",
                 i18nKey: "daily",
-                icon: (
-                  <Clock className="w-7 h-7 text-[#9a9e6b]" strokeWidth={1.5} />
-                ),
-                bg: "bg-[#f5f6ed]",
-                text: "text-[#9a9e6b]",
+                icon: <Clock />,
+                glowText: "text-amber-400",
+                glowBg: "bg-amber-500",
               },
               {
                 label: "More Apps",
                 i18nKey: "moreApps",
-                icon: (
-                  <Smartphone
-                    className="w-7 h-7 text-[#9a9e6b]"
-                    strokeWidth={1.5}
-                  />
-                ),
-                bg: "bg-[#f5f6ed]",
-                text: "text-[#9a9e6b]",
+                icon: <Smartphone />,
+                glowText: "text-indigo-400",
+                glowBg: "bg-indigo-500",
               },
             ].map((feature, i) => (
               <button
@@ -330,21 +320,47 @@ export function Home({ setView }: HomeProps) {
                 onClick={() => {
                   if (feature.label === "Quran") setView("Quran" as any);
                   else if (feature.label === "Daily") setView("daily" as any);
+                  else if (feature.label === "Tasbih") setView("tasbeeh" as any);
+                  else if (feature.label === "Share") setView("share" as any);
                   else setView("home" as any);
                 }}
-                className="bg-white p-2 rounded-[14px] flex items-center justify-start gap-2.5 shadow-sm border border-slate-100/80 hover:shadow-md transition-shadow active:scale-95 text-left h-[60px]"
+                className="group flex flex-col items-center gap-2.5 outline-none perspective-[1000px]"
               >
                 <div
-                  className={`w-[44px] h-[44px] ${feature.bg} rounded-[12px] flex items-center justify-center shrink-0`}
+                  className="w-[56px] h-[56px] sm:w-[64px] sm:h-[64px] rounded-[18px] bg-[#0a0a0c] border border-white/10 flex flex-col items-center justify-center relative transition-all duration-500 ease-out group-hover:scale-110 group-hover:-translate-y-2 group-active:scale-95 z-10"
+                  style={{ 
+                    transformStyle: 'preserve-3d',
+                    boxShadow: '0 10px 30px -10px rgba(0,0,0,0.8)'
+                  }}
+                  onMouseMove={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const xPct = x / rect.width - 0.5;
+                    const yPct = y / rect.height - 0.5;
+                    e.currentTarget.style.transform = `rotateX(${-yPct * 30}deg) rotateY(${xPct * 30}deg) scale(1.1) translateY(-8px)`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = `rotateX(0deg) rotateY(0deg) scale(1) translateY(0px)`;
+                  }}
                 >
-                  {/* Clone element to override w-7 to w-5 */}
-                  {React.cloneElement(feature.icon as React.ReactElement, { className: (feature.icon as React.ReactElement).props.className.replace('w-7 h-7', 'w-5 h-5') })}
+                  <div 
+                    className={`absolute inset-0 rounded-[18px] blur-xl opacity-0 group-hover:opacity-40 transition-opacity duration-500 ${feature.glowBg}`} 
+                    style={{ transform: 'translateZ(-1px)' }} 
+                  />
+                  
+                  {/* Subtle glass reflection */}
+                  <div className="absolute inset-0 rounded-[18px] bg-gradient-to-tr from-transparent via-white/5 to-white/20 pointer-events-none" />
+
+                  {React.cloneElement(feature.icon as React.ReactElement, { 
+                    className: `w-6 h-6 sm:w-7 sm:h-7 relative z-10 ${feature.glowText} drop-shadow-[0_0_10px_currentColor]`,
+                    strokeWidth: 1.5,
+                    style: { transform: 'translateZ(20px)' }
+                  })}
                 </div>
-                <span
-                  className={`text-[13px] font-extrabold ${feature.text} leading-[1.1] pr-1 whitespace-pre-line tracking-tight`}
-                >
-                  {feature.i18nKey &&
-                  t(feature.i18nKey as any) !== feature.i18nKey
+                
+                <span className="text-[11px] sm:text-xs font-semibold text-slate-300 text-center leading-tight tracking-tight px-1 whitespace-pre-line group-hover:text-white transition-colors">
+                  {feature.i18nKey && t(feature.i18nKey as any) !== feature.i18nKey
                     ? t(feature.i18nKey as any)
                     : feature.label}
                 </span>

@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { useSettings } from '../hooks/useSettings';
-import { Moon, Bell, MapPin, Globe, Palette, Plus, Trash, Clock } from 'lucide-react';
+import { Moon, Bell, MapPin, Globe, Palette, Plus, Trash, Clock, Download } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
 import { useState } from 'react';
@@ -45,6 +45,35 @@ export function SettingsView() {
     } finally {
       setIsUpdating(false);
     }
+  };
+
+  const handleExportData = () => {
+    const data = {
+      settings: localStorage.getItem('islamic-app-settings-v11'),
+      alarms: localStorage.getItem('islamic-alarms-v2'),
+      tracker: localStorage.getItem('dailySalahTracker'),
+      tahajjudAlarm: localStorage.getItem('islamic-tahajjud-alarm'),
+      exportDate: new Date().toISOString()
+    };
+    
+    // Parse strings back to objects where necessary for cleaner JSON structure
+    const parsedData = {
+      settings: data.settings ? JSON.parse(data.settings) : null,
+      alarms: data.alarms ? JSON.parse(data.alarms) : null,
+      tracker: data.tracker ? JSON.parse(data.tracker) : null,
+      tahajjudAlarm: data.tahajjudAlarm ? JSON.parse(data.tahajjudAlarm) : null,
+      exportDate: data.exportDate
+    };
+
+    const blob = new Blob([JSON.stringify(parsedData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `prayer-app-backup-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -113,6 +142,36 @@ export function SettingsView() {
 
         {settings.alarmsEnabled && (
           <>
+            <div className="p-4 flex flex-col gap-2 border-b border-emerald-800/40 bg-emerald-900/10">
+              <button
+                onClick={() => {
+                  if ('Notification' in window) {
+                    Notification.requestPermission().then(permission => {
+                      if (permission === 'granted') {
+                        new Notification("Notifications Active", {
+                          body: "Prayer alerts are working perfectly.",
+                          icon: "/icon-192.png"
+                        });
+                      }
+                    });
+                  }
+                  if ('vibrate' in navigator) navigator.vibrate([100, 50, 100]);
+                  
+                  // Try playing a sound to unlock audio context
+                  try {
+                    let snd = settings.alarmSound === 'beep' ? 'https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3' : 'https://assets.mixkit.co/sfx/preview/mixkit-positive-notification-951.mp3';
+                    new Audio(snd).play().catch(() => {});
+                  } catch(e) {}
+                }}
+                className="py-2.5 px-4 bg-emerald-600/30 font-semibold text-emerald-300 text-xs rounded-lg border border-emerald-500/30 hover:bg-emerald-600/40 transition active:scale-95 flex items-center justify-center gap-2"
+              >
+                <Bell className="w-4 h-4" /> Request Permission & Test Alert
+              </button>
+              <p className="text-[10px] text-emerald-400/60 text-center uppercase tracking-widest px-4">
+                Must be done manually to allow browser notifications and sound to play
+              </p>
+            </div>
+
             <div className="p-4 flex items-center justify-between border-b border-emerald-800/40 bg-emerald-900/10">
               <div className="flex items-center gap-3 text-emerald-100 ml-8">
                 <div className="font-medium text-sm">Alert Sound</div>
@@ -290,7 +349,7 @@ export function SettingsView() {
           </div>
         </div>
         
-        <div className="p-4 flex flex-col border-t border-emerald-800/40 rounded-b-xl">
+        <div className="p-4 flex flex-col border-t border-emerald-800/40">
           <h3 className="text-emerald-100 font-medium mb-3 flex items-center gap-2">
             <Globe className="w-5 h-5 text-emerald-400" /> Database Sync
           </h3>
@@ -317,6 +376,23 @@ export function SettingsView() {
                 </button>
               </div>
             )}
+          </div>
+        </div>
+
+        <div className="p-4 flex flex-col border-t border-emerald-800/40 rounded-b-xl">
+          <h3 className="text-emerald-100 font-medium mb-3 flex items-center gap-2">
+            <Download className="w-5 h-5 text-emerald-400" /> Data Backup
+          </h3>
+          <div className="bg-emerald-950/50 p-3 rounded-lg border border-emerald-800/50">
+            <p className="text-xs text-emerald-400/80 mb-3 leading-relaxed">
+              Export your prayer history and app preferences as a JSON file you can keep securely offline.
+            </p>
+            <button 
+              onClick={handleExportData} 
+              className="py-2 px-4 bg-emerald-900/50 text-emerald-300 text-xs font-semibold rounded hover:bg-emerald-800/80 transition-colors border border-emerald-800 flex items-center justify-center gap-2 w-full"
+            >
+              <Download className="w-4 h-4" /> Export JSON Backup
+            </button>
           </div>
         </div>
       </div>

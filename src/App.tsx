@@ -11,6 +11,7 @@ import { LanguagesView } from './pages/LanguagesView';
 import { DonateView } from './pages/DonateView';
 import { ShareView } from './pages/ShareView';
 import { DailyView } from './pages/DailyView';
+import { TasbeehView } from './pages/TasbeehView';
 import { Home2 } from './pages/Home2';
 import { Navigation } from './components/Navigation';
 import { LocationPrompt } from './components/LocationPrompt';
@@ -18,7 +19,7 @@ import { AnimatePresence } from 'motion/react';
 import { useSettings } from './hooks/useSettings';
 import { useDataSync } from './hooks/useDataSync';
 
-export type ViewType = 'home' | 'home2' | 'calendar' | 'settings' | 'prayer' | 'Quran' | 'Question & Answer' | 'qibla' | 'languages' | 'donate' | 'share' | 'daily' | string;
+export type ViewType = 'home' | 'home2' | 'calendar' | 'settings' | 'prayer' | 'Quran' | 'Question & Answer' | 'qibla' | 'languages' | 'donate' | 'share' | 'daily' | 'tasbeeh' | string;
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewType>('home');
@@ -30,7 +31,7 @@ export default function App() {
   }, [settings.theme]);
 
   // Standard views
-  const standardViews = ['home', 'home2', 'calendar', 'settings', 'prayer', 'Quran', 'Question & Answer', 'qibla', 'languages', 'donate', 'share', 'daily'];
+  const standardViews = ['home', 'home2', 'calendar', 'settings', 'prayer', 'Quran', 'Question & Answer', 'qibla', 'languages', 'donate', 'share', 'daily', 'tasbeeh'];
   const isFeatureView = !standardViews.includes(currentView);
 
   return (
@@ -53,6 +54,7 @@ export default function App() {
           {currentView === 'donate' && <DonateView setView={setCurrentView} />}
           {currentView === 'share' && <ShareView setView={setCurrentView} />}
           {currentView === 'daily' && <DailyView setView={setCurrentView} />}
+          {currentView === 'tasbeeh' && <TasbeehView setView={setCurrentView} />}
           {isFeatureView && <FeatureView title={currentView} setView={setCurrentView} />}
         </AnimatePresence>
 

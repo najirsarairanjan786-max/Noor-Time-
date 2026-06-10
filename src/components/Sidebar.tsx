@@ -41,7 +41,7 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
     { icon: VolumeX, label: t('silentMode') || 'Silent Mode', isSilentMode: true, color: 'text-purple-400' },
     { icon: CalendarDays, label: t('monthlyPrayerTimes') || 'Monthly Prayer Times', view: 'calendar' as ViewType, color: 'text-emerald-500' },
     { icon: Heart, label: t('rohaniIlaj') || 'Rohani Ilaj', color: 'text-yellow-500' },
-    { icon: Star, label: t('tasbih') || 'Tasbih', color: 'text-green-600' },
+    { icon: Star, label: t('tasbih') || 'Tasbih', view: 'tasbeeh' as ViewType, color: 'text-green-600' },
     { icon: Lightbulb, label: t('inspiration') || 'Inspiration', color: 'text-orange-500' },
     { icon: CalendarCheck, label: t('hijriCalendar') || 'Hijri Calendar', view: 'calendar' as ViewType, color: 'text-fuchsia-500' },
     { icon: Radio, label: t('madaniRadio') || 'Madani Radio', color: 'text-orange-500' },
@@ -82,10 +82,21 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="absolute top-0 left-0 bottom-0 w-[85%] max-w-[320px] bg-emerald-950 z-[101] overflow-hidden flex flex-col shadow-2xl"
+            className="absolute top-0 left-0 bottom-0 w-[85%] max-w-[320px] bg-emerald-950 z-[101] overflow-hidden flex flex-col shadow-2xl relative"
           >
+            {/* Background Image */}
+            <div 
+              className="absolute inset-0 z-0 opacity-[0.15] pointer-events-none mix-blend-overlay"
+              style={{
+                backgroundImage: `url('https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=600&q=80')`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+              }}
+            />
+
             {/* Header */}
-            <div className="p-6 bg-emerald-900/50 flex items-center justify-between">
+            <div className="p-6 bg-emerald-900/50 flex items-center justify-between relative z-10">
               <div className="flex flex-col gap-1">
                 <h2 className="text-2xl font-bold text-white tracking-wide">PrayerTimes</h2>
                 {user ? (
@@ -103,7 +114,7 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
             </div>
             
             {/* Menu List */}
-            <div className="flex-1 overflow-y-auto py-4 pl-4 pr-2 custom-scrollbar pb-24 relative">
+            <div className="flex-1 overflow-y-auto py-4 pl-4 pr-2 custom-scrollbar pb-24 relative z-10">
               <div className="space-y-1">
                 {menuItems.map((item, index) => (
                   <button 

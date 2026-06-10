@@ -502,16 +502,51 @@ export function PrayerTimesList({
                 endTimeObj.setMinutes(timeObj.getMinutes() + 24);
                 const isCurrent = idx === currentPrayerIndex;
 
+                const nextPrayerTimeObjInner = parse(
+                  prayers[(idx + 1) % prayers.length].time.split(" ")[0],
+                  "HH:mm",
+                  now,
+                );
+                if (idx === prayers.length - 1) {
+                  if (now.getHours() > 12) {
+                    nextPrayerTimeObjInner.setDate(nextPrayerTimeObjInner.getDate() + 1);
+                  } else {
+                    timeObj.setDate(timeObj.getDate() - 1);
+                  }
+                } else {
+                  if (nextPrayerTimeObjInner < timeObj) {
+                    nextPrayerTimeObjInner.setDate(nextPrayerTimeObjInner.getDate() + 1);
+                  }
+                }
+
+                let progress = 0;
+                let remainingText = "";
+
+                if (isBefore(now, timeObj)) {
+                  progress = 0;
+                } else if (isAfter(now, nextPrayerTimeObjInner)) {
+                  progress = 100;
+                } else {
+                  const total = differenceInMinutes(nextPrayerTimeObjInner, timeObj);
+                  const elapsed = differenceInMinutes(now, timeObj);
+                  progress = Math.max(0, Math.min(100, (elapsed / total) * 100));
+                  const remaining = total - elapsed;
+                  const rHours = Math.floor(remaining / 60);
+                  const rMins = remaining % 60;
+                  remainingText = rHours > 0 ? `-${rHours}h ${rMins}m` : `-${rMins}m`;
+                }
+
                 return (
                   <div
                     key={prayer.name}
                     className={cn(
-                      "flex flex-row items-center justify-between p-2.5 rounded-xl transition-colors",
+                      "flex flex-col rounded-xl transition-colors relative overflow-hidden",
                       isCurrent
                         ? "bg-[#e8f3ec] shadow-sm border border-[#d2e5da]"
                         : "hover:bg-slate-50 border border-transparent",
                     )}
                   >
+                    <div className="flex flex-row items-center justify-between p-2.5 pb-1.5 z-10 w-full">
                     <div className="flex items-center space-x-3 min-w-[120px]">
                       {isFajr ? (
                         <span className="text-slate-400 text-lg">⏱️</span>
@@ -594,9 +629,25 @@ export function PrayerTimesList({
                       </button>
                     </div>
                   </div>
-                );
-              })
-            : otherTimes.map((ot) => {
+
+                  {/* Visual Progress Bar section */}
+                  <div className="px-3 pb-2 pt-0.5 w-full flex flex-col gap-1 z-10 relative">
+                    <div className="w-full h-1.5 bg-slate-200/50 rounded-full overflow-hidden flex">
+                      <div 
+                        className={cn("h-full rounded-full transition-all duration-1000 ease-in-out", isCurrent ? "bg-[#265e28]" : progress === 100 ? "bg-slate-300" : "bg-transparent")} 
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                    {isCurrent && remainingText && (
+                      <div className="text-[10px] text-[#265e28] font-bold text-right tracking-tight leading-none opacity-80 mt-0.5">
+                        {remainingText} left
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          : otherTimes.map((ot) => {
                 const { timeObj } = ot;
                 return (
                   <div

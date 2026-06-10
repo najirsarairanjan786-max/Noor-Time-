@@ -24,38 +24,45 @@ export function useAlarmSystem(timings: PrayerTimings | null) {
   useEffect(() => {
     if (!settings.alarmsEnabled || !timings) return;
 
-    const interval = setInterval(() => {
-      const now = new Date();
-      
-      const schoolName = settings.school === 1 ? ' \u2014 Hanafi' : '';
+    let preAlarmMinutes = settings.preAlarmMinutes || 10;
+    const schoolName = settings.school === 1 ? ' \u2014 Hanafi' : '';
 
-      const prayers = [
-        { name: 'Fajr', time: timings.Fajr },
-        { name: 'Zuhr', time: timings.Dhuhr },
-        { name: `Asr${schoolName}`, time: timings.Asr },
-        { name: 'Maghrib', time: timings.Maghrib },
-        { name: `Isha${schoolName}`, time: timings.Isha },
-      ];
+    const prayers = [
+      { name: 'Fajr', time: timings.Fajr },
+      { name: 'Zuhr', time: timings.Dhuhr },
+      { name: `Asr${schoolName}`, time: timings.Asr },
+      { name: 'Maghrib', time: timings.Maghrib },
+      { name: `Isha${schoolName}`, time: timings.Isha },
+    ];
+
+    const checkAlarms = () => {
+      const now = new Date();
+      const currentHm = format(now, 'HH:mm');
 
       for (const prayer of prayers) {
         if (!alarms[prayer.name]) continue;
 
-        const prayerDate = parse(prayer.time.split(' ')[0], 'HH:mm', now);
+        const prayerTimeStr = prayer.time.split(' ')[0]; // "15:30"
         
-        // Exact time alarm
-        if (isSameMinute(now, prayerDate)) {
+        // Exact time alarm check
+        if (prayerTimeStr === currentHm) {
           triggerAlarm(prayer.name, "It is time for prayer.");
         }
-        
-        // Pre-alarm
-        if (settings.preAlarmMinutes > 0) {
-          const preAlarmTime = addMinutes(prayerDate, -settings.preAlarmMinutes);
-          if (isSameMinute(now, preAlarmTime)) {
-            triggerAlarm(prayer.name, `${settings.preAlarmMinutes} minutes remaining for prayer.`, true);
-          }
+
+        // Pre-alarm check
+        const prayerDate = parse(prayerTimeStr, 'HH:mm', now);
+        const preAlarmDate = addMinutes(prayerDate, -preAlarmMinutes);
+        const preAlarmHm = format(preAlarmDate, 'HH:mm');
+
+        if (preAlarmHm === currentHm) {
+          triggerAlarm(prayer.name, `${preAlarmMinutes} minutes remaining for prayer.`, true);
         }
       }
-    }, 60000); // check every minute
+    };
+
+    // Check immediately and then every 10 seconds
+    checkAlarms();
+    const interval = setInterval(checkAlarms, 10000);
 
     return () => clearInterval(interval);
   }, [settings.alarmsEnabled, settings.preAlarmMinutes, timings, alarms]);
