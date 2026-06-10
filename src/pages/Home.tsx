@@ -125,28 +125,35 @@ export function Home({ setView }: HomeProps) {
         {/* Top Bar content relative to bg */}
         <div className="relative z-10 max-w-lg mx-auto">
           {/* Header row 1 */}
-          <div className="flex justify-between items-start mb-2">
-            <div className="flex items-start gap-4 pr-2">
-              <button
-                onClick={() => setIsSidebarOpen(true)}
-                className="pt-1 mt-[2px] hover:opacity-80 transition"
-              >
-                <div className="w-8 flex flex-col gap-1.5 items-end">
-                  <div className="h-1 w-8 bg-white rounded-full"></div>
-                  <div className="h-[3px] w-6 bg-white rounded-full"></div>
-                  <div className="h-1 w-8 bg-white rounded-full"></div>
-                </div>
-              </button>
-              <button
-                onClick={handleLocationUpdate}
-                className="flex flex-col text-left hover:opacity-80 transition-opacity max-w-[200px] overflow-hidden"
-              >
-                <span className="font-bold text-[14px] uppercase leading-tight whitespace-nowrap text-ellipsis overflow-hidden w-full block shadow-sm shadow-black/10">
-                  {settings.location?.name ||
-                    "ZIR HOUSE, Md Nazir Hussain Dwarikapur, S..."}
-                </span>
-              </button>
+          <div className="flex justify-between items-center mb-6 relative">
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="relative z-20 hover:opacity-80 transition p-2 -ml-2"
+            >
+              <div className="w-7 flex flex-col gap-[5px] items-start">
+                <div className="h-[3px] w-7 bg-white rounded-full"></div>
+                <div className="h-[3px] w-5 bg-white rounded-full"></div>
+                <div className="h-[3px] w-7 bg-white rounded-full"></div>
+              </div>
+            </button>
+
+            {/* Center Title */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 mt-1">
+              <h1 className="text-2xl font-black text-white tracking-wide drop-shadow-md">
+                PrayerTimes
+              </h1>
             </div>
+
+            {/* Location */}
+            <button
+              onClick={handleLocationUpdate}
+              className="relative z-20 flex bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20 px-2.5 py-1.5 rounded-full items-center gap-1.5 max-w-[120px] overflow-hidden"
+            >
+              <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full flex-shrink-0 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse" />
+              <span className="font-bold text-[10px] uppercase tracking-wider leading-tight whitespace-nowrap text-ellipsis overflow-hidden w-full text-right shadow-sm shadow-black/10">
+                {settings.location?.name || "Location"}
+              </span>
+            </button>
           </div>
 
           <div className="flex justify-between items-start mt-4">

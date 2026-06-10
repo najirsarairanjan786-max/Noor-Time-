@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { useLocalStorage } from 'usehooks-ts';
-import { RotateCcw, Vibrate, CheckCircle } from 'lucide-react';
+import { RotateCcw, Vibrate, CheckCircle, ChevronLeft } from 'lucide-react';
 import { useCallback } from 'react';
 
 export function TasbeehView({ setView }: { setView: (v: string) => void }) {
@@ -42,6 +42,14 @@ export function TasbeehView({ setView }: { setView: (v: string) => void }) {
         
         {/* Header Controls */}
         <div className="w-full flex justify-between items-center mb-12 relative z-10">
+          <button 
+            onClick={() => setView('home')}
+            className={`p-2 pl-1.5 rounded-full transition-colors bg-slate-800/40 hover:bg-slate-700/60 text-slate-200 flex items-center gap-1`}
+          >
+            <ChevronLeft size={20} />
+            <span className="text-sm font-medium pr-3">Back</span>
+          </button>
+
           <button 
             onClick={handleToggleHaptic}
             className={`p-3 rounded-full transition-colors ${hapticEnabled ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-800/40 text-slate-400'}`}

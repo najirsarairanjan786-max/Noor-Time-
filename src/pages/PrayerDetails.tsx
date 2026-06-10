@@ -1,10 +1,11 @@
 import { motion } from 'motion/react';
 import { useData } from '../hooks/useData';
 import { useSettings } from '../hooks/useSettings';
-import { Compass, Book, Map } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Compass, Book, Map, ChevronLeft } from 'lucide-react';
+import { useState, useEffect, Dispatch, SetStateAction } from 'react';
+import { ViewType } from '../App';
 
-export function PrayerDetails() {
+export function PrayerDetails({ setView }: { setView: Dispatch<SetStateAction<ViewType>> }) {
   const { settings } = useSettings();
   const { timings } = useData(settings.location, settings.method ?? 1, settings.school ?? 1);
   const [heading, setHeading] = useState<number | null>(null);
@@ -42,8 +43,16 @@ export function PrayerDetails() {
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
-      className="pb-32 px-4 pt-12 max-w-md mx-auto space-y-6"
+      className="pb-32 px-4 pt-12 max-w-md mx-auto space-y-6 relative"
     >
+      <button 
+        onClick={() => setView('home')}
+        className="absolute top-4 left-4 p-2 pl-1.5 bg-emerald-900/50 hover:bg-emerald-800/80 rounded-[20px] text-emerald-100 transition-colors z-10 flex items-center gap-1"
+      >
+        <ChevronLeft className="w-6 h-6" />
+        <span className="text-sm font-medium pr-3">Back</span>
+      </button>
+
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-white">Prayer & Qibla</h2>
         <p className="text-emerald-300/80 mt-1">Resources for your daily prayers</p>

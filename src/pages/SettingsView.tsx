@@ -3,10 +3,11 @@ import { useSettings } from '../hooks/useSettings';
 import { Moon, Bell, MapPin, Globe, Palette, Plus, Trash, Clock, Download } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
-import { useState } from 'react';
+import { useState, Dispatch, SetStateAction } from 'react';
+import { ViewType } from '../App';
 import { ThemeModal } from '../components/ThemeModal';
 
-export function SettingsView() {
+export function SettingsView({ setView }: { setView: Dispatch<SetStateAction<ViewType>> }) {
   const { settings, setSettings, requestLocation } = useSettings();
   const { user, signIn, logOut } = useAuth();
   const [isUpdating, setIsUpdating] = useState(false);
@@ -81,8 +82,16 @@ export function SettingsView() {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="pb-32 px-4 pt-12 max-w-md mx-auto space-y-6"
+      className="pb-32 px-4 pt-12 max-w-md mx-auto space-y-6 relative"
     >
+      <button 
+        onClick={() => setView('home')}
+        className="absolute top-4 left-4 p-2 pl-1.5 bg-emerald-900/50 hover:bg-emerald-800/80 rounded-full text-emerald-100 transition-colors z-10 flex items-center gap-1"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"/></svg>
+        <span className="text-sm font-medium pr-3">Back</span>
+      </button>
+
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-white">Settings</h2>
         <p className="text-emerald-300/80 mt-1">Configure your app experience</p>

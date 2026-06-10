@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Dispatch, SetStateAction } from "react";
+import { ViewType } from "../App";
 import {
   format,
   startOfMonth,
@@ -24,7 +25,7 @@ interface CalendarDayInfo {
   };
 }
 
-export function CalendarView() {
+export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<ViewType>> }) {
   const { settings } = useSettings();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [calendarData, setCalendarData] = useState<CalendarDayInfo[]>([]);
@@ -109,9 +110,17 @@ export function CalendarView() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="pb-24 px-4 pt-4 max-w-3xl w-full mx-auto min-h-[100dvh] flex flex-col justify-center"
+      className="pb-24 px-4 pt-20 max-w-3xl w-full mx-auto min-h-[100dvh] flex flex-col justify-center relative"
     >
-      <div className="flex items-center justify-between mb-8 bg-pink-900/60 backdrop-blur-lg border border-pink-500/20 shadow-2xl rounded-2xl p-4">
+      <button 
+        onClick={() => setView('home')}
+        className="absolute top-4 left-4 p-2 bg-pink-900/50 hover:bg-pink-800/80 rounded-full text-pink-100 transition-colors z-10 flex items-center gap-2"
+      >
+        <ChevronLeft className="w-6 h-6" />
+        <span className="text-sm font-medium pr-1">Back</span>
+      </button>
+
+      <div className="flex items-center justify-between mb-8 bg-pink-900/60 backdrop-blur-lg border border-pink-500/20 shadow-2xl rounded-2xl p-4 relative">
         <button
           onClick={prevMonth}
           className="p-2 bg-pink-800/40 rounded-full hover:bg-pink-700/50 transition"

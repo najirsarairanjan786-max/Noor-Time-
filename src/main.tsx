@@ -3,6 +3,16 @@ import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import { AuthProvider } from './hooks/useAuth';
 import './index.css';
+import { registerSW } from 'virtual:pwa-register';
+
+const updateSW = registerSW({
+  onNeedRefresh() {
+    // We could show a toast here
+  },
+  onOfflineReady() {
+    console.log('App is ready to work offline');
+  },
+});
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

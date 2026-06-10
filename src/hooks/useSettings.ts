@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocalStorage } from "usehooks-ts";
 
 export interface AppSettings {
@@ -45,7 +45,7 @@ export function useSettings() {
   );
 
   // Helper to request geolocation
-  const requestLocation = (): Promise<void> => {
+  const requestLocation = useCallback((): Promise<void> => {
     return new Promise((resolve, reject) => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -103,7 +103,7 @@ export function useSettings() {
         reject(new Error("Geolocation not supported"));
       }
     });
-  };
+  }, [setSettings]);
 
   return { settings, setSettings, requestLocation };
 }

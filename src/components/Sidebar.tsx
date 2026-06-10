@@ -3,7 +3,7 @@ import {
   BookOpen, MessageCircle, Settings, Globe, HeartHandshake, MapPin, 
   Cloud, Calculator, Compass, VolumeX, CalendarDays, Heart, Share2,
   Lightbulb, CalendarCheck, Radio, Star, Bell, Mail, Smartphone, ThumbsUp, X,
-  BookA, Bookmark, BookText
+  BookA, Bookmark, BookText, ArrowLeft
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { type Dispatch, type SetStateAction, useState } from 'react';
@@ -82,7 +82,7 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="absolute top-0 left-0 bottom-0 w-[85%] max-w-[320px] bg-emerald-950 z-[101] overflow-hidden flex flex-col shadow-2xl relative"
+            className="absolute top-0 left-0 bottom-0 w-[80%] max-w-[320px] bg-emerald-950 z-[101] overflow-hidden flex flex-col shadow-2xl rounded-r-3xl border-r border-white/10 relative"
           >
             {/* Background Image */}
             <div 
@@ -96,21 +96,23 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
             />
 
             {/* Header */}
-            <div className="p-6 bg-emerald-900/50 flex items-center justify-between relative z-10">
-              <div className="flex flex-col gap-1">
-                <h2 className="text-2xl font-bold text-white tracking-wide">PrayerTimes</h2>
-                {user ? (
-                  <button onClick={logOut} className="text-xs text-emerald-200 text-left hover:text-white transition-colors">Sign Out ({user.displayName || user.email})</button>
-                ) : (
-                  <button onClick={signIn} className="text-xs text-emerald-200 text-left hover:text-white border border-emerald-500/30 px-2 py-1 rounded-md transition-colors w-max">Sign In with Google</button>
-                )}
-              </div>
+            <div className="p-6 pt-16 bg-emerald-900/50 flex flex-col items-start gap-3 relative z-10">
               <button 
                 onClick={onClose}
-                className="p-2 rounded-full hover:bg-white/10 transition-colors text-emerald-100"
+                className="absolute top-4 left-4 p-1.5 rounded-full hover:bg-white/10 transition-colors text-emerald-100 flex items-center gap-1 self-start"
               >
-                <X className="w-6 h-6" />
+                <ArrowLeft className="w-6 h-6" />
+                <span className="text-sm font-medium pr-2">Back</span>
               </button>
+
+              <div className="flex flex-col gap-1 w-full pl-1">
+                <h2 className="text-2xl font-bold text-white tracking-wide">PrayerTimes</h2>
+                {user ? (
+                  <button onClick={logOut} className="text-xs font-semibold text-emerald-200 text-left hover:text-white transition-colors mt-1">Sign Out ({user.displayName || user.email})</button>
+                ) : (
+                  <button onClick={signIn} className="text-xs font-semibold text-emerald-200 text-left hover:text-white border border-emerald-500/30 px-3 py-1.5 rounded-lg transition-colors w-max bg-emerald-800/30 mt-1">Sign In with Google</button>
+                )}
+              </div>
             </div>
             
             {/* Menu List */}

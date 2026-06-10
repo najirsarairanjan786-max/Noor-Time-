@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
+import { User, onAuthStateChanged, signInWithPopup, browserPopupRedirectResolver, GoogleAuthProvider, signOut } from 'firebase/auth';
 import { auth, db } from '../lib/firebase';
 import { doc, getDocFromServer } from 'firebase/firestore';
 
@@ -33,11 +33,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = async () => {
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      await signInWithPopup(auth, provider, browserPopupRedirectResolver);
     } catch (error: any) {
       if (error?.code === 'auth/popup-closed-by-user') {
         console.warn("Sign-in popup closed by user");
         return;
+      }
+      if (error?.code === 'auth/network-request-failed') {
+        alert("Network Error: Please ensure you are not using a brave shield or adblocker that blocks the login popup, and check your connection.");
       }
       console.error("Error signing in with Google", error);
     }

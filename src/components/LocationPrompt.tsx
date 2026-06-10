@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MapPinOff, X } from 'lucide-react';
+import { useSettings } from '../hooks/useSettings';
 
 export function LocationPrompt() {
   const [showPrompt, setShowPrompt] = useState(false);
+  const { settings, requestLocation } = useSettings();
 
   useEffect(() => {
     const checkPermission = async () => {
@@ -17,6 +19,10 @@ export function LocationPrompt() {
           if (!hasDismissed) {
              setShowPrompt(true);
           }
+        } else if (result.state === 'granted') {
+           if (settings.autoLocation) {
+               requestLocation().catch(console.error);
+           }
         }
         
         // Listen for changes
@@ -29,6 +35,9 @@ export function LocationPrompt() {
           } else if (result.state === 'granted') {
              setShowPrompt(false);
              localStorage.removeItem('location_prompt_dismissed');
+             if (settings.autoLocation) {
+                 requestLocation().catch(console.error);
+             }
           }
         };
       } catch (error) {
@@ -38,7 +47,7 @@ export function LocationPrompt() {
     };
     
     checkPermission();
-  }, []);
+  }, [requestLocation, settings.autoLocation]);
 
   const dismiss = () => {
     setShowPrompt(false);

@@ -44,9 +44,9 @@ export default function App() {
         <AnimatePresence mode="wait">
           {currentView === 'home' && <Home setView={setCurrentView} />}
           {currentView === 'home2' && <Home2 setView={setCurrentView} />}
-          {currentView === 'calendar' && <CalendarView />}
-          {currentView === 'settings' && <SettingsView />}
-          {currentView === 'prayer' && <PrayerDetails />}
+          {currentView === 'calendar' && <CalendarView setView={setCurrentView} />}
+          {currentView === 'settings' && <SettingsView setView={setCurrentView} />}
+          {currentView === 'prayer' && <PrayerDetails setView={setCurrentView} />}
           {currentView === 'Quran' && <QuranView setView={setCurrentView} />}
           {currentView === 'Question & Answer' && <QuizView setView={setCurrentView} />}
           {currentView === 'qibla' && <QiblaDirectionView setView={setCurrentView} />}
