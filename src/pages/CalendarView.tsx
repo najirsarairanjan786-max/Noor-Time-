@@ -63,9 +63,27 @@ export function CalendarView() {
           const mappedHijri = flatData[flatIdx]
             ? flatData[flatIdx].hijri
             : day.hijri;
+
+          const m = parseInt(mappedHijri.month.number);
+          const d = parseInt(mappedHijri.day);
+          const customHolidays = [];
+          if (m === 1 && d === 1) customHolidays.push("1st Muharram (Islamic New Year)");
+          if (m === 1 && d === 10) customHolidays.push("Ashura (10th Muharram)");
+          if (m === 3 && d === 12) customHolidays.push("Eid Milad-un-Nabi (12 Rabi ul Awwal)");
+          if (m === 7 && d === 27) customHolidays.push("Shab e Miraj (27 Rajab)");
+          if (m === 8 && d === 15) customHolidays.push("Shab e Barat (15 Shaban)");
+          if (m === 9 && d === 1) customHolidays.push("1st Ramadan");
+          if (m === 9 && d === 27) customHolidays.push("Shab e Qadr (27 Ramadan)");
+          if (m === 10 && d === 1) customHolidays.push("Eid ul-Fitr");
+          if (m === 12 && d === 9) customHolidays.push("Day of Arafah (9 Zilhaj)");
+          if (m === 12 && d === 10) customHolidays.push("Eid ul-Adha");
+
           return {
             ...day,
-            hijri: mappedHijri,
+            hijri: {
+              ...mappedHijri,
+              holidays: Array.from(new Set([...(mappedHijri.holidays || []), ...customHolidays]))
+            },
           };
         });
 
