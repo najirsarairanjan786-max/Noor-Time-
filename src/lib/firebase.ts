@@ -7,8 +7,11 @@ import firebaseConfig from '../../firebase-applet-config.json';
 setLogLevel('silent');
 
 const app = initializeApp(firebaseConfig);
-export const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()}),
-  databaseId: firebaseConfig.firestoreDatabaseId || '(default)'
-});
+export const db = initializeFirestore(
+  app,
+  {
+    localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()}),
+  },
+  firebaseConfig.firestoreDatabaseId || '(default)'
+);
 export const auth = getAuth();

@@ -9,7 +9,7 @@ import {
   addMonths,
   subMonths,
 } from "date-fns";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, CalendarDays } from "lucide-react";
 import { cn } from "../lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { useSettings } from "../hooks/useSettings";
@@ -28,6 +28,7 @@ interface CalendarDayInfo {
 export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<ViewType>> }) {
   const { settings } = useSettings();
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<string | null>(format(new Date(), "dd-MM-yyyy"));
   const [calendarData, setCalendarData] = useState<CalendarDayInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<{
@@ -45,10 +46,34 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
         const prev = subMonths(currentDate, 1);
         const next = addMonths(currentDate, 1);
 
-        const fetchReq = (d: Date) =>
-          fetch(
-            `https://api.aladhan.com/v1/gToHCalendar/${d.getMonth() + 1}/${d.getFullYear()}`,
-          ).then((r) => r.json());
+        const fetchReq = async (d: Date) => {
+          const m = d.getMonth() + 1;
+          const y = d.getFullYear();
+          const cacheKey = `calendar_${m}_${y}`;
+          
+          if (typeof window !== 'undefined') {
+            const cached = localStorage.getItem(cacheKey);
+            if (cached) {
+              try {
+                return JSON.parse(cached);
+              } catch(e) {}
+            }
+          }
+          try {
+            const r = await fetch(`https://api.aladhan.com/v1/gToHCalendar/${m}/${y}`);
+            const data = await r.json();
+            if (typeof window !== 'undefined' && data) {
+              localStorage.setItem(cacheKey, JSON.stringify(data));
+            }
+            return data;
+          } catch(err) {
+            if (typeof window !== 'undefined') {
+              const cached = localStorage.getItem(cacheKey);
+              if (cached) return JSON.parse(cached);
+            }
+            throw err;
+          }
+        };
 
         const [prevData, currData, nextData] = await Promise.all([
           fetchReq(prev),
@@ -100,6 +125,10 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
 
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
   const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
+  const goToToday = () => {
+    setCurrentDate(new Date());
+    setSelectedDate(format(new Date(), "dd-MM-yyyy"));
+  };
 
   // Determine grid padding
   const startDayOfMonth = getDay(startOfMonth(currentDate)); // 0 = Sun, 1 = Mon
@@ -112,18 +141,27 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
       exit={{ opacity: 0, y: -20 }}
       className="pb-24 px-4 pt-20 max-w-3xl w-full mx-auto min-h-[100dvh] flex flex-col justify-center relative"
     >
-      <button 
-        onClick={() => setView('home')}
-        className="absolute top-4 left-4 p-2 bg-pink-900/50 hover:bg-pink-800/80 rounded-full text-pink-100 transition-colors z-10 flex items-center gap-2"
-      >
-        <ChevronLeft className="w-6 h-6" />
-        <span className="text-sm font-medium pr-1">Back</span>
-      </button>
+      <div className="absolute top-4 left-4 right-4 flex justify-between items-center z-10">
+        <button 
+          onClick={() => setView('home')}
+          className="p-2 bg-pink-900/50 hover:bg-pink-800/80 rounded-full text-pink-100 transition-colors flex items-center gap-2"
+        >
+          <ChevronLeft className="w-6 h-6" />
+          <span className="text-sm font-medium pr-1">Back</span>
+        </button>
+        <button
+          onClick={goToToday}
+          className="p-2 bg-pink-900/50 hover:bg-pink-800/80 rounded-full text-pink-100 transition-colors flex items-center gap-2 pl-3 pr-4"
+        >
+          <CalendarIcon className="w-4 h-4" />
+          <span className="text-sm font-medium">Today</span>
+        </button>
+      </div>
 
       <div className="flex items-center justify-between mb-8 bg-pink-900/60 backdrop-blur-lg border border-pink-500/20 shadow-2xl rounded-2xl p-4 relative">
         <button
           onClick={prevMonth}
-          className="p-2 bg-pink-800/40 rounded-full hover:bg-pink-700/50 transition"
+          className="p-2 bg-pink-800/40 rounded-full hover:bg-pink-700/50 transition focus:outline-none focus:ring-2 focus:ring-pink-500/50"
         >
           <ChevronLeft className="w-6 h-6 text-pink-200" />
         </button>
@@ -149,7 +187,7 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
         </div>
         <button
           onClick={nextMonth}
-          className="p-2 bg-pink-800/40 rounded-full hover:bg-pink-700/50 transition"
+          className="p-2 bg-pink-800/40 rounded-full hover:bg-pink-700/50 transition focus:outline-none focus:ring-2 focus:ring-pink-500/50"
         >
           <ChevronRight className="w-6 h-6 text-pink-200" />
         </button>
@@ -189,6 +227,7 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
           {calendarData.map((day, idx) => {
             const isToday =
               day.gregorian.date === format(new Date(), "dd-MM-yyyy");
+            const isSelected = selectedDate === day.gregorian.date;
             const hasEvents = day.hijri.holidays.length > 0;
             const arabicHijriDay = day.hijri.day
               .toString()
@@ -199,26 +238,30 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
             return (
               <div
                 key={day.gregorian.date}
-                onClick={() =>
-                  hasEvents &&
-                  setSelectedEvent({
-                    date: day.gregorian.date,
-                    events: day.hijri.holidays,
-                  })
-                }
+                onClick={() => {
+                  setSelectedDate(day.gregorian.date);
+                  if (hasEvents) {
+                    setSelectedEvent({
+                      date: day.gregorian.date,
+                      events: day.hijri.holidays,
+                    });
+                  }
+                }}
                 className={cn(
                   "aspect-square p-1 md:p-2 flex flex-col items-center justify-center rounded-xl relative cursor-pointer transition-all",
                   isToday
                     ? "bg-pink-500/80 text-white shadow-md border border-pink-400/50"
+                    : isSelected 
+                    ? "bg-pink-400/40 text-pink-50 shadow-sm border border-pink-300/60"
                     : "hover:bg-pink-800/50 bg-pink-900/20 text-pink-100",
-                  hasEvents && !isToday && "border border-pink-400/30",
+                  hasEvents && !isToday && !isSelected && "border border-pink-400/30",
                 )}
               >
                 <div className="absolute top-1 left-1 md:top-1.5 md:left-1.5 leading-none">
                   <span
                     className={cn(
                       "text-[9px] md:text-xs font-sans opacity-70",
-                      isToday ? "opacity-100 text-white" : "text-pink-200"
+                      isToday || isSelected ? "opacity-100 text-white" : "text-pink-200"
                     )}
                   >
                     {day.gregorian.day}
@@ -228,7 +271,7 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
                   <span
                     className={cn(
                       "text-lg md:text-2xl font-arabic leading-none",
-                      isToday ? "font-bold text-white text-shadow" : "text-pink-50"
+                      isToday || isSelected ? "font-bold text-white text-shadow" : "text-pink-50"
                     )}
                   >
                     {arabicHijriDay}
@@ -236,8 +279,8 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
                 </div>
                 {hasEvents && (
                   <>
-                    <div className="absolute top-1 right-1 w-1 h-1 md:w-1.5 md:h-1.5 bg-pink-300 rounded-full animate-pulse"></div>
-                    <span className="absolute bottom-0 text-[8px] md:text-[10px] text-pink-200 truncate w-full text-center px-0.5 leading-none">
+                    <div className={cn("absolute top-1 right-1 w-1 h-1 md:w-1.5 md:h-1.5 rounded-full animate-pulse", isToday ? "bg-white" : "bg-pink-300")}></div>
+                    <span className={cn("absolute bottom-0 text-[8px] md:text-[10px] truncate w-full text-center px-0.5 leading-none", isToday ? "text-pink-100" : "text-pink-200")}>
                       {day.hijri.holidays[0]}
                     </span>
                   </>
@@ -247,9 +290,69 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
           })}
         </div>
       </div>
+      
+      {/* Selected Date Details Panel */}
+      {selectedDate && calendarData.find(d => d.gregorian.date === selectedDate) && (() => {
+        const d = calendarData.find(d => d.gregorian.date === selectedDate)!;
+        const arabicHijriDay = d.hijri.day
+          .toString()
+          .split("")
+          .map((n) => "۰۱۲۳۴۵۶۷۸۹"[parseInt(n)])
+          .join("");
+        const arabicHijriYear = d.hijri.year
+          .toString()
+          .split("")
+          .map((n) => "۰۱۲۳۴۵۶۷۸۹"[parseInt(n)])
+          .join("");
+          
+        return (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-6 bg-pink-900/40 backdrop-blur-md rounded-2xl p-5 border border-pink-500/20 shadow-lg w-full max-w-lg mx-auto"
+          >
+            <div className="flex justify-between items-center border-b border-pink-500/20 pb-4 mb-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-pink-500/20 text-pink-200 p-2.5 rounded-xl border border-pink-500/30">
+                  <CalendarDays className="w-6 h-6" />
+                </div>
+                <div>
+                  <h4 className="text-white font-medium text-lg tracking-tight">
+                    {d.gregorian.day} {d.gregorian.month.en} {d.gregorian.date.split("-")[2]}
+                  </h4>
+                  <p className="text-pink-300/80 text-sm">{d.hijri.day} {d.hijri.month.en} {d.hijri.year}</p>
+                </div>
+              </div>
+              
+              <div className="text-right" dir="rtl">
+                <h4 className="text-pink-50 font-arabic font-bold text-2xl">
+                  {arabicHijriDay} {d.hijri.month.ar}
+                </h4>
+                <p className="text-pink-300/80 font-arabic text-sm">{arabicHijriYear} ہجری</p>
+              </div>
+            </div>
+            
+            {d.hijri.holidays.length > 0 ? (
+               <div className="flex flex-col gap-2">
+                 <span className="text-xs text-pink-300 uppercase tracking-widest font-bold">Events on this day</span>
+                 {d.hijri.holidays.map((h, i) => (
+                   <span
+                     key={i}
+                     className="text-white text-sm bg-pink-500/80 border border-pink-400/50 px-4 py-2.5 rounded-xl flex items-center shadow-sm"
+                   >
+                     {h}
+                   </span>
+                 ))}
+               </div>
+            ) : (
+               <p className="text-pink-200/50 text-sm italic">No special Islamic events on this day.</p>
+            )}
+          </motion.div>
+        );
+      })()}
 
-      <div className="mt-6 mb-8 w-full max-w-lg mx-auto">
-        <h3 className="text-xl font-bold text-white mb-4 px-2 text-center">Islamic Events</h3>
+      <div className="mt-8 mb-8 w-full max-w-lg mx-auto">
+        <h3 className="text-xl font-bold text-white mb-4 px-2 text-center">Month's Events</h3>
         <div className="space-y-3">
           {calendarData
             .filter((day) => day.hijri.holidays.length > 0)
@@ -268,7 +371,9 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
               return (
                 <div
                   key={`event-list-${day.gregorian.date}`}
-                  className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 flex flex-col gap-3 shadow-lg"
+                  onClick={() => setSelectedDate(day.gregorian.date)}
+                  className={cn("bg-white/10 backdrop-blur-md rounded-2xl p-4 border flex flex-col gap-3 shadow-lg cursor-pointer transition-colors", 
+                    selectedDate === day.gregorian.date ? "border-pink-400 bg-white/20" : "border-white/20 hover:bg-white/15")}
                 >
                   <div className="flex justify-between items-center text-sm">
                     <span className="font-medium text-pink-100 bg-black/20 px-3 py-1.5 rounded-lg whitespace-nowrap">

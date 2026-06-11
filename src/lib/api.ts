@@ -43,14 +43,62 @@ export interface AladhanResponse {
 
 export async function fetchPayerTimes(lat: number, lng: number, method: number = 1, school: number = 1): Promise<AladhanResponse['data']> {
   const dateStr = format(new Date(), 'dd-MM-yyyy');
-  const response = await fetch(`https://api.aladhan.com/v1/timings/${dateStr}?latitude=${lat}&longitude=${lng}&method=${method}&school=${school}`);
-  const data = await response.json();
-  return data.data;
+  const cacheKey = `prayer_times_${dateStr}_${lat}_${lng}_${method}_${school}`;
+  
+  if (typeof window !== 'undefined') {
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        return JSON.parse(cached);
+      } catch (e) {
+        console.error("Failed to parse cached prayer times", e);
+      }
+    }
+  }
+
+  try {
+    const response = await fetch(`https://api.aladhan.com/v1/timings/${dateStr}?latitude=${lat}&longitude=${lng}&method=${method}&school=${school}`);
+    const data = await response.json();
+    if (typeof window !== 'undefined' && data?.data) {
+      localStorage.setItem(cacheKey, JSON.stringify(data.data));
+    }
+    return data.data;
+  } catch (err) {
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) return JSON.parse(cached);
+    }
+    throw err;
+  }
 }
 
 export async function fetchHijriDate(date: Date): Promise<HijriDateInfo> {
   const dateStr = format(date, 'dd-MM-yyyy');
-  const response = await fetch(`https://api.aladhan.com/v1/gToH/${dateStr}`);
-  const data = await response.json();
-  return data.data.hijri;
+  const cacheKey = `hijri_date_${dateStr}`;
+  
+  if (typeof window !== 'undefined') {
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        return JSON.parse(cached);
+      } catch (e) {
+        console.error("Failed to parse cached hijri date", e);
+      }
+    }
+  }
+
+  try {
+    const response = await fetch(`https://api.aladhan.com/v1/gToH/${dateStr}`);
+    const data = await response.json();
+    if (typeof window !== 'undefined' && data?.data?.hijri) {
+      localStorage.setItem(cacheKey, JSON.stringify(data.data.hijri));
+    }
+    return data.data.hijri;
+  } catch (err) {
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) return JSON.parse(cached);
+    }
+    throw err;
+  }
 }

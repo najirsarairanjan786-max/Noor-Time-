@@ -13,13 +13,13 @@ export function useAlarmSystem(timings: PrayerTimings | null) {
   const lastAlarmTime = useRef<string | null>(null);
 
   useEffect(() => {
-    // Request permission
-    if (typeof window !== 'undefined' && 'Notification' in window) {
+    // Request permission if enabled
+    if (settings.pushNotificationsEnabled && typeof window !== 'undefined' && 'Notification' in window) {
       if (Notification.permission === 'default') {
         Notification.requestPermission();
       }
     }
-  }, []);
+  }, [settings.pushNotificationsEnabled]);
 
   useEffect(() => {
     if (!settings.alarmsEnabled || !timings) return;
@@ -78,7 +78,7 @@ export function useAlarmSystem(timings: PrayerTimings | null) {
     }
 
     // Notification
-    if ('Notification' in window && Notification.permission === 'granted') {
+    if (settings.pushNotificationsEnabled && 'Notification' in window && Notification.permission === 'granted') {
       new Notification(`🕌 ${prayerName} Prayer`, {
         body: message,
         icon: '/icon-192.png' // Make sure you have this in real PWA
@@ -97,6 +97,7 @@ export function useAlarmSystem(timings: PrayerTimings | null) {
         'azan-medina': 'https://media.blubrry.com/muslim_central_quran/podcasts.qurancentral.com/madinah-adhan/Madinah-Adhan-01.mp3',
         'azan-al-aqsa': 'https://archive.org/download/AdhanAlAqsa/Adhan%20Al%20Aqsa.mp3',
         'azan-mishary': 'https://archive.org/download/AdhanMishary/Adhan%20Mishary.mp3',
+        'azan-abdul-basit': 'https://archive.org/download/AdhanAbdulBasit/Adhan%20Abdul%20Basit.mp3',
       };
       
       if (!isPreAlarm) {

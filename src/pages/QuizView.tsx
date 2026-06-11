@@ -9,7 +9,7 @@ interface QuizViewProps {
   key?: string;
 }
 
-const QUESTIONS = [
+export const QUESTIONS = [
   {
     questionEn: "What is the very first pillar of Islam?",
     questionHi: "इस्लाम का सबसे पहला स्तंभ क्या है?",
@@ -181,10 +181,14 @@ const QUESTIONS = [
 ];
 
 export function QuizView({ setView }: QuizViewProps) {
+  const [shuffledQuestions, setShuffledQuestions] = useState(() => {
+    return [...QUESTIONS].sort(() => Math.random() - 0.5).slice(0, 10);
+  });
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
-  const [score, setScore] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
+  const [wrongCount, setWrongCount] = useState(0);
 
   const handleOptionSelect = (index: number) => {
     if (showResult) return;
@@ -192,13 +196,15 @@ export function QuizView({ setView }: QuizViewProps) {
     setSelectedOption(index);
     setShowResult(true);
 
-    if (index === QUESTIONS[currentQuestion].correctIndex) {
-      setScore(s => s + 1);
+    if (index === shuffledQuestions[currentQuestion].correctIndex) {
+      setCorrectCount(c => c + 1);
+    } else {
+      setWrongCount(w => w + 1);
     }
   };
 
   const handleNext = () => {
-    if (currentQuestion < QUESTIONS.length - 1) {
+    if (currentQuestion < shuffledQuestions.length - 1) {
       setCurrentQuestion(c => c + 1);
       setSelectedOption(null);
       setShowResult(false);
@@ -209,13 +215,16 @@ export function QuizView({ setView }: QuizViewProps) {
   };
 
   const resetQuiz = () => {
+    setShuffledQuestions([...QUESTIONS].sort(() => Math.random() - 0.5).slice(0, 10));
     setCurrentQuestion(0);
     setSelectedOption(null);
     setShowResult(false);
-    setScore(0);
+    setCorrectCount(0);
+    setWrongCount(0);
   };
 
-  const isCompleted = currentQuestion >= QUESTIONS.length;
+  const isCompleted = currentQuestion >= shuffledQuestions.length;
+  const totalPoints = correctCount * 10;
 
   return (
     <motion.div
@@ -241,12 +250,25 @@ export function QuizView({ setView }: QuizViewProps) {
               <span className="text-4xl">🌟</span>
             </div>
             <h2 className="text-2xl font-bold text-slate-800 mb-2">Quiz Completed!</h2>
-            <p className="text-slate-600 mb-8">
-              Your score: <span className="font-bold text-emerald-600">{score}</span> out of {QUESTIONS.length}
-            </p>
+            
+            <div className="flex flex-col gap-3 w-full max-w-xs mx-auto mb-8">
+              <div className="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <span className="font-semibold text-slate-600">Correct Answers:</span>
+                <span className="font-bold text-emerald-600 text-lg">{correctCount}</span>
+              </div>
+              <div className="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <span className="font-semibold text-slate-600">Wrong Answers:</span>
+                <span className="font-bold text-rose-600 text-lg">{wrongCount}</span>
+              </div>
+              <div className="flex justify-between items-center bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
+                <span className="font-bold text-emerald-800">Total Rewards:</span>
+                <span className="font-bold text-emerald-600 text-xl">{totalPoints} Points</span>
+              </div>
+            </div>
+
             <button 
               onClick={resetQuiz}
-              className="bg-emerald-600 text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:bg-emerald-700 active:scale-95 transition-all"
+              className="bg-emerald-600 text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:bg-emerald-700 active:scale-95 transition-all w-full max-w-xs"
             >
               Play Again
             </button>
@@ -255,29 +277,29 @@ export function QuizView({ setView }: QuizViewProps) {
           <div className="flex flex-col h-full">
             <div className="flex justify-between items-center mb-6">
               <span className="text-emerald-600 font-bold text-sm bg-emerald-50 px-3 py-1 rounded-full">
-                Question {currentQuestion + 1}/{QUESTIONS.length}
+                Question {currentQuestion + 1}/{shuffledQuestions.length}
               </span>
-              <span className="text-slate-500 font-medium text-sm">
-                Score: {score}
+              <span className="text-emerald-700 font-bold text-sm bg-emerald-50 px-3 py-1 rounded-full">
+                Rewards: {totalPoints}
               </span>
             </div>
 
             <div className="mb-8 space-y-3">
               <h2 className="text-[19px] leading-snug font-bold text-slate-800">
-                {QUESTIONS[currentQuestion].questionEn}
+                {shuffledQuestions[currentQuestion].questionEn}
               </h2>
               <h2 className="text-[18px] leading-snug font-semibold text-slate-700">
-                {QUESTIONS[currentQuestion].questionHi}
+                {shuffledQuestions[currentQuestion].questionHi}
               </h2>
               <h2 className="text-[22px] leading-snug font-arabic font-bold text-slate-800 text-right">
-                {QUESTIONS[currentQuestion].questionAr}
+                {shuffledQuestions[currentQuestion].questionAr}
               </h2>
             </div>
 
             <div className="flex flex-col gap-3">
-              {QUESTIONS[currentQuestion].options.map((option, index) => {
+              {shuffledQuestions[currentQuestion].options.map((option, index) => {
                 const isSelected = selectedOption === index;
-                const isCorrect = index === QUESTIONS[currentQuestion].correctIndex;
+                const isCorrect = index === shuffledQuestions[currentQuestion].correctIndex;
                 const showCorrect = showResult && isCorrect;
                 const showWrong = showResult && isSelected && !isCorrect;
 
@@ -326,7 +348,7 @@ export function QuizView({ setView }: QuizViewProps) {
                   onClick={handleNext}
                   className="bg-emerald-600 text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:bg-emerald-700 active:scale-95 transition-all w-full sm:w-auto"
                 >
-                  {currentQuestion === QUESTIONS.length - 1 ? 'Finish' : 'Next Question'}
+                  {currentQuestion === shuffledQuestions.length - 1 ? 'Finish' : 'Next Question'}
                 </button>
               </motion.div>
             )}

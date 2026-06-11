@@ -6,6 +6,9 @@ import { PrayerDetails } from './pages/PrayerDetails';
 import { FeatureView } from './pages/FeatureView';
 import { QuranView } from './pages/QuranView';
 import { QuizView } from './pages/QuizView';
+import { HadeesView } from './pages/HadeesView';
+import { TajweedView } from './pages/TajweedView';
+import { AdhkarView } from './pages/AdhkarView';
 import { QiblaDirectionView } from './pages/QiblaDirectionView';
 import { LanguagesView } from './pages/LanguagesView';
 import { DonateView } from './pages/DonateView';
@@ -13,13 +16,14 @@ import { ShareView } from './pages/ShareView';
 import { DailyView } from './pages/DailyView';
 import { TasbeehView } from './pages/TasbeehView';
 import { Home2 } from './pages/Home2';
+import { ProfileView } from './pages/ProfileView';
 import { Navigation } from './components/Navigation';
 import { LocationPrompt } from './components/LocationPrompt';
 import { AnimatePresence } from 'motion/react';
 import { useSettings } from './hooks/useSettings';
 import { useDataSync } from './hooks/useDataSync';
 
-export type ViewType = 'home' | 'home2' | 'calendar' | 'settings' | 'prayer' | 'Quran' | 'Question & Answer' | 'qibla' | 'languages' | 'donate' | 'share' | 'daily' | 'tasbeeh' | string;
+export type ViewType = 'home' | 'home2' | 'calendar' | 'settings' | 'prayer' | 'Quran' | 'Question & Answer' | 'Hadees' | 'Tajweed' | 'Adhkar' | 'qibla' | 'languages' | 'donate' | 'share' | 'daily' | 'tasbeeh' | 'profile' | string;
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewType>('home');
@@ -27,11 +31,18 @@ export default function App() {
   useDataSync();
 
   useEffect(() => {
+    document.documentElement.classList.add('theme-transition');
     document.documentElement.setAttribute('data-theme', settings.theme);
+    
+    const timeout = setTimeout(() => {
+      document.documentElement.classList.remove('theme-transition');
+    }, 400);
+
+    return () => clearTimeout(timeout);
   }, [settings.theme]);
 
   // Standard views
-  const standardViews = ['home', 'home2', 'calendar', 'settings', 'prayer', 'Quran', 'Question & Answer', 'qibla', 'languages', 'donate', 'share', 'daily', 'tasbeeh'];
+  const standardViews = ['home', 'home2', 'calendar', 'settings', 'prayer', 'Quran', 'Question & Answer', 'Hadees', 'Tajweed', 'Adhkar', 'qibla', 'languages', 'donate', 'share', 'daily', 'tasbeeh', 'profile'];
   const isFeatureView = !standardViews.includes(currentView);
 
   return (
@@ -48,6 +59,9 @@ export default function App() {
           {currentView === 'settings' && <SettingsView setView={setCurrentView} />}
           {currentView === 'prayer' && <PrayerDetails setView={setCurrentView} />}
           {currentView === 'Quran' && <QuranView setView={setCurrentView} />}
+          {currentView === 'Hadees' && <HadeesView setView={setCurrentView} />}
+          {currentView === 'Tajweed' && <TajweedView setView={setCurrentView} />}
+          {currentView === 'Adhkar' && <AdhkarView setView={setCurrentView} />}
           {currentView === 'Question & Answer' && <QuizView setView={setCurrentView} />}
           {currentView === 'qibla' && <QiblaDirectionView setView={setCurrentView} />}
           {currentView === 'languages' && <LanguagesView setView={setCurrentView} />}
@@ -55,6 +69,7 @@ export default function App() {
           {currentView === 'share' && <ShareView setView={setCurrentView} />}
           {currentView === 'daily' && <DailyView setView={setCurrentView} />}
           {currentView === 'tasbeeh' && <TasbeehView setView={setCurrentView} />}
+          {currentView === 'profile' && <ProfileView setView={setCurrentView} />}
           {isFeatureView && <FeatureView title={currentView} setView={setCurrentView} />}
         </AnimatePresence>
 

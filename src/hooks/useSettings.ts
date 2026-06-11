@@ -11,10 +11,11 @@ export interface AppSettings {
   alarmsEnabled: boolean;
   fontSize: "small" | "medium" | "large";
   preAlarmMinutes: number;
-  alarmSound: "beep" | "azan-mecca" | "azan-medina" | "chime" | "azan-al-aqsa" | "azan-mishary";
+  alarmSound: "beep" | "azan-mecca" | "azan-medina" | "chime" | "azan-al-aqsa" | "azan-mishary" | "azan-abdul-basit";
   hijriOffset: number;
   customTimings: Record<string, string>;
   silentMode: boolean;
+  pushNotificationsEnabled: boolean;
   customAlarms: Record<string, string>;
   prayerAlarmSounds: Record<string, string>;
 }
@@ -35,6 +36,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   hijriOffset: 0,
   customTimings: {},
   silentMode: false,
+  pushNotificationsEnabled: true,
   customAlarms: {},
 };
 

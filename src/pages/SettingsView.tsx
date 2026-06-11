@@ -151,12 +151,25 @@ export function SettingsView({ setView }: { setView: Dispatch<SetStateAction<Vie
 
         {settings.alarmsEnabled && (
           <>
+            <div className="p-4 flex items-center justify-between border-b border-emerald-800/40 bg-emerald-900/10">
+              <div className="flex items-center gap-3 text-emerald-100 ml-8">
+                <div className="font-medium text-sm">Push Notifications</div>
+              </div>
+              <button 
+                onClick={() => setSettings(p => ({ ...p, pushNotificationsEnabled: !p.pushNotificationsEnabled }))}
+                className={`w-12 h-6 rounded-full transition-colors relative ${settings.pushNotificationsEnabled ? 'bg-emerald-500' : 'bg-emerald-900'}`}
+              >
+                <div className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-all ${settings.pushNotificationsEnabled ? 'left-7' : 'left-1'}`}></div>
+              </button>
+            </div>
+
             <div className="p-4 flex flex-col gap-2 border-b border-emerald-800/40 bg-emerald-900/10">
               <button
                 onClick={() => {
                   if ('Notification' in window) {
                     Notification.requestPermission().then(permission => {
                       if (permission === 'granted') {
+                        setSettings(p => ({ ...p, pushNotificationsEnabled: true }));
                         new Notification("Notifications Active", {
                           body: "Prayer alerts are working perfectly.",
                           icon: "/icon-192.png"
@@ -196,6 +209,7 @@ export function SettingsView({ setView }: { setView: Dispatch<SetStateAction<Vie
                 <option value="azan-medina">Madinah Adhan</option>
                 <option value="azan-al-aqsa">Al-Aqsa Adhan</option>
                 <option value="azan-mishary">Mishary Adhan</option>
+                <option value="azan-abdul-basit">Abdul Basit Adhan</option>
               </select>
             </div>
 
@@ -239,6 +253,7 @@ export function SettingsView({ setView }: { setView: Dispatch<SetStateAction<Vie
                     <option value="azan-medina">Madinah Adhan</option>
                     <option value="azan-al-aqsa">Al-Aqsa Adhan</option>
                     <option value="azan-mishary">Mishary Adhan</option>
+                    <option value="azan-abdul-basit">Abdul Basit Adhan</option>
                   </select>
                 </div>
               ))}
@@ -365,8 +380,11 @@ export function SettingsView({ setView }: { setView: Dispatch<SetStateAction<Vie
           <div className="bg-emerald-950/50 p-3 rounded-lg border border-emerald-800/50">
             {user ? (
               <div className="flex flex-col gap-3">
-                <p className="text-xs text-emerald-300 font-medium">Logged in as {user.email}</p>
+                <p className="text-xs text-emerald-300 font-medium">Logged in as {user.displayName || user.email}</p>
                 <div className="flex gap-2">
+                   <button onClick={() => setView('profile')} className="py-2 px-4 bg-emerald-600 text-white text-xs font-semibold rounded hover:bg-emerald-500 transition-colors shadow-md shadow-emerald-900/20 flex-1">
+                     Manage Profile
+                   </button>
                    <button onClick={logOut} className="py-2 px-4 bg-emerald-900/50 text-red-400 text-xs font-semibold rounded hover:bg-red-900/30 hover:text-red-300 transition-colors border border-red-500/10 flex-1">
                      Sign Out
                    </button>
@@ -378,10 +396,10 @@ export function SettingsView({ setView }: { setView: Dispatch<SetStateAction<Vie
                   Sign in to seamlessly synchronize your app preferences, alarms, and daily trackers across multiple devices via Firebase.
                 </p>
                 <button 
-                  onClick={signIn} 
+                  onClick={() => setView('profile')} 
                   className="py-2 px-4 bg-emerald-600 text-white text-xs font-bold rounded-lg overflow-hidden hover:bg-emerald-500 transition-colors shadow-md shadow-emerald-900/20 w-full"
                 >
-                  Sign in with Google
+                  Sign In
                 </button>
               </div>
             )}

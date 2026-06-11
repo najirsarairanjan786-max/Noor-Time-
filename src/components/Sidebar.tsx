@@ -73,7 +73,7 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm z-[100]"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
           />
           
           {/* Drawer */}
@@ -82,7 +82,7 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="absolute top-0 left-0 bottom-0 w-[80%] max-w-[320px] bg-emerald-950 z-[101] overflow-hidden flex flex-col shadow-2xl rounded-r-3xl border-r border-white/10 relative"
+            className="fixed top-0 left-0 bottom-0 w-[80%] max-w-[320px] bg-emerald-950 z-[101] overflow-hidden flex flex-col shadow-2xl rounded-r-3xl border-r border-white/10"
           >
             {/* Background Image */}
             <div 
@@ -105,18 +105,13 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
                 <span className="text-sm font-medium pr-2">Back</span>
               </button>
 
-              <div className="flex flex-col gap-1 w-full pl-1">
+              <div className="flex flex-col gap-1 w-full pl-1 mt-2">
                 <h2 className="text-2xl font-bold text-white tracking-wide">PrayerTimes</h2>
-                {user ? (
-                  <button onClick={logOut} className="text-xs font-semibold text-emerald-200 text-left hover:text-white transition-colors mt-1">Sign Out ({user.displayName || user.email})</button>
-                ) : (
-                  <button onClick={signIn} className="text-xs font-semibold text-emerald-200 text-left hover:text-white border border-emerald-500/30 px-3 py-1.5 rounded-lg transition-colors w-max bg-emerald-800/30 mt-1">Sign In with Google</button>
-                )}
               </div>
             </div>
             
             {/* Menu List */}
-            <div className="flex-1 overflow-y-auto py-4 pl-4 pr-2 custom-scrollbar pb-24 relative z-10">
+            <div className="flex-1 overflow-y-auto py-4 pl-4 pr-2 custom-scrollbar pb-24 relative z-10 w-full h-full">
               <div className="space-y-1">
                 {menuItems.map((item, index) => (
                   <button 
@@ -145,7 +140,7 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 20 }}
-                  className="absolute bottom-8 left-4 right-4 bg-emerald-800 text-white shadow-xl rounded-xl p-3 text-sm text-center font-medium border border-emerald-600/50"
+                  className="absolute bottom-8 left-4 right-4 bg-emerald-800 text-white shadow-xl rounded-xl p-3 text-sm text-center font-medium border border-emerald-600/50 z-20"
                 >
                   {toastMsg}
                 </motion.div>

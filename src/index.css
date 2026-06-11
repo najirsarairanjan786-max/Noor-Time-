@@ -19,6 +19,15 @@
   --color-white: var(--color-white-override, #ffffff);
 }
 
+.theme-transition,
+.theme-transition *,
+.theme-transition ::before,
+.theme-transition ::after {
+  transition-property: background-color, border-color, color, fill, stroke, text-decoration-color, box-shadow !important;
+  transition-duration: 400ms !important;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
 :root[data-theme="light"] {
   /* Invert all emerald utilities for light mode */
   --em-50: #064e3b;
