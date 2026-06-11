@@ -39,6 +39,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.warn("Sign-in popup closed by user");
         return;
       }
+      if (error?.message?.toLowerCase().includes('invalid') || error?.message?.toLowerCase().includes('popup')) {
+        alert("Login is restricted in this preview window. Please open the app in a new tab (using the arrow icon at the top right) to use Google Login.");
+      }
       if (error?.code === 'auth/network-request-failed') {
         alert("Network Error: Please ensure you are not using a brave shield or adblocker that blocks the login popup, and check your connection.");
       }

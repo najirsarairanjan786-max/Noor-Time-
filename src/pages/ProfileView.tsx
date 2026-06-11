@@ -119,7 +119,11 @@ export function ProfileView({ setView }: { setView: (view: string) => void }) {
       const provider = new FacebookAuthProvider();
       await signInWithPopup(auth, provider, browserPopupRedirectResolver);
     } catch (err: any) {
-      setError(err.message);
+      if (err.message.toLowerCase().includes('invalid') || err.message.toLowerCase().includes('popup')) {
+        setError('Login restricted in preview. Please open the app in a new tab.');
+      } else {
+        setError(err.message);
+      }
     } finally {
       setLoading(false);
     }
