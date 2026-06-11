@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, FormEvent } from 'react';
 import { motion } from 'motion/react';
 import { ArrowLeft, Mail, Phone, Facebook, LogOut, Camera, UserCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, FacebookAuthProvider, signInWithPopup } from 'firebase/auth';
+import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, FacebookAuthProvider, signInWithPopup, browserPopupRedirectResolver } from 'firebase/auth';
 
 export function ProfileView({ setView }: { setView: (view: string) => void }) {
   const { user, logOut, signIn } = useAuth();
@@ -63,13 +63,33 @@ export function ProfileView({ setView }: { setView: (view: string) => void }) {
     e.preventDefault();
     setLoading(true);
     setError('');
+    
+    let formattedPhone = phone.trim();
+    if (!formattedPhone.startsWith('+')) {
+      // Default to +91 (India) if no + is provided, since the user is communicating in Hindi
+      formattedPhone = '+91' + formattedPhone;
+    }
+    
     try {
       setupRecaptcha();
       const appVerifier = (window as any).recaptchaVerifier;
-      const confirmation = await signInWithPhoneNumber(auth, phone, appVerifier);
+      const confirmation = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
       setConfirmationResult(confirmation);
     } catch (err: any) {
-      setError(err.message);
+      if (err.message.includes('auth/invalid-phone-number')) {
+        setError('Invalid phone number. Ensure it has a country code (e.g. +91).');
+      } else if (err.message.includes('auth/unauthorized-domain')) {
+        setError('Domain not authorized. Please add *.run.app in your Firebase Console under Authentication settings.');
+      } else if (err.message.includes('popup')) {
+        setError('Popup blocked by browser or iframe. Open app in a new tab.');
+      } else {
+        setError(err.message);
+      }
+      // Reset recaptcha on error so user can try again
+      if ((window as any).recaptchaVerifier) {
+        (window as any).recaptchaVerifier.clear();
+        (window as any).recaptchaVerifier = null;
+      }
     } finally {
       setLoading(false);
     }
@@ -82,7 +102,11 @@ export function ProfileView({ setView }: { setView: (view: string) => void }) {
     try {
       await confirmationResult.confirm(otp);
     } catch (err: any) {
-      setError(err.message);
+      if (err.message.includes('auth/invalid-verification-code')) {
+        setError('Invalid OTP code. Please try again.');
+      } else {
+        setError(err.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -93,7 +117,7 @@ export function ProfileView({ setView }: { setView: (view: string) => void }) {
     setError('');
     try {
       const provider = new FacebookAuthProvider();
-      await signInWithPopup(auth, provider);
+      await signInWithPopup(auth, provider, browserPopupRedirectResolver);
     } catch (err: any) {
       setError(err.message);
     } finally {
