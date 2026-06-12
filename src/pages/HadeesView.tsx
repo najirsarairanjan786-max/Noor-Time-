@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, BookOpen, ChevronRight, ChevronLeft } from 'lucide-react';
+import { ArrowLeft, BookOpen, ChevronRight, ChevronLeft, Share2, Copy, Heart, Bookmark, Settings, List, Layers, ArrowRight, Search } from 'lucide-react';
 import { type ViewType } from '../App';
 import { SAHIH_BUKHARI_HADEES } from '../data/hadees';
 
@@ -8,157 +8,592 @@ interface HadeesViewProps {
   setView: (view: ViewType) => void;
 }
 
+// Grouping the hadiths for the list view
+const HADEES_CATEGORIES = [
+  {
+    id: 'iman',
+    titleUr: 'كتاب الإيمان (ایمان کا بیان)',
+    count: 2,
+    items: SAHIH_BUKHARI_HADEES.filter(h => h.category === 'Iman')
+  },
+  {
+    id: 'ilm',
+    titleUr: 'كتاب العلم (علم کا بیان)',
+    count: 1,
+    items: SAHIH_BUKHARI_HADEES.filter(h => h.category === 'Ilm')
+  },
+  {
+    id: 'quran',
+    titleUr: 'فضائل القرآن (قرآن کے فضائل)',
+    count: 1,
+    items: SAHIH_BUKHARI_HADEES.filter(h => h.category === 'Quran')
+  },
+  {
+    id: 'akhlaq',
+    titleUr: 'كتاب الأدب (ادب و اخلاق)',
+    count: 1,
+    items: SAHIH_BUKHARI_HADEES.filter(h => h.category === 'Akhlaq')
+  }
+];
+
 export function HadeesView({ setView }: HadeesViewProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [activeScreen, setActiveScreen] = useState<'list' | 'detail' | 'settings'>('list');
+  const [selectedHadeesIndex, setSelectedHadeesIndex] = useState(0);
+  const [activeTab, setActiveTab] = useState<'topics' | 'volumes'>('topics');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [keepAwake, setKeepAwake] = useState(false);
+  const [fontSize, setFontSize] = useState(24);
+  const [contentFont, setContentFont] = useState('Jameel Noori');
+  const [appFont, setAppFont] = useState('Jameel Noori');
+  const [bgColor, setBgColor] = useState('#fcfafd');
+  const [textColor, setTextColor] = useState('#1e293b');
+  
+  const [favorites, setFavorites] = useState<number[]>(() => {
+    try {
+      const saved = localStorage.getItem('favoriteHadees');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  const lowerQuery = searchQuery.trim().toLowerCase();
+  const matchesSearch = (item: any) => {
+    if (!lowerQuery) return true;
+    return (
+      item.chapterAr?.toLowerCase().includes(lowerQuery) ||
+      item.chapterEn?.toLowerCase().includes(lowerQuery) ||
+      item.textAr?.toLowerCase().includes(lowerQuery) ||
+      item.textEn?.toLowerCase().includes(lowerQuery) ||
+      item.textUr?.toLowerCase().includes(lowerQuery) ||
+      item.category?.toLowerCase().includes(lowerQuery)
+    );
+  };
+
+  const filteredFavorites = SAHIH_BUKHARI_HADEES.filter(h => favorites.includes(h.id) && matchesSearch(h));
+  const filteredCategories = HADEES_CATEGORIES.map(cat => ({
+    ...cat,
+    items: cat.items.filter(matchesSearch)
+  })).filter(cat => cat.items.length > 0);
+
+  const currentHadees = SAHIH_BUKHARI_HADEES[selectedHadeesIndex];
+  const isFavorite = currentHadees ? favorites.includes(currentHadees.id) : false;
+
+  const handleCopy = () => {
+    if (!currentHadees) return;
+    navigator.clipboard.writeText(`${currentHadees.textAr}\n\n${currentHadees.textEn}\n\n${currentHadees.book} - Hadith ${currentHadees.number}`);
+  };
+
+  const listContainerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const listItemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+  };
+
+  const toggleFavorite = () => {
+    if (!currentHadees) return;
+    setFavorites(prev => {
+      const isFav = prev.includes(currentHadees.id);
+      let newFavs = isFav ? prev.filter(id => id !== currentHadees.id) : [...prev, currentHadees.id];
+      localStorage.setItem('favoriteHadees', JSON.stringify(newFavs));
+      return newFavs;
+    });
+  };
+
+  const openHadees = (id: number) => {
+    const idx = SAHIH_BUKHARI_HADEES.findIndex(h => h.id === id);
+    if (idx !== -1) {
+      setSelectedHadeesIndex(idx);
+      setActiveScreen('detail');
+    }
+  };
 
   const nextHadees = () => {
-    setCurrentIndex((prev) => (prev + 1) % SAHIH_BUKHARI_HADEES.length);
+    setSelectedHadeesIndex(prev => (prev + 1) % SAHIH_BUKHARI_HADEES.length);
   };
 
   const prevHadees = () => {
-    setCurrentIndex((prev) => (prev - 1 + SAHIH_BUKHARI_HADEES.length) % SAHIH_BUKHARI_HADEES.length);
+    setSelectedHadeesIndex(prev => (prev - 1 + SAHIH_BUKHARI_HADEES.length) % SAHIH_BUKHARI_HADEES.length);
   };
 
-  const current = SAHIH_BUKHARI_HADEES[currentIndex];
-
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="pb-24 w-full min-h-screen relative overflow-hidden"
-    >
-      {/* 3D Animated Background */}
-      <div className="fixed inset-0 z-[-1] bg-[#0f172a] overflow-hidden">
-        <motion.div 
-          className="absolute inset-[-10%] bg-cover bg-center bg-no-repeat opacity-40 mix-blend-screen"
-          animate={{
-            rotate: [0, 2, 0, -2, 0],
-            scale: [1, 1.05, 1],
-          }}
-          transition={{ duration: 40, repeat: Infinity, ease: "easeInOut" }}
-          style={{
-            backgroundImage: 'url("https://images.unsplash.com/photo-1542816417-0983c9c9ad53?q=80&w=1200&auto=format&fit=crop")',
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0f172a]/90 via-[#0f172a]/60 to-[#0f172a]/95" />
-      </div>
-
-      <div className="pt-6 px-4 mb-4 flex items-center justify-between sticky top-0 z-20">
-        <button
-          onClick={() => setView('home')}
-          className="w-10 h-10 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center transition border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.1)] active:scale-95"
-        >
-          <ArrowLeft className="w-5 h-5 text-white" />
-        </button>
-        <div className="flex flex-col items-end">
-          <h1 className="text-xl font-bold text-white tracking-wide">صحيح البخاري</h1>
-          <p className="text-amber-400 text-xs font-medium tracking-widest uppercase">Sahih al-Bukhari</p>
-        </div>
-      </div>
-
-      <div className="px-4 max-w-lg mx-auto pb-8 pt-4 relative perspective-[1200px]">
-        {/* Animated Book Image */}
-        <motion.div 
-          className="w-full h-48 mb-6 relative rounded-3xl overflow-hidden shadow-2xl border border-white/10"
-          initial={{ rotateX: 15, rotateY: -10, y: 20, opacity: 0 }}
-          animate={{ rotateX: 0, rotateY: 0, y: 0, opacity: 1 }}
-          transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
-          style={{ transformStyle: 'preserve-3d' }}
-          whileHover={{ rotateY: 10, rotateX: -5, scale: 1.02 }}
-        >
-          <motion.div 
-            className="absolute inset-0 bg-cover bg-center"
-            animate={{ scale: [1, 1.1, 1] }}
-            transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
-            style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1585036156171-384164a8c675?q=80&w=800&auto=format&fit=crop")' }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-5">
-            <motion.div 
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <BookOpen className="w-4 h-4 text-amber-400" />
-                <span className="text-amber-400 font-bold text-sm tracking-uppercase tracking-wider">Chapter {current.number}</span>
-              </div>
-              <h2 className="text-white text-2xl font-bold font-arabic leading-tight drop-shadow-md">{current.chapterAr}</h2>
-              <p className="text-slate-300 text-sm font-medium">{current.chapterEn}</p>
-            </motion.div>
-          </div>
-        </motion.div>
-
-        {/* 3D Hadith Card */}
-        <AnimatePresence mode="wait">
+    <div className="w-full min-h-screen bg-slate-50 font-sans">
+      <AnimatePresence mode="wait">
+        {activeScreen === 'list' ? (
           <motion.div
-            key={current.id}
-            initial={{ opacity: 0, rotateY: 90, scale: 0.9 }}
-            animate={{ opacity: 1, rotateY: 0, scale: 1 }}
-            exit={{ opacity: 0, rotateY: -90, scale: 0.9 }}
-            transition={{ duration: 0.5, ease: "backOut" }}
-            className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 relative shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden"
-            style={{ transformStyle: 'preserve-3d' }}
+            key="list"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="pb-24"
           >
-            {/* Ambient inner glow */}
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent opacity-50 pointer-events-none" />
-            
-            <div className="relative z-10 space-y-6">
-              {/* Header */}
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                <div className="bg-amber-500/20 text-amber-300 px-3 py-1 rounded-full text-xs font-bold font-mono border border-amber-500/30">
-                  Hadith {current.number}
+            {/* Top Bar (Navy Blue) */}
+            <div className="bg-[#354458] text-white px-4 py-4 flex items-center justify-between shadow-md sticky top-0 z-20">
+              <div className="flex items-center gap-4">
+                <button onClick={() => setView('home')} className="p-1 active:scale-95 transition">
+                  <ArrowLeft className="w-6 h-6" />
+                </button>
+                <h1 className="text-xl font-bold tracking-wide">صحيح البخاري</h1>
+              </div>
+              <button onClick={() => setActiveScreen('settings')} className="p-1 active:scale-95 transition">
+                <Settings className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Header Banner */}
+            <div className="p-4">
+              <div className="bg-[#354458] rounded-xl p-4 relative overflow-hidden border-2 border-white shadow-lg">
+                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '16px 16px' }} />
+                
+                {/* White Center Card */}
+                <div className="bg-white rounded-lg p-4 text-center my-2 shadow-inner relative z-10">
+                  <h2 className="text-2xl font-bold font-arabic text-[#354458] mb-1">الجامع المسند الصحيح</h2>
+                  <h3 className="text-xl font-bold font-arabic text-[#354458]">معروف بـ صحيح البخاري</h3>
+                  <div className="bg-[#a3b8bc]/30 py-1 px-4 mt-2 inline-block rounded-full">
+                    <p className="text-sm font-arabic font-bold text-[#354458]">مؤلف: الإمام محمد بن إسماعيل البخاري</p>
+                  </div>
                 </div>
-                <div className="text-slate-400 italic text-sm">
-                  {current.narrator}
+
+                {/* Stats */}
+                <div className="flex justify-center gap-2 mt-4 relative z-10 font-arabic text-sm" dir="rtl">
+                  <span className="border border-white/40 text-white px-3 py-1 rounded-md bg-white/10 backdrop-blur-sm">كل احادیث: 7563</span>
+                  <span className="border border-white/40 text-white px-3 py-1 rounded-md bg-white/10 backdrop-blur-sm">كل ابواب: 97</span>
+                  <span className="border border-white/40 text-white px-3 py-1 rounded-md bg-white/10 backdrop-blur-sm">كل جلدیں: 9</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Search Bar */}
+            <div className="px-4 mb-4">
+              <div className="relative">
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <Search className="w-5 h-5 text-slate-400" />
+                </div>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="تلاش کریں / Search..."
+                  className="w-full bg-white border border-[#354458] rounded-full py-2.5 pl-4 pr-10 focus:outline-none focus:ring-2 focus:ring-[#354458]/50 shadow-sm font-arabic outline-none"
+                  dir="rtl"
+                />
+              </div>
+            </div>
+
+            {/* Tabs */}
+            <div className="px-4 mb-4 flex justify-center">
+              <div className="flex bg-white rounded-full border border-[#354458] overflow-hidden w-full max-w-md shadow-sm" dir="rtl">
+                <button
+                  onClick={() => setActiveTab('topics')}
+                  className={`flex-1 py-2 flex justify-center items-center gap-2 font-bold transition-colors ${activeTab === 'topics' ? 'bg-[#354458] text-white' : 'text-[#354458]'}`}
+                >
+                  <List className="w-5 h-5" />
+                  مضامین
+                </button>
+                <button
+                  onClick={() => setActiveTab('volumes')}
+                  className={`flex-1 py-2 flex justify-center items-center gap-2 font-bold transition-colors ${activeTab === 'volumes' ? 'bg-[#354458] text-white' : 'text-[#354458]'}`}
+                >
+                  <Layers className="w-5 h-5" />
+                  جلد
+                </button>
+                <button
+                  onClick={() => setActiveTab('favorites')}
+                  className={`flex-1 py-2 flex justify-center items-center gap-2 font-bold transition-colors ${activeTab === 'favorites' ? 'bg-[#354458] text-white' : 'text-[#354458]'}`}
+                >
+                  <Heart className="w-5 h-5" />
+                  محفوظ
+                </button>
+              </div>
+            </div>
+
+            {/* Main Category Header */}
+            {activeTab !== 'favorites' && (
+              <div className="px-4 mb-4">
+                <div className="bg-[#94a8b3] rounded-lg p-3 flex items-center justify-between shadow-sm" dir="rtl">
+                  <h3 className="font-arabic font-bold text-[#1f2937] text-lg">صحيح البخاري مقدمة</h3>
+                  <BookOpen className="w-6 h-6 text-[#1f2937]/70" />
+                </div>
+              </div>
+            )}
+
+            {/* List Content */}
+            <motion.div 
+              key={activeTab + searchQuery}
+              variants={listContainerVariants}
+              initial="hidden"
+              animate="visible"
+              className="px-4 pb-24 space-y-6"
+            >
+              {activeTab === 'favorites' ? (
+                favorites.length === 0 ? (
+                  <motion.div variants={listItemVariants} className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 text-center text-slate-500">
+                    <Heart className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+                    <p className="font-arabic">کوئی حدیث محفوظ نہیں کی گئی</p>
+                    <p className="text-sm mt-1">No saved Hadiths yet</p>
+                  </motion.div>
+                ) : filteredFavorites.length === 0 ? (
+                  <motion.div variants={listItemVariants} className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 text-center text-slate-500">
+                    <Search className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+                    <p className="font-arabic">کوئی نتیجہ نہیں ملا</p>
+                    <p className="text-sm mt-1">No results found</p>
+                  </motion.div>
+                ) : (
+                  <motion.div variants={listItemVariants} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div className="bg-[#354458] text-white px-4 py-3 flex items-center justify-between" dir="rtl">
+                      <span className="font-arabic font-bold text-lg">محفوظ احادیث (Saved)</span>
+                      <span className="border border-white/30 px-3 py-1 rounded-md text-sm font-arabic bg-white/10">{filteredFavorites.length}</span>
+                    </div>
+                    <div className="divide-y divide-slate-100 flex flex-col">
+                      {filteredFavorites.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => openHadees(item.id)}
+                          className="w-full text-right bg-[#fcfafd] hover:bg-slate-100 transition px-4 py-4 flex items-center justify-between group active:bg-slate-200"
+                          dir="rtl"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-600">
+                              <Heart className="w-4 h-4 fill-amber-500" />
+                            </div>
+                            <span className="font-arabic text-lg text-slate-800 font-medium group-hover:text-[#354458]">باب: {item.chapterAr}</span>
+                          </div>
+                          <div className="w-8 h-8 rounded-full bg-[#354458] flex items-center justify-center text-white shadow-sm">
+                            <ArrowRight className="w-4 h-4" />
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )
+              ) : (
+                filteredCategories.length === 0 ? (
+                  <motion.div variants={listItemVariants} className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 text-center text-slate-500">
+                    <Search className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+                    <p className="font-arabic">کوئی نتیجہ نہیں ملا</p>
+                    <p className="text-sm mt-1">No results found</p>
+                  </motion.div>
+                ) : (
+                  filteredCategories.map((category) => (
+                  <motion.div variants={listItemVariants} key={category.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    {/* Category Header */}
+                    <div className="bg-[#354458] text-white px-4 py-3 flex items-center justify-between" dir="rtl">
+                      <span className="font-arabic font-bold text-lg">{category.titleUr}</span>
+                      <span className="border border-white/30 px-3 py-1 rounded-md text-sm font-arabic bg-white/10">ابواب: {category.count}</span>
+                    </div>
+                    
+                    {/* Category Items */}
+                    <div className="divide-y divide-slate-100 flex flex-col">
+                      {category.items.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => openHadees(item.id)}
+                          className="w-full text-right bg-[#fcfafd] hover:bg-slate-100 transition px-4 py-4 flex items-center justify-between group active:bg-slate-200"
+                          dir="rtl"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-[#94a8b3]/20 flex items-center justify-center text-[#354458]">
+                              <List className="w-4 h-4" />
+                            </div>
+                            <span className="font-arabic text-lg text-slate-800 font-medium group-hover:text-[#354458]">باب: {item.chapterAr}</span>
+                          </div>
+                          <div className="w-8 h-8 rounded-full bg-[#354458] flex items-center justify-center text-white shadow-sm">
+                            <ArrowRight className="w-4 h-4" />
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                ))
+                )
+              )}
+            </motion.div>
+          </motion.div>
+        ) : activeScreen === 'settings' ? (
+          <motion.div
+            key="settings"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="pb-24 w-full min-h-screen bg-white relative text-slate-800"
+          >
+            {/* Top Bar (Navy Blue) */}
+            <div className="bg-[#354458] text-white px-4 py-4 flex items-center shadow-md sticky top-0 z-20">
+              <button onClick={() => setActiveScreen('list')} className="p-1 active:scale-95 transition absolute left-4">
+                <ArrowLeft className="w-6 h-6" />
+              </button>
+              <h1 className="text-xl font-bold tracking-wide w-full text-center">Settings</h1>
+            </div>
+
+            <div className="px-6 py-8 space-y-8">
+              {/* Keep Awake */}
+              <div className="flex items-center gap-6">
+                <button
+                  onClick={() => setKeepAwake(!keepAwake)}
+                  className={`relative inline-flex items-center h-9 rounded-full w-[88px] transition-colors border-2 ${
+                    keepAwake ? 'bg-[#354458] border-[#354458]' : 'bg-white border-[#354458]'
+                  }`}
+                >
+                  <span
+                    className={`absolute text-[13px] font-bold ${
+                      keepAwake ? 'right-3 text-white' : 'left-4 text-[#354458]'
+                    }`}
+                  >
+                    {keepAwake ? 'ON' : 'OFF'}
+                  </span>
+                  <span
+                    className={`absolute w-6 h-6 rounded-full transition-transform ${
+                      keepAwake ? 'bg-white translate-x-1' : 'bg-[#354458] translate-x-[52px]'
+                    }`}
+                  />
+                </button>
+                <span className="text-xl font-medium text-slate-700">Keep Awake</span>
+              </div>
+
+              <hr className="border-slate-800" />
+
+              {/* Colors */}
+              <div className="space-y-6">
+                <div className="flex items-center justify-between px-2">
+                  <div className="flex items-center gap-4">
+                    <span className="text-slate-800 font-medium leading-tight">Change<br/>Background</span>
+                    <label className="w-[42px] h-[42px] rounded-full bg-gradient-to-tr from-[#3b82f6] via-[#ec4899] to-[#f59e0b] shadow-sm transform transition active:scale-95 border-2 border-white cursor-pointer relative overflow-hidden flex items-center justify-center">
+                      <input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="absolute opacity-0 w-16 h-16 cursor-pointer" />
+                    </label>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-slate-800 font-medium leading-tight">Change Text<br/>Color</span>
+                    <label className="w-[42px] h-[42px] rounded-full bg-gradient-to-tr from-[#3b82f6] via-[#ec4899] to-[#f59e0b] shadow-sm transform transition active:scale-95 border-2 border-white cursor-pointer relative overflow-hidden flex items-center justify-center">
+                      <input type="color" value={textColor} onChange={(e) => setTextColor(e.target.value)} className="absolute opacity-0 w-16 h-16 cursor-pointer" />
+                    </label>
+                  </div>
+                </div>
+                
+                <div className="flex justify-center">
+                  <button onClick={() => { setBgColor('#fcfafd'); setTextColor('#1e293b'); }} className="bg-[#354458] text-white px-8 py-3.5 rounded-full font-medium shadow-md active:scale-95 transition text-[15px]">
+                    Set to Default Colors
+                  </button>
                 </div>
               </div>
 
-              {/* Arabic Text */}
-              <div className="text-right">
-                <p className="font-arabic text-2xl sm:text-3xl leading-relaxed text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] font-bold">
-                  {current.textAr}
-                </p>
+              <hr className="border-slate-800" />
+
+              {/* Preview */}
+              <div className="space-y-4">
+                <h3 className="text-slate-700 font-medium text-lg">Preview</h3>
+                <div 
+                  className="border border-slate-100 rounded-xl py-6 px-4 text-center shadow-[0_4px_15px_rgba(0,0,0,0.05)] transition-colors"
+                  style={{ backgroundColor: bgColor }}
+                >
+                  <p className="font-arabic font-bold" style={{ fontSize: `${fontSize}px`, color: textColor }} dir="rtl">
+                    مصطفیٰ جان رحمت پہ لاکھوں سلام
+                  </p>
+                </div>
               </div>
 
-              {/* Urdu translation */}
-              <div className="bg-emerald-950/30 -mx-6 px-6 py-4 border-y border-white/5">
-                <p className="font-arabic text-xl sm:text-2xl leading-relaxed text-emerald-200 text-right drop-shadow-md" dir="rtl">
-                  {current.textUr}
-                </p>
+              {/* Font Size */}
+              <div className="space-y-4 pb-2">
+                <h3 className="text-slate-700 font-medium text-lg">Font Size</h3>
+                <div className="relative pt-2">
+                  <input
+                    type="range"
+                    min="16"
+                    max="48"
+                    value={fontSize}
+                    onChange={(e) => setFontSize(Number(e.target.value))}
+                    className="w-full h-[3px] bg-slate-300 rounded-lg appearance-none cursor-pointer"
+                    style={{
+                      background: `linear-gradient(to right, #354458 ${(fontSize - 16) / (48 - 16) * 100}%, #cbd5e1 ${(fontSize - 16) / (48 - 16) * 100}%)`
+                    }}
+                  />
+                  <style>{`
+                    input[type=range]::-webkit-slider-thumb {
+                      appearance: none;
+                      width: 28px;
+                      height: 28px;
+                      border-radius: 50%;
+                      background: #354458;
+                      cursor: pointer;
+                      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+                    }
+                  `}</style>
+                </div>
               </div>
 
-              {/* English translation */}
-              <div>
-                <p className="text-slate-300 text-[15px] leading-relaxed font-medium">
-                  {current.textEn}
-                </p>
+              <hr className="border-slate-800" />
+
+              {/* Fonts */}
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-800 font-medium">Content Font</span>
+                  <div className="relative w-48">
+                    <select
+                      value={contentFont}
+                      onChange={(e) => setContentFont(e.target.value)}
+                      className="w-full appearance-none bg-[#94a8b3] text-white rounded-lg py-3 px-4 pr-10 focus:outline-none font-medium"
+                    >
+                      <option value="Jameel Noori">Jameel Noori</option>
+                      <option value="Alvi Nastaleeq">Alvi Nastaleeq</option>
+                      <option value="Noto Nastaliq Urdu">Noto Nastaliq</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-white">
+                      <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                        <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-800 font-medium">App Font</span>
+                  <div className="relative w-48">
+                    <select
+                      value={appFont}
+                      onChange={(e) => setAppFont(e.target.value)}
+                      className="w-full appearance-none bg-[#94a8b3] text-white rounded-lg py-3 px-4 pr-10 focus:outline-none font-medium"
+                    >
+                      <option value="Jameel Noori">Jameel Noori</option>
+                      <option value="Alvi Nastaleeq">Alvi Nastaleeq</option>
+                      <option value="Noto Nastaliq Urdu">Noto Nastaliq</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-white">
+                      <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                        <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </motion.div>
-        </AnimatePresence>
-
-        {/* Navigation Controls */}
-        <div className="flex items-center justify-center gap-6 mt-8">
-          <button 
-            onClick={prevHadees}
-            className="w-12 h-12 rounded-full bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center transition-all active:scale-90 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] text-white group"
+        ) : (
+          <motion.div
+            key="detail"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="pb-24 w-full min-h-screen bg-[#050B14] relative overflow-hidden text-white"
           >
-            <ChevronLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
-          </button>
-          
-          <div className="text-slate-400 font-mono text-sm tracking-wider tabular-nums font-bold">
-            {currentIndex + 1} / {SAHIH_BUKHARI_HADEES.length}
-          </div>
+            {/* Detail View - Kept from original dark theme */}
+            <div className="fixed inset-0 pointer-events-none opacity-20">
+              <div className="absolute inset-0 mix-blend-screen"
+                   style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/stardust.png")' }}></div>
+              <div className="absolute top-0 inset-x-0 h-96 bg-gradient-to-b from-amber-500/10 to-transparent blur-3xl"></div>
+            </div>
 
-          <button 
-            onClick={nextHadees}
-            className="w-12 h-12 rounded-full bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center transition-all active:scale-90 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] text-white group"
-          >
-            <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-          </button>
-        </div>
-      </div>
-    </motion.div>
+            <div className="pt-6 px-4 mb-2 flex items-center justify-between sticky top-0 z-20">
+              <button
+                onClick={() => setActiveScreen('list')}
+                className="w-10 h-10 bg-white/5 hover:bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center transition border border-white/10 text-white"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <div className="flex flex-col items-end">
+                <h1 className="text-xl font-bold text-white tracking-wide font-arabic">صحيح البخاري</h1>
+                <p className="text-amber-400 text-xs font-bold tracking-widest uppercase">{currentHadees?.book || 'Hadith'}</p>
+              </div>
+            </div>
+
+            <div className="px-4 max-w-lg mx-auto pb-8 pt-4 relative z-10">
+              {currentHadees && (
+                <>
+                  <motion.div
+                    key={currentHadees.id}
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="bg-[#0f172a] border border-white/10 rounded-3xl overflow-hidden shadow-2xl relative"
+                  >
+                    <div className="bg-gradient-to-r from-slate-900 via-amber-950/40 to-slate-900 border-b border-white/5 py-4 px-6 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <BookOpen className="w-4 h-4 text-amber-500" />
+                        <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">
+                          Chapter {currentHadees.chapterEn || currentHadees.chapterAr}
+                        </span>
+                      </div>
+                      <div className="bg-amber-500/20 text-amber-400 px-3 py-1 rounded-full text-xs font-bold border border-amber-500/30">
+                        Hadith {currentHadees.number}
+                      </div>
+                    </div>
+
+                    <div className="p-6 space-y-6">
+                      {currentHadees.narrator && (
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/5 rounded-lg border border-white/5">
+                          <span className="text-white/60 text-xs font-medium">Narrated by:</span>
+                          <span className="text-white/90 text-sm font-semibold">{currentHadees.narrator.replace('Narrated ', '')}</span>
+                        </div>
+                      )}
+
+                      <div className="text-right pb-4 border-b border-white/5">
+                        <h3 className="text-amber-500/60 font-arabic text-sm mb-4">{currentHadees.chapterAr}</h3>
+                        <p className="font-arabic text-2xl sm:text-3xl leading-[1.8] text-white drop-shadow-sm font-medium">
+                          {currentHadees.textAr}
+                        </p>
+                      </div>
+
+                      <div className="pb-4 border-b border-white/5">
+                        <span className="text-emerald-500 font-bold text-[10px] uppercase tracking-widest mb-2 block">Urdu Translation</span>
+                        <p className="font-arabic text-xl sm:text-2xl leading-relaxed text-emerald-100 text-right" dir="rtl">
+                          {currentHadees.textUr}
+                        </p>
+                      </div>
+
+                      <div>
+                        <span className="text-blue-400 font-bold text-[10px] uppercase tracking-widest mb-2 block">English Translation</span>
+                        <p className="text-slate-300 text-[15px] leading-relaxed font-medium">
+                          {currentHadees.textEn}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="bg-[#0b101d] px-6 py-4 flex items-center justify-between border-t border-white/5">
+                      <div className="flex items-center gap-6">
+                        <button onClick={toggleFavorite} className={`flex items-center gap-2 transition ${isFavorite ? 'text-amber-500' : 'text-slate-400 hover:text-white'}`}>
+                          <Heart className={`w-5 h-5 ${isFavorite ? 'fill-amber-500' : ''}`} />
+                          <span className="text-xs font-semibold">{isFavorite ? 'Saved' : 'Save'}</span>
+                        </button>
+                        <button onClick={handleCopy} className="flex items-center gap-2 text-slate-400 hover:text-white transition">
+                          <Copy className="w-5 h-5" />
+                          <span className="text-xs font-semibold">Copy</span>
+                        </button>
+                      </div>
+                      <button className="flex items-center gap-2 text-slate-400 hover:text-white transition">
+                        <Share2 className="w-5 h-5" />
+                        <span className="text-xs font-semibold">Share</span>
+                      </button>
+                    </div>
+                  </motion.div>
+
+                  <div className="flex items-center justify-between mt-8 max-w-[280px] mx-auto">
+                    <button onClick={prevHadees} className="w-12 h-12 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition-all active:scale-90 text-white">
+                      <ChevronLeft className="w-6 h-6" />
+                    </button>
+                    <div className="flex flex-col items-center">
+                      <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Hadith</span>
+                      <div className="text-white font-mono text-sm tracking-wider font-bold">
+                        {selectedHadeesIndex + 1} / {SAHIH_BUKHARI_HADEES.length}
+                      </div>
+                    </div>
+                    <button onClick={nextHadees} className="w-12 h-12 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition-all active:scale-90 text-white">
+                      <ChevronRight className="w-6 h-6" />
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
+

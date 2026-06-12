@@ -1,18 +1,14 @@
-import { useState, useRef, useEffect, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, Mail, Phone, Facebook, LogOut, Camera, UserCircle } from 'lucide-react';
+import { ArrowLeft, LogOut, Camera, UserCircle, Phone } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, FacebookAuthProvider, signInWithPopup, browserPopupRedirectResolver } from 'firebase/auth';
+import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, updateProfile, updateEmail, sendEmailVerification } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
-export function ProfileView({ setView }: { setView: (view: string) => void }) {
-  const { user, logOut, signIn } = useAuth();
+export function ProfileView({ setView, onSkip }: { setView: (view: string) => void, onSkip?: () => void }) {
+  const { user, logOut } = useAuth();
   const auth = getAuth();
-  const [method, setMethod] = useState<'selection' | 'email' | 'phone'>('selection');
-  
-  // Email state
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isRegistering, setIsRegistering] = useState(false);
   
   // Phone state
   const [phone, setPhone] = useState('');
@@ -20,7 +16,10 @@ export function ProfileView({ setView }: { setView: (view: string) => void }) {
   const [confirmationResult, setConfirmationResult] = useState<any>(null);
   
   // Profile state
-  const [displayName, setDisplayName] = useState(user?.displayName || '');
+  const [firstName, setFirstName] = useState('');
+  const [middleName, setMiddleName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
   const [photoURL, setPhotoURL] = useState(user?.photoURL || '');
   
   const [loading, setLoading] = useState(false);
@@ -29,27 +28,36 @@ export function ProfileView({ setView }: { setView: (view: string) => void }) {
   
   useEffect(() => {
     if (user) {
-      setDisplayName(user.displayName || '');
       setPhotoURL(user.photoURL || '');
+      setEmail(user.email || '');
+      
+      const fetchProfile = async () => {
+        try {
+          const docRef = doc(db, 'users', user.uid);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setFirstName(data.firstName || '');
+            setMiddleName(data.middleName || '');
+            setLastName(data.lastName || '');
+          } else if (user.displayName) {
+            const parts = user.displayName.split(' ');
+            if (parts.length > 0) setFirstName(parts[0]);
+            if (parts.length > 2) {
+              setMiddleName(parts[1]);
+              setLastName(parts.slice(2).join(' '));
+            } else if (parts.length > 1) {
+              setLastName(parts.slice(1).join(' '));
+            }
+          }
+        } catch (e) {
+          console.error("Error fetching profile", e);
+        }
+      };
+      
+      fetchProfile();
     }
   }, [user]);
-
-  const handleEmailAuth = async (e: FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    try {
-      if (isRegistering) {
-        await createUserWithEmailAndPassword(auth, email, password);
-      } else {
-        await signInWithEmailAndPassword(auth, email, password);
-      }
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const setupRecaptcha = () => {
     if (!(window as any).recaptchaVerifier) {
@@ -85,11 +93,13 @@ export function ProfileView({ setView }: { setView: (view: string) => void }) {
       } else {
         setError(err.message);
       }
-      // Reset recaptcha on error so user can try again
-      if ((window as any).recaptchaVerifier) {
-        (window as any).recaptchaVerifier.clear();
-        (window as any).recaptchaVerifier = null;
-      }
+      
+      try {
+        if ((window as any).recaptchaVerifier) {
+          (window as any).recaptchaVerifier.clear();
+          (window as any).recaptchaVerifier = null;
+        }
+      } catch (e) {}
     } finally {
       setLoading(false);
     }
@@ -101,29 +111,11 @@ export function ProfileView({ setView }: { setView: (view: string) => void }) {
     setError('');
     try {
       await confirmationResult.confirm(otp);
+      setConfirmationResult(null);
+      setPhone('');
+      setOtp('');
     } catch (err: any) {
-      if (err.message.includes('auth/invalid-verification-code')) {
-        setError('Invalid OTP code. Please try again.');
-      } else {
-        setError(err.message);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleFacebookLogin = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const provider = new FacebookAuthProvider();
-      await signInWithPopup(auth, provider, browserPopupRedirectResolver);
-    } catch (err: any) {
-      if (err.message.toLowerCase().includes('invalid') || err.message.toLowerCase().includes('popup')) {
-        setError('Login restricted in preview. Please open the app in a new tab.');
-      } else {
-        setError(err.message);
-      }
+      setError('Invalid OTP code.');
     } finally {
       setLoading(false);
     }
@@ -131,19 +123,41 @@ export function ProfileView({ setView }: { setView: (view: string) => void }) {
 
   const handleUpdateProfile = async (e: FormEvent) => {
     e.preventDefault();
+    if (!user) return;
     setLoading(true);
     setError('');
     setSuccess('');
+    
     try {
-      if (auth.currentUser) {
-        await updateProfile(auth.currentUser, {
-          displayName,
-          photoURL
-        });
+      const newDisplayName = [firstName, middleName, lastName].filter(Boolean).join(' ');
+      
+      await updateProfile(user, {
+        displayName: newDisplayName,
+        photoURL
+      });
+      
+      const userRef = doc(db, 'users', user.uid);
+      await setDoc(userRef, {
+        firstName,
+        middleName,
+        lastName,
+        displayName: newDisplayName,
+        updatedAt: new Date()
+      }, { merge: true });
+      
+      if (email && email !== user.email) {
+        await updateEmail(user, email);
+        await sendEmailVerification(user);
+        setSuccess('Profile updated! Verification email sent.');
+      } else {
         setSuccess('Profile updated successfully!');
       }
     } catch (err: any) {
-      setError(err.message);
+      if (err.code === 'auth/requires-recent-login') {
+        setError('Changing email requires a recent login. Please re-authenticate.');
+      } else {
+        setError(err.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -155,7 +169,7 @@ export function ProfileView({ setView }: { setView: (view: string) => void }) {
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -20 }}
-        className="min-h-screen bg-[#050B14] pb-24"
+        className="min-h-screen bg-[#050B14] pb-24 overflow-y-auto"
       >
         <div className="bg-emerald-900/40 p-4 pt-12 rounded-b-3xl shadow-lg relative px-6">
           <button 
@@ -165,44 +179,89 @@ export function ProfileView({ setView }: { setView: (view: string) => void }) {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="text-center mt-8">
-            <h1 className="text-2xl font-bold text-white mb-2">My Profile</h1>
+            <h1 className="text-2xl font-bold text-white mb-2">Profile</h1>
+            <p className="text-emerald-200/70 text-sm">Manage your account</p>
           </div>
         </div>
 
         <div className="p-6 max-w-lg mx-auto">
-          <form onSubmit={handleUpdateProfile} className="flex flex-col gap-5 bg-emerald-900/20 p-6 rounded-3xl border border-emerald-800/30">
-            <div className="flex flex-col items-center gap-4">
-              <div className="relative">
-                {photoURL ? (
-                  <img src={photoURL} alt="Profile" className="w-24 h-24 rounded-full object-cover border-4 border-emerald-500/30" />
-                ) : (
-                  <div className="w-24 h-24 rounded-full bg-emerald-800/50 flex items-center justify-center border-4 border-emerald-500/30">
-                    <UserCircle className="w-12 h-12 text-emerald-300/50" />
-                  </div>
-                )}
+          <div className="flex flex-col items-center mb-8 relative">
+            <div className="w-24 h-24 rounded-full bg-emerald-900/50 flex items-center justify-center text-4xl overflow-hidden border-2 border-emerald-500 shadow-xl relative group">
+              {photoURL ? (
+                <img src={photoURL} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <UserCircle className="w-12 h-12 text-emerald-400" />
+              )}
+              <div className="absolute inset-0 bg-black/50 items-center justify-center hidden group-hover:flex transition-all cursor-pointer">
+                <Camera className="w-6 h-6 text-white" />
               </div>
-              
-              <div className="w-full">
-                <label className="block text-emerald-200/70 text-xs font-semibold mb-1 ml-1">Profile Image URL</label>
+            </div>
+            {firstName && <h2 className="text-xl font-bold text-white mt-4">{[firstName, lastName].filter(Boolean).join(' ')}</h2>}
+            <p className="text-emerald-200/50 text-sm mt-1">{user.phoneNumber || user.email}</p>
+          </div>
+
+          <form onSubmit={handleUpdateProfile} className="flex flex-col gap-4">
+            <div>
+              <label className="block text-emerald-200/70 text-xs font-semibold mb-1 ml-1">Photo URL</label>
+              <input 
+                type="url" 
+                value={photoURL} 
+                onChange={(e) => setPhotoURL(e.target.value)}
+                className="w-full bg-black/30 border border-emerald-800/50 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-emerald-500 transition-colors"
+                placeholder="https://example.com/photo.jpg"
+              />
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-emerald-200/70 text-xs font-semibold mb-1 ml-1">First Name</label>
                 <input 
                   type="text" 
-                  value={photoURL} 
-                  onChange={(e) => setPhotoURL(e.target.value)}
+                  value={firstName} 
+                  onChange={(e) => setFirstName(e.target.value)}
                   className="w-full bg-black/30 border border-emerald-800/50 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-emerald-500 transition-colors"
-                  placeholder="https://..."
+                  placeholder="First name"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-emerald-200/70 text-xs font-semibold mb-1 ml-1">Middle Name (Optional)</label>
+                <input 
+                  type="text" 
+                  value={middleName} 
+                  onChange={(e) => setMiddleName(e.target.value)}
+                  className="w-full bg-black/30 border border-emerald-800/50 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-emerald-500 transition-colors"
+                  placeholder="Middle name"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-emerald-200/70 text-xs font-semibold mb-1 ml-1">Display Name</label>
+              <label className="block text-emerald-200/70 text-xs font-semibold mb-1 ml-1">Last Name</label>
               <input 
                 type="text" 
-                value={displayName} 
-                onChange={(e) => setDisplayName(e.target.value)}
+                value={lastName} 
+                onChange={(e) => setLastName(e.target.value)}
                 className="w-full bg-black/30 border border-emerald-800/50 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-emerald-500 transition-colors"
-                placeholder="Enter your name"
+                placeholder="Last name"
               />
+            </div>
+            
+            <div>
+              <label className="block text-emerald-200/70 text-xs font-semibold mb-1 ml-1">Email <span className="text-emerald-500/50 text-[10px]">(Optional - Verification will be sent)</span></label>
+              <input 
+                type="email" 
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-black/30 border border-emerald-800/50 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-emerald-500 transition-colors"
+                placeholder="your.email@example.com"
+              />
+              {user.email && !user.emailVerified && (
+                <div className="text-[10px] text-amber-400 mt-1 ml-1 font-medium">
+                  Verification pending for {user.email}
+                </div>
+              )}
             </div>
             
             {error && <div className="text-rose-400 text-xs text-center">{error}</div>}
@@ -218,7 +277,7 @@ export function ProfileView({ setView }: { setView: (view: string) => void }) {
           </form>
 
           <button 
-            onClick={() => { logOut(); setMethod('selection'); }}
+            onClick={() => { logOut(); }}
             className="w-full mt-6 py-3 flex items-center justify-center gap-2 bg-rose-900/30 hover:bg-rose-900/50 text-rose-300 font-semibold rounded-xl transition-colors border border-rose-900/50"
           >
             <LogOut className="w-4 h-4" />
@@ -231,166 +290,116 @@ export function ProfileView({ setView }: { setView: (view: string) => void }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="min-h-screen bg-[#050B14] pb-24 overflow-y-auto"
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className="min-h-[100dvh] bg-[#050B14] flex flex-col justify-center px-4 relative"
     >
-      <div className="bg-emerald-900/40 p-4 pt-12 rounded-b-3xl shadow-lg relative px-6">
-        <button 
-          onClick={() => method === 'selection' ? setView('home') : setMethod('selection')}
-          className="absolute top-12 left-4 p-2 rounded-full hover:bg-white/10 transition-colors text-emerald-100"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <div className="text-center mt-8">
-          <h1 className="text-2xl font-bold text-white mb-2">Sign In</h1>
-          <p className="text-emerald-200/70 text-sm">To access your account</p>
-        </div>
-      </div>
+      <button 
+        onClick={() => {
+          if (onSkip) {
+            onSkip();
+            setView('home');
+          } else {
+            setView('home');
+          }
+        }}
+        className="absolute top-6 left-4 p-3 rounded-full hover:bg-emerald-900/30 transition-colors text-emerald-300 z-50 shadow-[0_0_15px_rgba(16,185,129,0.1)] border border-emerald-800/20 backdrop-blur-sm"
+      >
+        <ArrowLeft className="w-5 h-5" />
+      </button>
 
-      <div className="p-6 max-w-lg mx-auto">
+      <div className="w-full max-w-sm mx-auto">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">Sign In</h1>
+          <p className="text-emerald-200/70 text-sm">Welcome back to your account</p>
+        </div>
+
         <div id="recaptcha-container"></div>
         {error && <div className="bg-rose-900/40 text-rose-300 p-3 rounded-xl text-sm mb-6 border border-rose-800/50">{error}</div>}
         
-        {method === 'selection' && (
-          <div className="flex flex-col gap-3">
-            <button 
-              onClick={() => signIn()}
-              className="w-full flex items-center gap-4 bg-white hover:bg-gray-100 text-[#050B14] p-4 rounded-2xl font-bold transition-all shadow-md active:scale-[0.98]"
-            >
-              <svg className="w-6 h-6" viewBox="0 0 24 24">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-              </svg>
-              Sign in with Google
-            </button>
-
-            <button 
-              onClick={handleFacebookLogin}
-              className="w-full flex items-center gap-4 bg-[#1877F2] hover:bg-[#166FE5] text-white p-4 rounded-2xl font-bold transition-all shadow-md active:scale-[0.98]"
-            >
-              <Facebook className="w-6 h-6" />
-              Sign in with Facebook
-            </button>
-
-            <div className="flex items-center gap-4 py-3">
-              <div className="flex-1 h-px bg-white/10"></div>
-              <span className="text-xs text-white/40 font-medium">OR</span>
-              <div className="flex-1 h-px bg-white/10"></div>
-            </div>
-
-            <button 
-              onClick={() => setMethod('phone')}
-              className="w-full flex items-center gap-4 bg-emerald-900/30 hover:bg-emerald-900/50 border border-emerald-800/50 text-white p-4 rounded-2xl font-bold transition-all shadow-md active:scale-[0.98]"
-            >
-              <Phone className="w-5 h-5 text-emerald-400" />
-              Continue with Phone
-            </button>
-
-            <button 
-              onClick={() => setMethod('email')}
-              className="w-full flex items-center gap-4 bg-emerald-900/30 hover:bg-emerald-900/50 border border-emerald-800/50 text-white p-4 rounded-2xl font-bold transition-all shadow-md active:scale-[0.98]"
-            >
-              <Mail className="w-5 h-5 text-emerald-400" />
-              Continue with Email
-            </button>
-            <div className="text-center mt-6 p-4 border border-rose-800 bg-rose-900/20 rounded-xl relative z-20">
-              <p className="text-xs text-rose-200">
-                <strong>Important Note:</strong> To make Email, Phone, and Facebook logins work, ensure you have enabled them in your Firebase console under Authentication &gt; Sign-in method, and added the preview domain (*.run.app) to your Authorized domains!
-              </p>
+        <div className="bg-emerald-900/20 rounded-3xl p-8 border border-emerald-800/30 shadow-2xl relative overflow-hidden backdrop-blur-sm">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-600 to-emerald-400"></div>
+          
+          <div className="flex justify-center mb-8">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-emerald-900 to-emerald-800 flex items-center justify-center shadow-lg border border-emerald-700/50 relative">
+              <div className="absolute inset-0 rounded-full bg-emerald-400/20 animate-pulse"></div>
+              <Phone className="w-8 h-8 text-emerald-400 relative z-10" />
             </div>
           </div>
-        )}
 
-        {method === 'email' && (
-          <form onSubmit={handleEmailAuth} className="flex flex-col gap-4">
-            <div>
-              <label className="block text-emerald-200/70 text-xs font-semibold mb-1 ml-1">Email</label>
-              <input 
-                type="email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-black/30 border border-emerald-800/50 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-emerald-500 transition-colors"
-                placeholder="address@example.com"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-emerald-200/70 text-xs font-semibold mb-1 ml-1">Password</label>
-              <input 
-                type="password" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-black/30 border border-emerald-800/50 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-emerald-500 transition-colors"
-                placeholder="••••••••"
-                required
-              />
-            </div>
-            <button 
-              type="submit" 
-              disabled={loading}
-              className="w-full py-4 mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all active:scale-[0.98] z-20 relative"
-            >
-              {loading ? 'Processing...' : isRegistering ? 'Create Account' : 'Sign In'}
-            </button>
-            
-            <button 
-              type="button" 
-              onClick={() => setIsRegistering(!isRegistering)}
-              className="text-emerald-400 text-sm font-medium mt-4 hover:text-emerald-300 z-20 relative"
-            >
-              {isRegistering ? 'Already have an account? Sign in' : 'Need an account? Register'}
-            </button>
-          </form>
-        )}
+          {!confirmationResult ? (
+            <form onSubmit={handleSendOtp} className="flex flex-col gap-5">
+              <div>
+                <label className="block text-emerald-200/70 text-xs font-semibold mb-2 ml-1 uppercase tracking-wider">Phone Number</label>
+                <div className="relative">
+                  <input 
+                    type="tel" 
+                    value={phone} 
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full bg-black/40 border border-emerald-800/50 rounded-2xl px-5 py-4 text-white text-base outline-none focus:border-emerald-500 transition-colors tracking-wider font-mono shadow-inner"
+                    placeholder="+91 1234567890"
+                    required
+                  />
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-emerald-500/50 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
+                </div>
+              </div>
+              <button 
+                type="submit" 
+                disabled={loading}
+                className="w-full py-4 mt-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold rounded-2xl transition-all active:scale-[0.98] shadow-[0_0_20px_rgba(16,185,129,0.2)] disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Sending OTP...' : 'Send Verification Code'}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleVerifyOtp} className="flex flex-col gap-5">
+              <div>
+                <label className="block text-emerald-200/70 text-xs font-semibold mb-2 ml-1 uppercase tracking-wider">OTP Code</label>
+                <input 
+                  type="text" 
+                  value={otp} 
+                  onChange={(e) => setOtp(e.target.value)}
+                  className="w-full bg-black/40 border border-emerald-800/50 rounded-2xl px-5 py-4 text-white text-2xl text-center outline-none focus:border-emerald-500 transition-colors tracking-[0.5em] font-mono shadow-inner"
+                  placeholder="123456"
+                  required
+                />
+              </div>
+              <button 
+                type="submit" 
+                disabled={loading}
+                className="w-full py-4 mt-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold rounded-2xl transition-all active:scale-[0.98] shadow-[0_0_20px_rgba(16,185,129,0.2)] disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Verifying...' : 'Verify & Sign In'}
+              </button>
+              <button 
+                type="button"
+                onClick={() => {
+                  setConfirmationResult(null);
+                  setOtp('');
+                }}
+                className="text-emerald-400/80 text-sm font-medium mt-4 hover:text-emerald-300 transition-colors"
+              >
+                Wrong Number? Change it
+              </button>
+            </form>
+          )}
 
-        {method === 'phone' && !confirmationResult && (
-          <form onSubmit={handleSendOtp} className="flex flex-col gap-4">
-            <div>
-              <label className="block text-emerald-200/70 text-xs font-semibold mb-1 ml-1">Phone Number</label>
-              <input 
-                type="tel" 
-                value={phone} 
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full bg-black/30 border border-emerald-800/50 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-emerald-500 transition-colors tracking-widest font-mono"
-                placeholder="+1234567890"
-                required
-              />
-            </div>
+          <p className="text-[10px] text-center text-emerald-600/60 mt-8 font-medium">
+            Secure authentication powered by Firebase
+          </p>
+        </div>
+        
+        {onSkip && (
+          <div className="mt-6 text-center">
             <button 
-              type="submit" 
-              disabled={loading}
-              className="w-full py-4 mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all active:scale-[0.98] z-20 relative"
+              onClick={onSkip}
+              className="text-emerald-400/70 hover:text-emerald-300 font-medium text-sm transition-colors decoration-emerald-500/30 underline-offset-4 hover:underline"
             >
-              {loading ? 'Sending OTP...' : 'Send OTP'}
+              Skip and continue without logging in
             </button>
-          </form>
-        )}
-
-        {method === 'phone' && confirmationResult && (
-          <form onSubmit={handleVerifyOtp} className="flex flex-col gap-4">
-            <div>
-              <label className="block text-emerald-200/70 text-xs font-semibold mb-1 ml-1">OTP Code</label>
-              <input 
-                type="text" 
-                value={otp} 
-                onChange={(e) => setOtp(e.target.value)}
-                className="w-full bg-black/30 border border-emerald-800/50 rounded-xl px-4 py-3 text-white text-sm text-center outline-none focus:border-emerald-500 transition-colors tracking-widest font-mono text-xl"
-                placeholder="123456"
-                required
-              />
-            </div>
-            <button 
-              type="submit" 
-              disabled={loading}
-              className="w-full py-4 mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all active:scale-[0.98] z-20 relative"
-            >
-              {loading ? 'Verifying...' : 'Verify OTP'}
-            </button>
-          </form>
+          </div>
         )}
       </div>
     </motion.div>

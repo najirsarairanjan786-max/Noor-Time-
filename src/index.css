@@ -134,3 +134,12 @@ body {
 .font-digital {
   font-family: 'VT323', monospace;
 }
+
+@keyframes scrollText {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-100%); }
+}
+
+.animate-marquee {
+  animation: scrollText 6s linear infinite;
+}

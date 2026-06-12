@@ -133,7 +133,7 @@ export function Home({ setView }: HomeProps) {
           <div className="relative z-10 max-w-lg mx-auto">
             {/* Header row 1 */}
             <div className="flex justify-between items-center mb-6 relative">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center">
                 <button
                   onClick={() => setIsSidebarOpen(true)}
                   className="relative z-20 hover:opacity-80 transition p-2 -ml-2"
@@ -144,21 +144,6 @@ export function Home({ setView }: HomeProps) {
                     <div className="h-[3px] w-7 bg-white rounded-full transition-all duration-300"></div>
                   </div>
                 </button>
-                <button 
-                  onClick={(e) => {
-                    // Prevent other clicks when clicking profile
-                    e.stopPropagation();
-                    // @ts-ignore
-                    setView('profile');
-                  }}
-                  className="flex items-center justify-center w-9 h-9 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-colors shadow-lg overflow-hidden shrink-0 relative z-20"
-                >
-                  {user?.photoURL ? (
-                    <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
-                  ) : (
-                    <UserCircle className="w-5 h-5 text-white/80" />
-                  )}
-                </button>
               </div>
 
               {/* Center Title */}
@@ -168,16 +153,23 @@ export function Home({ setView }: HomeProps) {
                 </h1>
               </div>
 
-              {/* Location */}
-              <button
-                onClick={handleLocationUpdate}
-                className="relative z-20 flex bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20 px-2.5 py-1.5 rounded-full items-center gap-1.5 max-w-[120px] overflow-hidden"
-              >
-                <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full flex-shrink-0 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse" />
-                <span className="font-bold text-[10px] uppercase tracking-wider leading-tight whitespace-nowrap text-ellipsis overflow-hidden w-full text-right shadow-sm shadow-black/10">
-                  {settings.location?.name || "Location"}
-                </span>
-              </button>
+              {/* Right Side Options */}
+              <div className="flex items-center gap-3 relative z-20">
+                {/* Location */}
+                <button
+                  onClick={handleLocationUpdate}
+                  className="flex bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20 px-2.5 py-1.5 rounded-full items-center gap-1.5 max-w-[120px] overflow-hidden group"
+                >
+                  <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full flex-shrink-0 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse" />
+                  <div className="w-full flex-1 overflow-hidden relative" style={{ display: 'flex', width: '80px' }}>
+                    <div className="font-bold text-[10px] uppercase tracking-wider leading-tight text-white flex whitespace-nowrap overflow-visible">
+                      <span className="inline-block animate-marquee group-hover:block" style={{ paddingLeft: '100%' }}>
+                        {settings.location?.name || "Location"}
+                      </span>
+                    </div>
+                  </div>
+                </button>
+              </div>
             </div>
 
             <div className="flex justify-between items-start mt-4">

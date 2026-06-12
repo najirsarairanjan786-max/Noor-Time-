@@ -1,8 +1,9 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { Settings as SettingsIcon, CalendarDays, BookOpen, Clock, MoonStar } from 'lucide-react';
+import { Settings as SettingsIcon, CalendarDays, BookOpen, Clock, MoonStar, UserCircle } from 'lucide-react';
 import { Dispatch, SetStateAction, useState, useRef, useEffect } from 'react';
 import { useSettings } from '../hooks/useSettings';
 import { useTranslation } from '../lib/i18n';
+import { useAuth } from '../hooks/useAuth';
 import { FeedbackModal } from './FeedbackModal';
 
 type ViewType = 'home' | 'calendar' | 'settings' | 'prayer' | 'daily' | string;
@@ -10,6 +11,7 @@ type ViewType = 'home' | 'calendar' | 'settings' | 'prayer' | 'daily' | string;
 export function Navigation({ view, setView }: { view: ViewType, setView: Dispatch<SetStateAction<ViewType>> }) {
   const { settings } = useSettings();
   const { t } = useTranslation(settings.language);
+  const { user } = useAuth();
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
 
@@ -19,6 +21,7 @@ export function Navigation({ view, setView }: { view: ViewType, setView: Dispatc
     { id: 'calendar', icon: CalendarDays, label: t('calendar') },
     { id: 'settings', icon: SettingsIcon, label: t('settings') },
     { id: 'daily', icon: Clock, label: t('more') },
+    { id: 'profile', icon: UserCircle, label: 'Profile' },
   ];
 
   const activeIndex = TABS.findIndex(t => t.id === view) === -1 ? 0 : TABS.findIndex(t => t.id === view);
@@ -56,7 +59,7 @@ export function Navigation({ view, setView }: { view: ViewType, setView: Dispatc
               transformOrigin: 'center'
             }}
             initial={false}
-            animate={{ x: `calc(${(activeIndex + 0.5) * (100 / 15)}% - 50%)` }}
+            animate={{ x: `calc(${(activeIndex + 0.5) * (100 / 18)}% - 50%)` }}
             transition={{ type: "spring", stiffness: 350, damping: 35 }}
           >
             {/* Left Block */}
@@ -112,11 +115,17 @@ export function Navigation({ view, setView }: { view: ViewType, setView: Dispatc
                    transition={{ type: "spring", stiffness: 350, damping: 35 }}
                    className="absolute top-[0px] z-20 w-[50px] h-[50px] flex flex-col items-center justify-center"
                  >
-                    <tab.icon 
-                       className={`transition-colors duration-200 ${isActive ? 'text-white' : 'text-slate-800'}`} 
-                       strokeWidth={isActive ? 2.5 : 2}
-                       size={24}
-                    />
+                    {tab.id === 'profile' && user?.photoURL ? (
+                      <div className={`w-6 h-6 rounded-full overflow-hidden border ${isActive ? 'border-white' : 'border-slate-800'}`}>
+                        <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
+                      </div>
+                    ) : (
+                      <tab.icon 
+                         className={`transition-colors duration-200 ${isActive ? 'text-white' : 'text-slate-800'}`} 
+                         strokeWidth={isActive ? 2.5 : 2}
+                         size={24}
+                      />
+                    )}
                  </motion.div>
               </div>
             );
