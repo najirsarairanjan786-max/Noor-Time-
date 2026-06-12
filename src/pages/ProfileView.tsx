@@ -296,20 +296,6 @@ export function ProfileView({ setView, onSkip }: { setView: (view: string) => vo
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       className="min-h-[100dvh] bg-[#050B14] flex flex-col justify-center px-4 relative"
     >
-      <button 
-        onClick={() => {
-          if (onSkip) {
-            onSkip();
-            setView('home');
-          } else {
-            setView('home');
-          }
-        }}
-        className="absolute top-6 left-4 p-3 rounded-full hover:bg-emerald-900/30 transition-colors text-emerald-300 z-50 shadow-[0_0_15px_rgba(16,185,129,0.1)] border border-emerald-800/20 backdrop-blur-sm"
-      >
-        <ArrowLeft className="w-5 h-5" />
-      </button>
-
       <div className="w-full max-w-sm mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Sign In</h1>

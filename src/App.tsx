@@ -85,12 +85,12 @@ export default function App() {
               {currentView === 'share' && <ShareView setView={setCurrentView} />}
               {currentView === 'daily' && <DailyView setView={setCurrentView} />}
               {currentView === 'tasbeeh' && <TasbeehView setView={setCurrentView} />}
-              {currentView === 'profile' && <ProfileView setView={setCurrentView} />}
+              {currentView === 'profile' && <ProfileView setView={setCurrentView} onSkip={() => setCurrentView('home')} />}
               {isFeatureView && <FeatureView title={currentView} setView={setCurrentView} />}
             </AnimatePresence>
 
             <LocationPrompt />
-            <Navigation view={currentView} setView={setCurrentView} />
+            {!(currentView === 'profile' && !user) && <Navigation view={currentView} setView={setCurrentView} />}
           </>
         )}
       </main>
