@@ -21,6 +21,7 @@ import React, {
   useEffect,
   useRef,
   useCallback,
+  useMemo,
 } from "react";
 
 type ViewType = "home" | "calendar" | "settings" | "prayer" | "Quran" | string;
@@ -136,6 +137,32 @@ export function QuranView({ setView }: QuranViewProps) {
       return [];
     }
   });
+
+  const quranImages = useMemo(
+    () => [
+      "https://images.unsplash.com/photo-1609599006353-e629aaabfeae?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1584284534898-1e43ed7f1be3?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1566804561081-3aa25cce1f9a?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1573059882294-88aa38ba7b8a?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1596420556209-6791e846059d?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1600863073718-42fcf0b08053?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1585036156171-384164a8c675?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1564507004663-b6dfb3c824d5?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1590076043818-4424ce117498?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1617066803272-353af84c478a?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1610486518776-80f0896bdfe3?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1507676184212-d0330a151817?q=80&w=800&auto=format&fit=crop",
+    ],
+    [],
+  );
+  const [currentHeroImage, setCurrentHeroImage] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentHeroImage((prev) => (prev + 1) % quranImages.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [quranImages]);
 
   const [bookmarkedAyahs, setBookmarkedAyahs] = useState<any[]>([]);
   const [loadingBookmarks, setLoadingBookmarks] = useState(false);
@@ -1085,17 +1112,20 @@ export function QuranView({ setView }: QuranViewProps) {
           {activeTab === "QURAN" ? (
             <>
               {/* Hero Banner */}
-              <div className="relative w-full rounded-[18px] overflow-hidden shadow-md group">
-                {/* Quran Image Background */}
-                <div
-                  className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-90"
-                  style={{
-                    backgroundImage: `url('https://images.unsplash.com/photo-1609599006353-e629aaabfeae?q=80&w=800&auto=format&fit=crop')`,
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+              <div className="relative w-full rounded-[18px] overflow-hidden shadow-md group min-h-[160px]">
+                {/* Quran Image Background Carousel */}
+                {quranImages.map((src, index) => (
+                  <div
+                    key={src}
+                    className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out ${
+                      currentHeroImage === index ? "opacity-90" : "opacity-0"
+                    }`}
+                    style={{ backgroundImage: `url('${src}')` }}
+                  />
+                ))}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
 
-                <div className="relative flex flex-col justify-end p-5 text-white z-10 pb-4">
+                <div className="relative flex flex-col justify-end p-5 text-white z-10 pb-4 h-full">
                   <div className="flex items-end justify-between mb-3 pt-6">
                     <div className="flex flex-col flex-1 pb-1">
                       <h2 className="text-[28px] font-extrabold mb-1 drop-shadow-lg tracking-tight leading-none mt-auto">

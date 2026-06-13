@@ -436,20 +436,22 @@ export function PrayerTimesList({
             </span>
           </button>
 
-          {/* Silent Mode sticks out slightly */}
+          <div className="h-full w-px bg-slate-200"></div>
+
           <button
-            onClick={() => setView?.('jamat_silent')}
-            className="flex flex-col items-center gap-1 relative z-10 -mr-4 ml-2 hover:opacity-80 transition-opacity"
+            onClick={() => setView?.("jamat_silent")}
+            className="flex flex-col items-center justify-center gap-1 hover:opacity-80 transition-opacity"
           >
             <div
               className={cn(
-                "w-11 h-11 rounded-full flex items-center justify-center text-white shadow-md border-4 border-emerald-950 transition-colors bg-slate-400"
+                "w-7 h-7 rounded-full flex items-center justify-center text-white shadow-sm transition-colors bg-slate-400",
               )}
             >
-              <Volume2 className="w-5 h-5" />
+              <Volume2 className="w-3.5 h-3.5" />
             </div>
-            <span className="text-[11px] font-semibold text-slate-800 absolute -bottom-5 right-1 whitespace-nowrap">
-              Silent Mode
+            <span className="text-[8.5px] font-semibold text-slate-500 flex flex-col items-center leading-[1.1]">
+              <span>Silent</span>
+              <span>Mode</span>
             </span>
           </button>
         </div>
@@ -504,13 +506,17 @@ export function PrayerTimesList({
                 );
                 if (idx === prayers.length - 1) {
                   if (now.getHours() > 12) {
-                    nextPrayerTimeObjInner.setDate(nextPrayerTimeObjInner.getDate() + 1);
+                    nextPrayerTimeObjInner.setDate(
+                      nextPrayerTimeObjInner.getDate() + 1,
+                    );
                   } else {
                     timeObj.setDate(timeObj.getDate() - 1);
                   }
                 } else {
                   if (nextPrayerTimeObjInner < timeObj) {
-                    nextPrayerTimeObjInner.setDate(nextPrayerTimeObjInner.getDate() + 1);
+                    nextPrayerTimeObjInner.setDate(
+                      nextPrayerTimeObjInner.getDate() + 1,
+                    );
                   }
                 }
 
@@ -522,13 +528,20 @@ export function PrayerTimesList({
                 } else if (isAfter(now, nextPrayerTimeObjInner)) {
                   progress = 100;
                 } else {
-                  const total = differenceInMinutes(nextPrayerTimeObjInner, timeObj);
+                  const total = differenceInMinutes(
+                    nextPrayerTimeObjInner,
+                    timeObj,
+                  );
                   const elapsed = differenceInMinutes(now, timeObj);
-                  progress = Math.max(0, Math.min(100, (elapsed / total) * 100));
+                  progress = Math.max(
+                    0,
+                    Math.min(100, (elapsed / total) * 100),
+                  );
                   const remaining = total - elapsed;
                   const rHours = Math.floor(remaining / 60);
                   const rMins = remaining % 60;
-                  remainingText = rHours > 0 ? `-${rHours}h ${rMins}m` : `-${rMins}m`;
+                  remainingText =
+                    rHours > 0 ? `-${rHours}h ${rMins}m` : `-${rMins}m`;
                 }
 
                 return (
@@ -542,101 +555,108 @@ export function PrayerTimesList({
                     )}
                   >
                     <div className="flex flex-row items-center justify-between p-2.5 pb-1.5 z-10 w-full">
-                    <div className="flex items-center space-x-3 min-w-[120px]">
-                      <span className="text-slate-400 text-lg">⏱️</span>
-                      <div className="flex items-center">
-                        <span className="font-semibold text-sm font-sans text-slate-800">
-                          {prayer.label}
-                        </span>
-                        {isCurrent && (
-                          <span className="text-[9px] bg-[#265e28] text-white px-2 py-0.5 rounded-full ml-2 font-bold tracking-wider uppercase">
-                            {t("now")}
+                      <div className="flex items-center space-x-3 min-w-[120px]">
+                        <span className="text-slate-400 text-lg">⏱️</span>
+                        <div className="flex items-center">
+                          <span className="font-semibold text-sm font-sans text-slate-800">
+                            {prayer.label}
                           </span>
-                        )}
+                          {isCurrent && (
+                            <span className="text-[9px] bg-[#265e28] text-white px-2 py-0.5 rounded-full ml-2 font-bold tracking-wider uppercase">
+                              {t("now")}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-center justify-end space-x-2 flex-1 text-right">
-                      {editingPrayer === prayer.name ? (
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="time"
-                            value={editingTime}
-                            onChange={(e) => setEditingTime(e.target.value)}
-                            className="p-1 rounded border border-slate-300 text-sm font-medium text-slate-800"
-                            autoFocus
-                          />
-                          <button
-                            onClick={() => handleSaveEdit(prayer.name)}
-                            className="text-emerald-600 hover:bg-emerald-50 p-1 rounded-full text-center"
-                          >
-                            <Check className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="font-semibold text-sm text-slate-800 tracking-tight flex items-center group/edit gap-2">
-                          <button
-                            onClick={() =>
-                              handleEditClick(prayer.name, prayer.time)
-                            }
-                            className="text-slate-400 hover:text-slate-600 transition-colors"
-                          >
-                            <Pencil className="w-3.5 h-3.5" />
-                          </button>
-                          <span>
-                            {format(timeObj, "hh:mm")}{" "}
-                            <span className="text-[11px] text-slate-500 font-medium">
-                              {format(timeObj, "a")}
-                            </span>
-                          </span>
-                        </div>
-                      )}
-
-                      {isFajr && !editingPrayer && (
-                        <div className="hidden sm:flex text-slate-400 items-center justify-center px-1">
-                          —
-                          <span className="font-semibold text-sm text-[#cc0000] ml-2 tracking-tight">
-                            {format(endTimeObj, "hh:mm")}{" "}
-                            <span className="text-[11px] text-[#cc0000] font-medium">
-                              {format(endTimeObj, "a")}
-                            </span>
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="w-10 flex justify-end">
-                      <button
-                        onClick={() => toggleAlarm(prayer.name)}
-                        className="text-slate-600"
-                      >
-                        {alarms[prayer.name] ? (
-                          <Volume2 className="w-5 h-5" />
+                      <div className="flex items-center justify-end space-x-2 flex-1 text-right">
+                        {editingPrayer === prayer.name ? (
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="time"
+                              value={editingTime}
+                              onChange={(e) => setEditingTime(e.target.value)}
+                              className="p-1 rounded border border-slate-300 text-sm font-medium text-slate-800"
+                              autoFocus
+                            />
+                            <button
+                              onClick={() => handleSaveEdit(prayer.name)}
+                              className="text-emerald-600 hover:bg-emerald-50 p-1 rounded-full text-center"
+                            >
+                              <Check className="w-4 h-4" />
+                            </button>
+                          </div>
                         ) : (
-                          <VolumeX className="w-5 h-5 text-slate-300" />
+                          <div className="font-semibold text-sm text-slate-800 tracking-tight flex items-center group/edit gap-2">
+                            <button
+                              onClick={() =>
+                                handleEditClick(prayer.name, prayer.time)
+                              }
+                              className="text-slate-400 hover:text-slate-600 transition-colors"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                            <span>
+                              {format(timeObj, "hh:mm")}{" "}
+                              <span className="text-[11px] text-slate-500 font-medium">
+                                {format(timeObj, "a")}
+                              </span>
+                            </span>
+                          </div>
                         )}
-                      </button>
-                    </div>
-                  </div>
 
-                  {/* Visual Progress Bar section */}
-                  <div className="px-3 pb-2 pt-0.5 w-full flex flex-col gap-1 z-10 relative">
-                    <div className="w-full h-1.5 bg-slate-200/50 rounded-full overflow-hidden flex">
-                      <div 
-                        className={cn("h-full rounded-full transition-all duration-1000 ease-in-out", isCurrent ? "bg-[#265e28]" : progress === 100 ? "bg-slate-300" : "bg-transparent")} 
-                        style={{ width: `${progress}%` }}
-                      />
-                    </div>
-                    {isCurrent && remainingText && (
-                      <div className="text-[10px] text-[#265e28] font-bold text-right tracking-tight leading-none opacity-80 mt-0.5">
-                        {remainingText} left
+                        {isFajr && !editingPrayer && (
+                          <div className="hidden sm:flex text-slate-400 items-center justify-center px-1">
+                            —
+                            <span className="font-semibold text-sm text-[#cc0000] ml-2 tracking-tight">
+                              {format(endTimeObj, "hh:mm")}{" "}
+                              <span className="text-[11px] text-[#cc0000] font-medium">
+                                {format(endTimeObj, "a")}
+                              </span>
+                            </span>
+                          </div>
+                        )}
                       </div>
-                    )}
+
+                      <div className="w-10 flex justify-end">
+                        <button
+                          onClick={() => toggleAlarm(prayer.name)}
+                          className="text-slate-600"
+                        >
+                          {alarms[prayer.name] ? (
+                            <Volume2 className="w-5 h-5" />
+                          ) : (
+                            <VolumeX className="w-5 h-5 text-slate-300" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Visual Progress Bar section */}
+                    <div className="px-3 pb-2 pt-0.5 w-full flex flex-col gap-1 z-10 relative">
+                      <div className="w-full h-1.5 bg-slate-200/50 rounded-full overflow-hidden flex">
+                        <div
+                          className={cn(
+                            "h-full rounded-full transition-all duration-1000 ease-in-out",
+                            isCurrent
+                              ? "bg-[#265e28]"
+                              : progress === 100
+                                ? "bg-slate-300"
+                                : "bg-transparent",
+                          )}
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
+                      {isCurrent && remainingText && (
+                        <div className="text-[10px] text-[#265e28] font-bold text-right tracking-tight leading-none opacity-80 mt-0.5">
+                          {remainingText} left
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })
-          : otherTimes.map((ot) => {
+                );
+              })
+            : otherTimes.map((ot) => {
                 const { timeObj } = ot;
                 return (
                   <div
