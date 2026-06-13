@@ -7,8 +7,14 @@ import {
   CheckCircle2,
   Play,
   Pause,
+  Download,
+  Bookmark,
+  Plus,
+  Trash2,
+  Edit3,
+  FileText,
 } from "lucide-react";
-import {
+import React, {
   Dispatch,
   SetStateAction,
   useState,
@@ -58,8 +64,16 @@ const PARAS_DATA = [
 ];
 
 export function QuranView({ setView }: QuranViewProps) {
+  const [translationTitle, setTranslationTitle] =
+    useState<string>("Translation");
   const [activeTab, setActiveTab] = useState<
-    "QURAN" | "SURAH" | "PARAH" | "TRANSLATION"
+    | "QURAN"
+    | "SURAH"
+    | "PARAH"
+    | "TRANSLATION"
+    | "BOOKMARKS"
+    | "DOWNLOADS"
+    | "NOTES"
   >("QURAN");
   const [translationSubTab, setTranslationSubTab] = useState<"SURAH" | "PARAH">(
     "SURAH",
@@ -78,6 +92,241 @@ export function QuranView({ setView }: QuranViewProps) {
   const [playingAyahIndex, setPlayingAyahIndex] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [notes, setNotes] = useState<
+    { id: string; text: string; date: string }[]
+  >(() => {
+    try {
+      return JSON.parse(localStorage.getItem("quran_notes") || "[]");
+    } catch {
+      return [];
+    }
+  });
+
+  const saveNote = (id: string, text: string) => {
+    setNotes((prev) => {
+      const idx = prev.findIndex((n) => n.id === id);
+      let newNotes;
+      if (idx !== -1) {
+        newNotes = [...prev];
+        newNotes[idx] = {
+          ...newNotes[idx],
+          text,
+          date: new Date().toISOString(),
+        };
+      } else {
+        newNotes = [{ id, text, date: new Date().toISOString() }, ...prev];
+      }
+      localStorage.setItem("quran_notes", JSON.stringify(newNotes));
+      return newNotes;
+    });
+  };
+
+  const deleteNote = (id: string) => {
+    setNotes((prev) => {
+      const newNotes = prev.filter((n) => n.id !== id);
+      localStorage.setItem("quran_notes", JSON.stringify(newNotes));
+      return newNotes;
+    });
+  };
+
+  const [bookmarks, setBookmarks] = useState<number[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("quran_bookmarks") || "[]");
+    } catch {
+      return [];
+    }
+  });
+
+  const [bookmarkedAyahs, setBookmarkedAyahs] = useState<any[]>([]);
+  const [loadingBookmarks, setLoadingBookmarks] = useState(false);
+
+  const [downloads, setDownloads] = useState<
+    { type: "SURAH" | "PARAH"; id: number }[]
+  >(() => {
+    try {
+      return JSON.parse(localStorage.getItem("quran_downloads") || "[]");
+    } catch {
+      return [];
+    }
+  });
+
+  const [lastReading, setLastReading] = useState<{
+    type: "SURAH" | "PARAH";
+    id: number;
+    isTranslationMode: boolean;
+    translationTitle: string;
+    pageIndex: number;
+    title: string;
+  } | null>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("quran_last_reading") || "null");
+    } catch {
+      return null;
+    }
+  });
+
+  const [showLastReadingModal, setShowLastReadingModal] = useState(false);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [noteInputValue, setNoteInputValue] = useState<string>("");
+  const [isCreatingNote, setIsCreatingNote] = useState(false);
+
+  useEffect(() => {
+    if (selectedSurah !== null || selectedPara !== null) {
+      let title = "";
+      let type: "SURAH" | "PARAH" | null = null;
+      let id: number | null = null;
+
+      if (selectedSurah !== null) {
+        type = "SURAH";
+        id = selectedSurah;
+        title = `Surah ${surahs.find((s) => s.number === selectedSurah)?.englishName || id}`;
+      } else if (selectedPara !== null) {
+        type = "PARAH";
+        id = selectedPara;
+        title = `Parah ${id}`;
+      }
+
+      if (type && id) {
+        const newData = {
+          type,
+          id,
+          isTranslationMode,
+          translationTitle,
+          pageIndex: currentPageIndex,
+          title,
+        };
+        setLastReading(newData);
+        localStorage.setItem("quran_last_reading", JSON.stringify(newData));
+      }
+    }
+  }, [
+    selectedSurah,
+    selectedPara,
+    isTranslationMode,
+    translationTitle,
+    currentPageIndex,
+    surahs,
+  ]);
+
+  const resumeLastReading = () => {
+    if (lastReading) {
+      setIsTranslationMode(lastReading.isTranslationMode);
+      setTranslationTitle(lastReading.translationTitle || "Translation");
+      if (lastReading.type === "SURAH") {
+        setSelectedSurah(lastReading.id);
+        setSelectedPara(null);
+      } else {
+        setSelectedPara(lastReading.id);
+        setSelectedSurah(null);
+      }
+      setTimeout(() => setCurrentPageIndex(lastReading.pageIndex || 0), 500);
+    } else {
+      alert("No previous reading found.");
+    }
+  };
+
+  const handleLastReadingOption = (option: string) => {
+    if (option === "Quran") {
+      setIsTranslationMode(false);
+    } else if (option === "Translation") {
+      setIsTranslationMode(true);
+      setTranslationTitle("Translation");
+    } else if (option === "Tafseer") {
+      setIsTranslationMode(true);
+      setTranslationTitle("صراط الجنان");
+    } else if (option === "16 lines Quran") {
+      setIsTranslationMode(true);
+      setTranslationTitle("16 lines Quran");
+    }
+
+    if (lastReading && lastReading.type === "SURAH") {
+      setSelectedSurah(lastReading.id);
+      setSelectedPara(null);
+    } else if (lastReading && lastReading.type === "PARAH") {
+      setSelectedPara(lastReading.id);
+      setSelectedSurah(null);
+    } else {
+      setSelectedSurah(1); // Default to Surah 1
+      setSelectedPara(null);
+    }
+    setTimeout(() => setCurrentPageIndex(lastReading?.pageIndex || 0), 500);
+    setShowLastReadingModal(false);
+  };
+
+  const globalAudioRef = useRef<HTMLAudioElement | null>(null);
+  const [playingGlobalSurah, setPlayingGlobalSurah] = useState<number | null>(
+    null,
+  );
+  const [globalIsPlaying, setGlobalIsPlaying] = useState(false);
+
+  useEffect(() => {
+    globalAudioRef.current = new Audio();
+    return () => {
+      if (globalAudioRef.current) {
+        globalAudioRef.current.pause();
+        globalAudioRef.current.removeAttribute("src");
+      }
+    };
+  }, []);
+
+  const toggleGlobalSurahPlay = (surahNumber: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const audio = globalAudioRef.current;
+    if (!audio) return;
+
+    if (playingGlobalSurah === surahNumber) {
+      if (globalIsPlaying) {
+        audio.pause();
+        setGlobalIsPlaying(false);
+      } else {
+        audio.play().catch(console.error);
+        setGlobalIsPlaying(true);
+      }
+    } else {
+      audio.pause();
+      const id = surahNumber.toString().padStart(3, "0");
+      audio.src = `https://server8.mp3quran.net/afs/${id}.mp3`;
+      audio.play().catch(console.error);
+      setPlayingGlobalSurah(surahNumber);
+      setGlobalIsPlaying(true);
+
+      audio.onended = () => {
+        setGlobalIsPlaying(false);
+        setPlayingGlobalSurah(null);
+      };
+      audio.onerror = () => {
+        setGlobalIsPlaying(false);
+        setPlayingGlobalSurah(null);
+      };
+    }
+  };
+
+  const toggleDownload = (
+    type: "SURAH" | "PARAH",
+    id: number,
+    event: React.MouseEvent,
+  ) => {
+    event.stopPropagation();
+    setDownloads((prev) => {
+      const isDownloaded = prev.some((d) => d.type === type && d.id === id);
+      const newDownloads = isDownloaded
+        ? prev.filter((d) => !(d.type === type && d.id === id))
+        : [...prev, { type, id }];
+      localStorage.setItem("quran_downloads", JSON.stringify(newDownloads));
+      return newDownloads;
+    });
+  };
+
+  const toggleBookmark = (ayahNumber: number, event: React.MouseEvent) => {
+    event.stopPropagation();
+    setBookmarks((prev) => {
+      const newBookmarks = prev.includes(ayahNumber)
+        ? prev.filter((b) => b !== ayahNumber)
+        : [...prev, ayahNumber];
+      localStorage.setItem("quran_bookmarks", JSON.stringify(newBookmarks));
+      return newBookmarks;
+    });
+  };
 
   useEffect(() => {
     audioRef.current = new Audio();
@@ -185,6 +434,32 @@ export function QuranView({ setView }: QuranViewProps) {
   }, []);
 
   useEffect(() => {
+    if (activeTab === "BOOKMARKS") {
+      if (bookmarks.length === 0) {
+        setBookmarkedAyahs([]);
+        return;
+      }
+      setLoadingBookmarks(true);
+      Promise.all(
+        bookmarks.map((num) =>
+          fetch(`https://api.alquran.cloud/v1/ayah/${num}/quran-uthmani`).then(
+            (res) => res.json(),
+          ),
+        ),
+      )
+        .then((results) => {
+          const valid = results.filter((r) => r && r.data).map((r) => r.data);
+          setBookmarkedAyahs(valid);
+          setLoadingBookmarks(false);
+        })
+        .catch((err) => {
+          console.error("Failed to load bookmarks", err);
+          setLoadingBookmarks(false);
+        });
+    }
+  }, [activeTab, bookmarks]);
+
+  useEffect(() => {
     const cached = [];
     for (let i = 1; i <= 30; i++) {
       if (localStorage.getItem(`quran_juz_${i}`)) {
@@ -235,11 +510,21 @@ export function QuranView({ setView }: QuranViewProps) {
 
       setLoading(true);
       if (isTranslationMode) {
+        let edition = "hi.hindi";
+        if (
+          translationTitle === "صراط الجنان" ||
+          translationTitle === "خزائن العرفان" ||
+          translationTitle.includes("اردو") ||
+          translationTitle === "Ifham-ul-Quran"
+        ) {
+          edition = "ur.jalandhry"; // Use an Urdu translation if an Urdu card is clicked
+        }
+
         Promise.all([
           fetch(
             `https://api.alquran.cloud/v1/${type}/${id}/quran-uthmani`,
           ).then((res) => res.json()),
-          fetch(`https://api.alquran.cloud/v1/${type}/${id}/hi.hindi`).then(
+          fetch(`https://api.alquran.cloud/v1/${type}/${id}/${edition}`).then(
             (res) => res.json(),
           ),
         ])
@@ -316,7 +601,7 @@ export function QuranView({ setView }: QuranViewProps) {
           </button>
           <div className="flex-1 flex justify-center pr-10">
             <h1 className="text-xl font-bold text-black font-sans">
-              Recite Quran
+              {isTranslationMode ? translationTitle : "Recite Quran"}
             </h1>
           </div>
         </div>
@@ -435,6 +720,8 @@ export function QuranView({ setView }: QuranViewProps) {
                   );
                   const isAyahPlaying = playingAyahIndex === currentGlobalIndex;
 
+                  const isBookmarked = bookmarks.includes(ayah.number);
+
                   if (ayah.hindiText) {
                     return (
                       <div
@@ -451,6 +738,14 @@ export function QuranView({ setView }: QuranViewProps) {
                             <span className="inline-flex items-center justify-center text-black font-sans mx-1">
                               ({ayah.numberInSurah})
                             </span>
+                            <button
+                              onClick={(e) => toggleBookmark(ayah.number, e)}
+                              className="inline-flex items-center justify-center mx-1 p-1 hover:bg-black/5 rounded-full transition-colors active:scale-95 translate-y-1"
+                            >
+                              <Bookmark
+                                className={`w-[18px] h-[18px] transition-colors ${isBookmarked ? "fill-[#df4b4b] text-[#df4b4b]" : "text-gray-400"}`}
+                              />
+                            </button>
                           </span>
                         </div>
                         <div
@@ -474,6 +769,14 @@ export function QuranView({ setView }: QuranViewProps) {
                       <span className="inline-flex items-center justify-center text-black font-sans mx-1">
                         ({ayah.numberInSurah})
                       </span>
+                      <button
+                        onClick={(e) => toggleBookmark(ayah.number, e)}
+                        className="inline-flex items-center justify-center mx-1 p-1 hover:bg-black/5 rounded-full transition-colors active:scale-95 translate-y-1"
+                      >
+                        <Bookmark
+                          className={`w-[18px] h-[18px] transition-colors ${isBookmarked ? "fill-[#df4b4b] text-[#df4b4b]" : "text-gray-400"}`}
+                        />
+                      </button>
                     </span>
                   );
                 })}
@@ -616,10 +919,16 @@ export function QuranView({ setView }: QuranViewProps) {
               <path d="m8 11 4 4 4-4" />
             </svg>
             <span className="text-[12px] font-bold mt-1 tracking-tight">
-              Translation
+              {translationTitle}
             </span>
           </button>
-          <button className="flex flex-col items-center justify-center p-2 min-w-[64px] active:scale-95 transition-transform">
+          <button
+            onClick={() => {
+              setActiveTab("DOWNLOADS");
+              setIsTranslationMode(false);
+            }}
+            className="flex flex-col items-center justify-center p-2 min-w-[64px] active:scale-95 transition-transform"
+          >
             <svg
               width="24"
               height="24"
@@ -707,7 +1016,13 @@ export function QuranView({ setView }: QuranViewProps) {
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-4 bg-white/70 backdrop-blur-md border-b-[3px] border-b-gray-100/50 shadow-sm sticky top-0 z-20">
           <button
-            onClick={() => setView("home")}
+            onClick={() => {
+              if (activeTab !== "QURAN") {
+                setActiveTab("QURAN");
+              } else {
+                setView("home");
+              }
+            }}
             className="w-9 h-9 flex items-center justify-center border-[1.5px] border-gray-300 rounded-[10px] bg-transparent text-black hover:bg-black/5 transition-colors"
           >
             <ChevronLeft className="w-6 h-6" strokeWidth={2} />
@@ -716,41 +1031,56 @@ export function QuranView({ setView }: QuranViewProps) {
             className="text-[20px] font-bold text-black tracking-tight"
             style={{ marginLeft: "-16px" }}
           >
-            Recite Quran
+            {activeTab === "TRANSLATION"
+              ? translationTitle
+              : activeTab === "NOTES"
+                ? "Notes"
+                : activeTab === "DOWNLOADS"
+                  ? "Downloads"
+                  : activeTab === "BOOKMARKS"
+                    ? "Favorite"
+                    : "Recite Quran"}
           </h1>
           <div className="w-9" />
         </div>
 
         <div className="p-4 space-y-5">
-          {/* Tabs */}
-          <div className="flex items-center justify-between bg-white/60 backdrop-blur-md rounded-full p-1 shadow-sm border border-gray-200/50">
-            {["QURAN", "SURAH", "PARAH"].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab as any)}
-                className={`flex-1 py-[10px] rounded-full font-bold text-[14px] transition-colors shadow-sm ${
-                  activeTab === tab
-                    ? "bg-[#df4b4b] text-white shadow-md"
-                    : "text-[#df4b4b] bg-transparent shadow-none"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
+          {activeTab !== "TRANSLATION" &&
+            activeTab !== "NOTES" &&
+            activeTab !== "DOWNLOADS" &&
+            activeTab !== "BOOKMARKS" && (
+              <>
+                {/* Tabs */}
+                <div className="flex items-center justify-between bg-white/60 backdrop-blur-md rounded-full p-1 shadow-sm border border-gray-200/50 overflow-x-auto gap-1">
+                  {["QURAN", "SURAH", "PARAH"].map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab as typeof activeTab)}
+                      className={`flex-1 min-w-max px-3 py-[10px] rounded-full font-bold text-[14px] transition-colors shadow-sm flex items-center justify-center ${
+                        activeTab === tab
+                          ? "bg-[#df4b4b] text-white shadow-md"
+                          : "text-[#df4b4b] bg-transparent shadow-none"
+                      }`}
+                    >
+                      {tab}
+                    </button>
+                  ))}
+                </div>
 
-          {/* Search */}
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search"
-              className="w-full bg-white border-2 border-[#df4b4b] rounded-full py-3.5 pl-6 pr-14 text-gray-800 placeholder-black font-extrabold text-[15px] focus:outline-none focus:ring-2 focus:ring-[#df4b4b]/20 shadow-sm"
-            />
-            <Search
-              className="w-6 h-6 text-black absolute right-5 top-1/2 -mt-3"
-              strokeWidth={2.5}
-            />
-          </div>
+                {/* Search */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search"
+                    className="w-full bg-white border-2 border-[#df4b4b] rounded-full py-3.5 pl-6 pr-14 text-gray-800 placeholder-black font-extrabold text-[15px] focus:outline-none focus:ring-2 focus:ring-[#df4b4b]/20 shadow-sm"
+                  />
+                  <Search
+                    className="w-6 h-6 text-black absolute right-5 top-1/2 -mt-3"
+                    strokeWidth={2.5}
+                  />
+                </div>
+              </>
+            )}
 
           {activeTab === "QURAN" ? (
             <>
@@ -760,7 +1090,7 @@ export function QuranView({ setView }: QuranViewProps) {
                 <div
                   className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-90"
                   style={{
-                    backgroundImage: `url('https://images.unsplash.com/photo-1596701062351-8c2c14d1fdd0?q=80&w=800&auto=format&fit=crop')`,
+                    backgroundImage: `url('https://images.unsplash.com/photo-1609599006353-e629aaabfeae?q=80&w=800&auto=format&fit=crop')`,
                   }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
@@ -783,7 +1113,10 @@ export function QuranView({ setView }: QuranViewProps) {
               <div className="grid grid-cols-2 gap-[14px]">
                 {/* Card 1 */}
                 <div
-                  onClick={() => setActiveTab("TRANSLATION")}
+                  onClick={() => {
+                    setTranslationTitle("Translation");
+                    setActiveTab("TRANSLATION");
+                  }}
                   className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm border-b-[8px] border-[#fb6060] text-center gap-2 active:scale-95 transition-transform h-[170px] cursor-pointer"
                 >
                   <div className="flex-1 flex items-center justify-center mb-1 relative mt-2">
@@ -809,7 +1142,13 @@ export function QuranView({ setView }: QuranViewProps) {
                 </div>
 
                 {/* Card 2 */}
-                <div className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm border-b-[8px] border-[#fb6060] text-center gap-2 active:scale-95 transition-transform h-[170px]">
+                <div
+                  onClick={() => {
+                    setTranslationTitle("16 lines Quran");
+                    setActiveTab("TRANSLATION");
+                  }}
+                  className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm border-b-[8px] border-[#fb6060] text-center gap-2 active:scale-95 transition-transform h-[170px] relative overflow-hidden cursor-pointer"
+                >
                   <div className="flex-1 flex items-center justify-center mb-1 relative mt-2">
                     <BookOpen
                       className="w-[84px] h-[84px] text-[#fb6060]"
@@ -827,7 +1166,13 @@ export function QuranView({ setView }: QuranViewProps) {
                 </div>
 
                 {/* Card 3 */}
-                <div className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm border-b-[8px] border-[#fb6060] text-center gap-0 active:scale-95 transition-transform h-[190px]">
+                <div
+                  onClick={() => {
+                    setTranslationTitle("صراط الجنان");
+                    setActiveTab("TRANSLATION");
+                  }}
+                  className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm border-b-[8px] border-[#fb6060] text-center gap-0 active:scale-95 transition-transform h-[190px] cursor-pointer"
+                >
                   <div className="flex-1 flex flex-col items-center justify-center text-[#fb6060] font-arabic font-bold text-[36px] leading-[1] text-center whitespace-pre-wrap -mt-2 drop-shadow-sm">
                     <span className="relative z-10 mb-[-12px]">
                       صراط الجنان
@@ -846,7 +1191,13 @@ export function QuranView({ setView }: QuranViewProps) {
                 </div>
 
                 {/* Card 4 */}
-                <div className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm border-b-[8px] border-[#fb6060] text-center gap-2 active:scale-95 transition-transform h-[190px]">
+                <div
+                  onClick={() => {
+                    setTranslationTitle("Ifham-ul-Quran");
+                    setActiveTab("TRANSLATION");
+                  }}
+                  className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm border-b-[8px] border-[#fb6060] text-center gap-2 active:scale-95 transition-transform h-[190px] cursor-pointer"
+                >
                   <div className="flex-1 flex items-center justify-center mb-2 mt-4 relative w-full">
                     <div className="w-[72px] h-[100px] bg-[#fb6060] rounded-[8px] relative flex flex-col items-center justify-center shadow-inner pt-2 pb-2 px-1">
                       {/* Binding effect */}
@@ -883,7 +1234,13 @@ export function QuranView({ setView }: QuranViewProps) {
                 </div>
 
                 {/* Card 5 */}
-                <div className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm border-b-[8px] border-[#fb6060] text-center gap-2 active:scale-95 transition-transform h-[190px]">
+                <div
+                  onClick={() => {
+                    setTranslationTitle("خزائن العرفان");
+                    setActiveTab("TRANSLATION");
+                  }}
+                  className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm border-b-[8px] border-[#fb6060] text-center gap-2 active:scale-95 transition-transform h-[190px] cursor-pointer"
+                >
                   <div className="flex-1 flex items-center justify-center mb-2 mt-4 relative w-full">
                     <div className="w-[72px] h-[100px] bg-[#fb6060] rounded-[8px] relative flex flex-col items-center justify-center shadow-inner pt-2 pb-2 px-1">
                       {/* Binding effect */}
@@ -920,7 +1277,13 @@ export function QuranView({ setView }: QuranViewProps) {
                 </div>
 
                 {/* Card 6 */}
-                <div className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm border-b-[8px] border-[#fb6060] text-center gap-2 active:scale-95 transition-transform h-[190px]">
+                <div
+                  onClick={() => {
+                    setTranslationTitle("افہام القرآن (اردو)");
+                    setActiveTab("TRANSLATION");
+                  }}
+                  className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm border-b-[8px] border-[#fb6060] text-center gap-2 active:scale-95 transition-transform h-[190px] cursor-pointer"
+                >
                   <div className="flex-1 flex items-center justify-center mb-2 mt-4 relative w-full">
                     <div className="w-[72px] h-[100px] bg-[#fb6060] rounded-[8px] relative flex flex-col items-center justify-center shadow-inner pt-2 pb-2 px-1">
                       {/* Binding effect */}
@@ -957,43 +1320,107 @@ export function QuranView({ setView }: QuranViewProps) {
                 </div>
 
                 {/* Card 7 - Last Reading */}
-                <div className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm border-b-[8px] border-[#fb6060] text-center gap-2 active:scale-95 transition-transform h-[170px]">
-                  <div className="flex-1 flex items-center justify-center mb-1 relative mt-2 text-[#fb6060]">
-                    {/* Custom SVG icon for Last Reading */}
-                    <svg
-                      width="84"
-                      height="84"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M4 6C4 4.89543 4.89543 4 6 4H16C18.2091 4 20 5.79086 20 8V18C20 19.1046 19.1046 20 18 20H6C4.89543 20 4 19.1046 4 18V6Z"
-                        fill="#fb6060"
-                      />
-                      <path
-                        d="M4 6C4 4.89543 4.89543 4 6 4V20C4.89543 20 4 19.1046 4 18V6Z"
-                        fill="white"
-                        fillOpacity="0.4"
-                      />
-                      <rect
-                        x="13"
-                        y="8"
-                        width="4"
-                        height="2"
-                        rx="1"
-                        fill="white"
-                      />
-                      <rect
-                        x="13"
-                        y="14"
-                        width="4"
-                        height="2"
-                        rx="1"
-                        fill="white"
-                      />
-                      <rect x="8" y="4" width="2" height="16" fill="white" />
-                    </svg>
+                <div
+                  onClick={() => setShowLastReadingModal(true)}
+                  className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm border-b-[8px] border-[#fb6060] text-center gap-2 active:scale-95 transition-transform h-[170px] cursor-pointer"
+                >
+                  <div className="flex-1 flex flex-col items-center justify-center mb-1 relative mt-2 text-[#fb6060] w-full overflow-hidden">
+                    {lastReading ? (
+                      <div className="flex flex-col items-center justify-center gap-1.5 mt-2 w-full">
+                        <svg
+                          width="40"
+                          height="40"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="mb-1 text-[#fb6060]"
+                        >
+                          <path
+                            d="M4 6C4 4.89543 4.89543 4 6 4H16C18.2091 4 20 5.79086 20 8V18C20 19.1046 19.1046 20 18 20H6C4.89543 20 4 19.1046 4 18V6Z"
+                            fill="currentColor"
+                          />
+                          <path
+                            d="M4 6C4 4.89543 4.89543 4 6 4V20C4.89543 20 4 19.1046 4 18V6Z"
+                            fill="white"
+                            fillOpacity="0.4"
+                          />
+                          <rect
+                            x="13"
+                            y="8"
+                            width="4"
+                            height="2"
+                            rx="1"
+                            fill="white"
+                          />
+                          <rect
+                            x="13"
+                            y="14"
+                            width="4"
+                            height="2"
+                            rx="1"
+                            fill="white"
+                          />
+                          <rect
+                            x="8"
+                            y="4"
+                            width="2"
+                            height="16"
+                            fill="white"
+                          />
+                        </svg>
+                        <span className="font-extrabold text-[14px] leading-tight px-2 text-center text-[#df4b4b] overflow-hidden text-ellipsis whitespace-nowrap w-full">
+                          {lastReading.title}
+                        </span>
+                        {lastReading.isTranslationMode && (
+                          <span className="text-[10px] font-bold bg-[#df4b4b]/10 text-[#df4b4b] px-2 py-0.5 rounded-full mt-[-2px] tracking-tight">
+                            {lastReading.translationTitle}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <>
+                        <svg
+                          width="84"
+                          height="84"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M4 6C4 4.89543 4.89543 4 6 4H16C18.2091 4 20 5.79086 20 8V18C20 19.1046 19.1046 20 18 20H6C4.89543 20 4 19.1046 4 18V6Z"
+                            fill="#fb6060"
+                          />
+                          <path
+                            d="M4 6C4 4.89543 4.89543 4 6 4V20C4.89543 20 4 19.1046 4 18V6Z"
+                            fill="white"
+                            fillOpacity="0.4"
+                          />
+                          <rect
+                            x="13"
+                            y="8"
+                            width="4"
+                            height="2"
+                            rx="1"
+                            fill="white"
+                          />
+                          <rect
+                            x="13"
+                            y="14"
+                            width="4"
+                            height="2"
+                            rx="1"
+                            fill="white"
+                          />
+                          <rect
+                            x="8"
+                            y="4"
+                            width="2"
+                            height="16"
+                            fill="white"
+                          />
+                        </svg>
+                      </>
+                    )}
                   </div>
                   <div className="w-full flex-col justify-end items-center flex pb-1">
                     <hr className="w-[85%] border-black mb-1.5 border-[0.5px]" />
@@ -1004,7 +1431,10 @@ export function QuranView({ setView }: QuranViewProps) {
                 </div>
 
                 {/* Card 8 - Favorite */}
-                <div className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm border-b-[8px] border-[#fb6060] text-center gap-2 active:scale-95 transition-transform h-[170px]">
+                <div
+                  onClick={() => setActiveTab("BOOKMARKS")}
+                  className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm border-b-[8px] border-[#fb6060] text-center gap-2 active:scale-95 transition-transform h-[170px] cursor-pointer"
+                >
                   <div className="flex-1 flex items-center justify-center mb-1 relative mt-2 text-[#fb6060]">
                     <svg
                       width="84"
@@ -1028,7 +1458,10 @@ export function QuranView({ setView }: QuranViewProps) {
                 </div>
 
                 {/* Card 9 - Notes */}
-                <div className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm border-b-[8px] border-[#fb6060] text-center gap-2 active:scale-95 transition-transform h-[170px]">
+                <div
+                  onClick={() => setActiveTab("NOTES")}
+                  className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm border-b-[8px] border-[#fb6060] text-center gap-2 active:scale-95 transition-transform h-[170px] cursor-pointer"
+                >
                   <div className="flex-1 flex items-center justify-center mb-1 relative mt-2 text-[#fb6060]">
                     <svg
                       width="76"
@@ -1080,7 +1513,10 @@ export function QuranView({ setView }: QuranViewProps) {
                 </div>
 
                 {/* Card 10 - Bookmark */}
-                <div className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm border-b-[8px] border-[#fb6060] text-center gap-2 active:scale-95 transition-transform h-[170px]">
+                <div
+                  onClick={() => setActiveTab("BOOKMARKS")}
+                  className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm border-b-[8px] border-[#fb6060] text-center gap-2 active:scale-95 transition-transform h-[170px] cursor-pointer"
+                >
                   <div className="flex-1 flex items-center justify-center mb-1 relative mt-2 text-[#fb6060]">
                     <svg
                       width="72"
@@ -1104,7 +1540,10 @@ export function QuranView({ setView }: QuranViewProps) {
                 </div>
 
                 {/* Card 11 - Downloads */}
-                <div className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm border-b-[8px] border-[#fb6060] text-center gap-2 active:scale-95 transition-transform h-[170px]">
+                <div
+                  onClick={() => setActiveTab("DOWNLOADS")}
+                  className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm border-b-[8px] border-[#fb6060] text-center gap-2 active:scale-95 transition-transform h-[170px] cursor-pointer"
+                >
                   <div className="flex-1 flex items-center justify-center mb-1 relative mt-2 text-[#fb6060]">
                     <svg
                       width="76"
@@ -1189,6 +1628,12 @@ export function QuranView({ setView }: QuranViewProps) {
                       }}
                       className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 flex flex-col justify-between relative overflow-hidden h-[160px] active:scale-95 transition-transform border-b-[4px] cursor-pointer border-[#fb6060]"
                     >
+                      <button
+                        onClick={(e) => toggleDownload("PARAH", parah.id, e)}
+                        className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-gray-50 rounded-full hover:bg-gray-100 z-10 text-[#df4b4b]"
+                      >
+                        <Download className="w-4 h-4" />
+                      </button>
                       {/* Top Right Decoration */}
                       <svg
                         className="absolute -top-2 -right-2 w-12 h-12 text-[#df4b4b] opacity-80 pointer-events-none"
@@ -1273,6 +1718,25 @@ export function QuranView({ setView }: QuranViewProps) {
                       }}
                       className="bg-[linear-gradient(to_bottom,white,#fff8f8)] rounded-[12px] shadow-sm border border-[#fb6060] p-3 pt-3 flex flex-col gap-3 relative active:scale-95 transition-transform cursor-pointer"
                     >
+                      <button
+                        onClick={(e) => toggleGlobalSurahPlay(surah.number, e)}
+                        className="absolute right-12 top-3 w-8 h-8 flex items-center justify-center bg-[#df4b4b]/10 rounded-full hover:bg-[#df4b4b]/20 z-10 text-[#df4b4b] transition-colors"
+                      >
+                        {playingGlobalSurah === surah.number &&
+                        globalIsPlaying ? (
+                          <Pause className="w-4 h-4 fill-current" />
+                        ) : (
+                          <Play className="w-4 h-4 fill-current" />
+                        )}
+                      </button>
+                      <button
+                        onClick={(e) =>
+                          toggleDownload("SURAH", surah.number, e)
+                        }
+                        className="absolute right-3 top-3 w-8 h-8 flex items-center justify-center bg-gray-50 rounded-full hover:bg-gray-100 z-10 text-[#df4b4b]"
+                      >
+                        <Download className="w-4 h-4" />
+                      </button>
                       <div className="flex justify-between items-start">
                         <div className="flex items-center gap-2.5">
                           <div className="relative w-10 h-10 flex items-center justify-center text-black">
@@ -1344,6 +1808,12 @@ export function QuranView({ setView }: QuranViewProps) {
                   }}
                   className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 flex flex-col justify-between relative overflow-hidden h-[160px] active:scale-95 transition-transform border-b-[4px] cursor-pointer"
                 >
+                  <button
+                    onClick={(e) => toggleDownload("PARAH", parah.id, e)}
+                    className="absolute top-2 left-2 w-8 h-8 flex items-center justify-center bg-gray-50 rounded-full hover:bg-gray-100 z-10 text-[#df4b4b]"
+                  >
+                    <Download className="w-4 h-4" />
+                  </button>
                   {/* Top Right Decoration */}
                   <svg
                     className="absolute top-0 right-0 w-12 h-12 text-[#df4b4b] opacity-80 pointer-events-none"
@@ -1428,6 +1898,22 @@ export function QuranView({ setView }: QuranViewProps) {
                   }}
                   className="bg-white rounded-[12px] shadow-sm border border-gray-100 p-3 pt-3 flex flex-col gap-3 relative active:scale-95 transition-transform cursor-pointer"
                 >
+                  <button
+                    onClick={(e) => toggleGlobalSurahPlay(surah.number, e)}
+                    className="absolute right-12 top-3 w-8 h-8 flex items-center justify-center bg-[#df4b4b]/10 rounded-full hover:bg-[#df4b4b]/20 z-10 text-[#df4b4b] transition-colors"
+                  >
+                    {playingGlobalSurah === surah.number && globalIsPlaying ? (
+                      <Pause className="w-4 h-4 fill-current" />
+                    ) : (
+                      <Play className="w-4 h-4 fill-current" />
+                    )}
+                  </button>
+                  <button
+                    onClick={(e) => toggleDownload("SURAH", surah.number, e)}
+                    className="absolute right-3 top-3 w-8 h-8 flex items-center justify-center bg-gray-50 rounded-full hover:bg-gray-100 z-10 text-[#df4b4b]"
+                  >
+                    <Download className="w-4 h-4" />
+                  </button>
                   {/* Top Row */}
                   <div className="flex justify-between items-start">
                     {/* Left: Icon */}
@@ -1537,6 +2023,195 @@ export function QuranView({ setView }: QuranViewProps) {
                 </div>
               ))}
             </div>
+          ) : activeTab === "BOOKMARKS" ? (
+            <div className="flex flex-col gap-[14px]">
+              {loadingBookmarks ? (
+                <div className="flex flex-col items-center justify-center py-10 text-[#df4b4b] gap-4">
+                  <Loader2 className="w-8 h-8 animate-spin" />
+                  <p className="font-bold text-[14px]">Loading Favorites...</p>
+                </div>
+              ) : bookmarkedAyahs.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 text-gray-400 gap-4">
+                  <Bookmark className="w-12 h-12 text-gray-300" />
+                  <p className="font-bold text-[15px]">No favorites yet.</p>
+                </div>
+              ) : (
+                bookmarkedAyahs.map((ayah) => (
+                  <div
+                    key={ayah.number}
+                    className="bg-[linear-gradient(to_bottom,white,#fff8f8)] rounded-[12px] shadow-sm border border-[#fb6060] p-4 flex flex-col gap-4 relative"
+                  >
+                    <div className="flex justify-between items-start border-b border-gray-100 pb-3">
+                      <div className="flex flex-col gap-1">
+                        <span className="font-extrabold text-[15px] tracking-tight text-black leading-none">
+                          {ayah.surah.englishName}
+                        </span>
+                        <span className="text-[12px] text-gray-500 font-bold tracking-tight">
+                          Ayah {ayah.numberInSurah} | Juz {ayah.juz}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => toggleBookmark(ayah.number, e)}
+                          className="p-2 hover:bg-black/5 rounded-full transition-colors active:scale-95 text-[#df4b4b]"
+                        >
+                          <Bookmark className="w-6 h-6 fill-current" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="text-right font-arabic text-2xl md:text-3xl leading-[2.2] md:leading-[2.5] text-black">
+                      {ayah.text}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          ) : activeTab === "DOWNLOADS" ? (
+            <div className="flex flex-col gap-[14px]">
+              {downloads.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 text-gray-400 gap-4">
+                  <Download className="w-12 h-12 text-gray-300" />
+                  <p className="font-bold text-[15px]">No downloads yet.</p>
+                </div>
+              ) : (
+                downloads.map((item, index) => (
+                  <div
+                    key={index}
+                    className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center justify-between relative cursor-pointer active:scale-95 transition"
+                    onClick={() => {
+                      if (item.type === "SURAH") {
+                        setIsTranslationMode(false);
+                        setSelectedSurah(item.id);
+                        setActiveTab("SURAH");
+                      } else {
+                        setIsTranslationMode(false);
+                        setSelectedPara(item.id);
+                        setActiveTab("PARAH");
+                      }
+                    }}
+                  >
+                    <div className="flex flex-col gap-1">
+                      <span className="font-extrabold text-[15px] tracking-tight text-black leading-none">
+                        {item.type === "SURAH"
+                          ? `Surah ${item.id}`
+                          : `Parah ${item.id}`}
+                      </span>
+                      <span className="text-[12px] text-[#df4b4b] font-bold tracking-tight">
+                        Downloaded
+                      </span>
+                    </div>
+                    <button
+                      onClick={(e) => toggleDownload(item.type, item.id, e)}
+                      className="p-2 bg-red-50 hover:bg-red-100 rounded-full transition-colors active:scale-95 text-[#df4b4b]"
+                    >
+                      <Download className="w-5 h-5 fill-current" />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          ) : activeTab === "NOTES" ? (
+            <div className="flex flex-col gap-[14px]">
+              {isCreatingNote || editingNoteId ? (
+                <div className="bg-white rounded-[12px] shadow-sm border border-[#fb6060] p-4 flex flex-col gap-3">
+                  <textarea
+                    value={noteInputValue}
+                    onChange={(e) => setNoteInputValue(e.target.value)}
+                    placeholder="Write your note here..."
+                    className="w-full min-h-[120px] p-3 text-[15px] border border-gray-200 rounded-lg focus:outline-none focus:border-[#fb6060] resize-y bg-gray-50/50"
+                    autoFocus
+                  />
+                  <div className="flex justify-end gap-2">
+                    <button
+                      onClick={() => {
+                        setIsCreatingNote(false);
+                        setEditingNoteId(null);
+                        setNoteInputValue("");
+                      }}
+                      className="px-4 py-2 font-bold text-[14px] text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (noteInputValue.trim()) {
+                          saveNote(
+                            editingNoteId || Date.now().toString(),
+                            noteInputValue,
+                          );
+                        }
+                        setIsCreatingNote(false);
+                        setEditingNoteId(null);
+                        setNoteInputValue("");
+                      }}
+                      className="px-4 py-2 font-bold text-[14px] text-white bg-[#df4b4b] hover:bg-[#c53939] rounded-lg transition-colors shadow-sm"
+                    >
+                      Save Note
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setIsCreatingNote(true)}
+                    className="w-full bg-white border border-gray-200 border-dashed rounded-[12px] p-4 flex items-center justify-center gap-2 text-gray-500 hover:bg-gray-50 hover:text-[#df4b4b] hover:border-[#fb6060] transition-colors active:scale-[0.98]"
+                  >
+                    <Plus className="w-5 h-5" />
+                    <span className="font-bold text-[15px]">
+                      Create New Note
+                    </span>
+                  </button>
+
+                  {notes.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-10 text-gray-400 gap-4">
+                      <FileText className="w-12 h-12 text-gray-300" />
+                      <p className="font-bold text-[15px]">No notes yet.</p>
+                    </div>
+                  ) : (
+                    notes.map((note) => (
+                      <div
+                        key={note.id}
+                        className="bg-white rounded-[12px] shadow-sm border border-gray-100 p-4 flex flex-col gap-3 relative"
+                      >
+                        <div className="flex justify-between items-start mb-1">
+                          <span className="text-[12px] text-gray-400 font-bold">
+                            {new Date(note.date).toLocaleDateString(undefined, {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => {
+                                setEditingNoteId(note.id);
+                                setNoteInputValue(note.text);
+                              }}
+                              className="p-1.5 text-gray-400 hover:text-[#df4b4b] hover:bg-red-50 rounded-full transition-colors active:scale-95"
+                              title="Edit"
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => deleteNote(note.id)}
+                              className="p-1.5 text-gray-400 hover:text-[#df4b4b] hover:bg-red-50 rounded-full transition-colors active:scale-95"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                        <p className="text-[15px] text-gray-800 whitespace-pre-wrap leading-relaxed">
+                          {note.text}
+                        </p>
+                      </div>
+                    ))
+                  )}
+                </>
+              )}
+            </div>
           ) : null}
 
           <div className="w-full text-center py-4">
@@ -1549,6 +2224,58 @@ export function QuranView({ setView }: QuranViewProps) {
           </div>
         </div>
       </div>
+      <AnimatePresence>
+        {showLastReadingModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-[2px]"
+            onClick={() => setShowLastReadingModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white max-w-[320px] w-full rounded-[16px] shadow-2xl flex flex-col overflow-hidden"
+            >
+              <div className="pt-5 pb-3 flex flex-col items-center">
+                <h3 className="font-extrabold text-[18px] text-black mb-3 tracking-tight">
+                  Last Reading
+                </h3>
+                <div className="w-[90%] h-[3px] bg-[#fb6060] mb-2 rounded-full"></div>
+              </div>
+              <div className="flex flex-col p-4 pt-1 gap-3">
+                <button
+                  onClick={() => handleLastReadingOption("Quran")}
+                  className="w-full bg-[#fa6969] hover:bg-[#e75a5a] text-black font-extrabold text-[16px] py-3.5 rounded-full transition-colors active:scale-95 text-center shadow-sm"
+                >
+                  Quran
+                </button>
+                <button
+                  onClick={() => handleLastReadingOption("Translation")}
+                  className="w-full bg-[#fa6969] hover:bg-[#e75a5a] text-black font-extrabold text-[16px] py-3.5 rounded-full transition-colors active:scale-95 text-center shadow-sm"
+                >
+                  Translation
+                </button>
+                <button
+                  onClick={() => handleLastReadingOption("Tafseer")}
+                  className="w-full bg-[#fa6969] hover:bg-[#e75a5a] text-black font-extrabold text-[16px] py-3.5 rounded-full transition-colors active:scale-95 text-center shadow-sm"
+                >
+                  Tafseer
+                </button>
+                <button
+                  onClick={() => handleLastReadingOption("16 lines Quran")}
+                  className="w-full bg-[#fa6969] hover:bg-[#e75a5a] text-black font-extrabold text-[16px] py-3.5 rounded-full transition-colors active:scale-95 text-center shadow-sm"
+                >
+                  16 lines Quran
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

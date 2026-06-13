@@ -176,7 +176,7 @@ export function DailyView({ setView }: DailyViewProps) {
               <div className="border border-[#758469]/30 rounded-t-full rounded-b-xl p-4 h-full flex flex-col items-center justify-center bg-white/60">
                  <h3 className="text-[24px] font-bold text-[#006e89] mb-4 drop-shadow-sm font-serif" dir="rtl">فرمانِ مصطفیٰ <span className="text-[12px] text-slate-500">ﷺ</span></h3>
                  <p className="text-[18px] font-bold text-[#9d5c2e] mb-2" dir="rtl">دو چتکبرے</p>
-                 <p className="text-[15px] leading-relaxed text-[#5a483a] font-medium" dir="rtl">
+                 <p className="text-[15px] leading-relaxed text-[#166534] font-medium" dir="rtl">
                    رسول اللہ صلی اللہ علیہ وسلم نے سینگ والے بکروں کی قربانی کی کہ انہیں اپنے ہاتھ سے <span className="font-bold text-[#c7823f]">ذبح</span> کیا، بسم اللہ و تکبیر کہی، فرمایا کہ میں نے آپ کو ان بکروں کی کروٹوں پر اپنا <span className="font-bold text-[#c7823f]">قدم</span> رکھے دیکھا، آپ فرماتے تھے: <span className="text-[18px] font-bold block mt-2 text-[#7f5130]">بسم اللہ واللہ اکبر۔</span>
                  </p>
                  <p className="text-[10px] mt-4 text-slate-600 font-medium" dir="rtl">

@@ -17,6 +17,28 @@ export function ThemeModal({ isOpen, onClose }: ThemeModalProps) {
     }
   }, [isOpen, settings.theme]);
 
+  const handleClose = () => {
+    document.documentElement.classList.add('theme-transition');
+    document.documentElement.setAttribute('data-theme', settings.theme || 'dark');
+    setTimeout(() => {
+      document.documentElement.classList.remove('theme-transition');
+    }, 400);
+    onClose();
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      document.documentElement.classList.add('theme-transition');
+      document.documentElement.setAttribute('data-theme', selectedTheme);
+      
+      const timeout = setTimeout(() => {
+        document.documentElement.classList.remove('theme-transition');
+      }, 400);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [selectedTheme, isOpen]);
+
   if (!isOpen) return null;
 
   const handleApply = () => {
@@ -42,7 +64,7 @@ export function ThemeModal({ isOpen, onClose }: ThemeModalProps) {
           <h2 className="text-2xl font-bold text-slate-800 text-center flex-1 whitespace-nowrap">Change Theme</h2>
           <div className="flex-1 flex justify-end">
             <button 
-              onClick={onClose}
+              onClick={handleClose}
               className="w-10 h-10 rounded-full bg-[#3d4b5c] text-white flex items-center justify-center hover:bg-slate-700 transition"
             >
               <X className="w-5 h-5" />

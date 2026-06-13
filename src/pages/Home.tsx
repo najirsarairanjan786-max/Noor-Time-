@@ -6,7 +6,8 @@ import { useHijriDate } from "../hooks/useHijriDate";
 import { PrayerTimesList } from "../components/PrayerTimesList";
 import { RamadanTracker } from "../components/RamadanTracker";
 import { Sidebar } from "../components/Sidebar";
-import { useDailyHadees } from "../hooks/useDailyHadees";
+import { SAHIH_BUKHARI_HADEES } from "../data/hadees";
+import { useDailyDua } from "../hooks/useDailyDua";
 import { format } from "date-fns";
 import React, { useState, useEffect } from "react";
 import {
@@ -60,10 +61,26 @@ export function Home({ setView }: HomeProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
   const { t, isRTL } = useTranslation(settings.language);
-  const dailyHadees = useDailyHadees();
+  const dailyDua = useDailyDua();
 
   // Initialize Alarm System
   useAlarmSystem(timings);
+
+  const [bannerIndex, setBannerIndex] = useState(0);
+
+  const HADEES_IMAGES = [
+    'https://images.unsplash.com/photo-1585036156171-384164a8c675?q=80&w=800&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1609599006353-e629aaabfeae?q=80&w=800&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1519817650390-64a93db51149?q=80&w=800&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1564121211835-e88c852648ab?q=80&w=800&auto=format&fit=crop'
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setBannerIndex((prev) => prev + 1);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     if (settings.autoLocation && !settings.location) {
@@ -278,31 +295,40 @@ export function Home({ setView }: HomeProps) {
               onClick={() => setView("Hadees" as any)}
             >
               <div 
-                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1585036156171-384164a8c675?q=80&w=800&auto=format&fit=crop")' }}
+                className="absolute inset-0 bg-cover bg-center transition-all duration-1000 group-hover:scale-105"
+                style={{ backgroundImage: `url("${HADEES_IMAGES[bannerIndex % HADEES_IMAGES.length]}")` }}
               />
               <div className="absolute inset-0 bg-[#0f172a]/80 backdrop-blur-[2px] group-hover:bg-[#0f172a]/70 transition-colors duration-500" />
               <div className="absolute inset-0 border border-amber-500/20 rounded-3xl group-hover:border-amber-500/40 transition-colors duration-500" />
               
-              <div className="relative p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <BookText className="w-4 h-4 text-amber-500" />
-                    <span className="text-amber-500/90 text-xs font-bold uppercase tracking-widest">Daily Hadith</span>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={bannerIndex}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -5 }}
+                  transition={{ duration: 0.5 }}
+                  className="relative p-5"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <BookText className="w-4 h-4 text-amber-500" />
+                      <span className="text-amber-500/90 text-xs font-bold uppercase tracking-widest">Daily Hadith</span>
+                    </div>
+                    <div className="text-white/40 text-xs font-mono font-medium">Bukhari {SAHIH_BUKHARI_HADEES[bannerIndex % SAHIH_BUKHARI_HADEES.length].number}</div>
                   </div>
-                  <div className="text-white/40 text-xs font-mono font-medium">Bukhari {dailyHadees.number}</div>
-                </div>
-                
-                <p className="text-sm text-slate-300 leading-relaxed font-medium mb-3 line-clamp-3">
-                  "{dailyHadees.textEn}"
-                </p>
-                
-                <div className="flex justify-end border-t border-white/5 pt-3 mt-1">
-                  <p className="font-arabic text-lg text-amber-400/90 leading-normal text-right drop-shadow-sm line-clamp-2" dir="rtl">
-                    {dailyHadees.textAr}
+                  
+                  <p className="text-sm text-amber-100/90 leading-relaxed font-medium mb-3 line-clamp-3">
+                    "{SAHIH_BUKHARI_HADEES[bannerIndex % SAHIH_BUKHARI_HADEES.length].textEn}"
                   </p>
-                </div>
-              </div>
+                  
+                  <div className="flex justify-end border-t border-white/5 pt-3 mt-1">
+                    <p className="font-arabic text-lg text-amber-400/90 leading-normal text-right drop-shadow-sm line-clamp-2" dir="rtl">
+                      {SAHIH_BUKHARI_HADEES[bannerIndex % SAHIH_BUKHARI_HADEES.length].textAr}
+                    </p>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
             </motion.div>
           </div>
 
@@ -441,6 +467,44 @@ export function Home({ setView }: HomeProps) {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Daily Dua Section */}
+          <div className="max-w-lg mx-auto pb-6 px-1 mt-2">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="group relative rounded-3xl overflow-hidden cursor-pointer shadow-lg mb-8"
+              // onClick={() => setView("Dua" as any)} // Can wire this up to a dua page later if needed
+            >
+              <div 
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1519817650390-64a93db51149?q=80&w=800&auto=format&fit=crop")' }}
+              />
+              <div className="absolute inset-0 bg-[#0f172a]/80 backdrop-blur-[2px] group-hover:bg-[#0f172a]/70 transition-colors duration-500" />
+              <div className="absolute inset-0 border border-emerald-500/20 rounded-3xl group-hover:border-emerald-500/40 transition-colors duration-500" />
+              
+              <div className="relative p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Heart className="w-4 h-4 text-emerald-500" />
+                    <span className="text-emerald-500/90 text-xs font-bold uppercase tracking-widest">Dua of the Day</span>
+                  </div>
+                  <div className="text-white/40 text-xs font-mono font-medium">{dailyDua.title}</div>
+                </div>
+                
+                <p className="text-sm text-slate-300 leading-relaxed font-medium mb-3">
+                  "{dailyDua.translation}"
+                </p>
+                
+                <div className="flex justify-end border-t border-white/5 pt-3 mt-1">
+                  <p className="font-arabic text-lg text-emerald-400/90 leading-normal text-right drop-shadow-sm" dir="rtl">
+                    {dailyDua.arabic}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
           </div>
         </div>
 

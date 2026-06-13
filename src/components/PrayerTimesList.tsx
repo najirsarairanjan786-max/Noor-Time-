@@ -438,23 +438,18 @@ export function PrayerTimesList({
 
           {/* Silent Mode sticks out slightly */}
           <button
-            onClick={handleGlobalSilentToggle}
+            onClick={() => setView?.('jamat_silent')}
             className="flex flex-col items-center gap-1 relative z-10 -mr-4 ml-2 hover:opacity-80 transition-opacity"
           >
             <div
               className={cn(
-                "w-11 h-11 rounded-full flex items-center justify-center text-white shadow-md border-4 border-emerald-950 transition-colors",
-                settings.silentMode ? "bg-red-400" : "bg-slate-400",
+                "w-11 h-11 rounded-full flex items-center justify-center text-white shadow-md border-4 border-emerald-950 transition-colors bg-slate-400"
               )}
             >
-              {settings.silentMode ? (
-                <VolumeX className="w-5 h-5" />
-              ) : (
-                <Volume2 className="w-5 h-5" />
-              )}
+              <Volume2 className="w-5 h-5" />
             </div>
             <span className="text-[11px] font-semibold text-slate-800 absolute -bottom-5 right-1 whitespace-nowrap">
-              {settings.silentMode ? "Silent On" : "Silent Off"}
+              Silent Mode
             </span>
           </button>
         </div>
@@ -548,13 +543,7 @@ export function PrayerTimesList({
                   >
                     <div className="flex flex-row items-center justify-between p-2.5 pb-1.5 z-10 w-full">
                     <div className="flex items-center space-x-3 min-w-[120px]">
-                      {isFajr ? (
-                        <span className="text-slate-400 text-lg">⏱️</span>
-                      ) : idx === 3 ? (
-                        <span className="text-slate-400 text-lg">🌒</span>
-                      ) : (
-                        <span className="text-slate-400 text-lg">🌘</span>
-                      )}
+                      <span className="text-slate-400 text-lg">⏱️</span>
                       <div className="flex items-center">
                         <span className="font-semibold text-sm font-sans text-slate-800">
                           {prayer.label}

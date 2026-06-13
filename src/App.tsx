@@ -16,6 +16,7 @@ import { DonateView } from './pages/DonateView';
 import { ShareView } from './pages/ShareView';
 import { DailyView } from './pages/DailyView';
 import { TasbeehView } from './pages/TasbeehView';
+import { JamatSilentView } from './pages/JamatSilentView';
 import { Home2 } from './pages/Home2';
 import { ProfileView } from './pages/ProfileView';
 import { Navigation } from './components/Navigation';
@@ -25,7 +26,7 @@ import { useSettings } from './hooks/useSettings';
 import { useDataSync } from './hooks/useDataSync';
 import { useAuth } from './hooks/useAuth';
 
-export type ViewType = 'home' | 'home2' | 'calendar' | 'settings' | 'prayer' | 'Quran' | 'Question & Answer' | 'Hadees' | 'Tajweed' | 'Adhkar' | 'qibla' | 'languages' | 'donate' | 'share' | 'daily' | 'tasbeeh' | 'profile' | string;
+export type ViewType = 'home' | 'home2' | 'calendar' | 'settings' | 'prayer' | 'Quran' | 'Question & Answer' | 'Hadees' | 'Tajweed' | 'Adhkar' | 'qibla' | 'languages' | 'donate' | 'share' | 'daily' | 'tasbeeh' | 'profile' | 'jamat_silent' | string;
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewType>('home');
@@ -54,7 +55,7 @@ export default function App() {
   }
 
   // Standard views
-  const standardViews = ['home', 'home2', 'calendar', 'settings', 'prayer', 'Quran', 'Question & Answer', 'Hadees', 'Tajweed', 'Adhkar', 'qibla', 'languages', 'donate', 'share', 'daily', 'tasbeeh', 'profile'];
+  const standardViews = ['home', 'home2', 'calendar', 'settings', 'prayer', 'Quran', 'Question & Answer', 'Hadees', 'Tajweed', 'Adhkar', 'qibla', 'languages', 'donate', 'share', 'daily', 'tasbeeh', 'profile', 'jamat_silent'];
   const isFeatureView = !standardViews.includes(currentView);
 
   return (
@@ -86,6 +87,7 @@ export default function App() {
               {currentView === 'daily' && <DailyView setView={setCurrentView} />}
               {currentView === 'tasbeeh' && <TasbeehView setView={setCurrentView} />}
               {currentView === 'profile' && <ProfileView setView={setCurrentView} onSkip={() => setCurrentView('home')} />}
+              {currentView === 'jamat_silent' && <JamatSilentView setView={setCurrentView} />}
               {isFeatureView && <FeatureView title={currentView} setView={setCurrentView} />}
             </AnimatePresence>
 
