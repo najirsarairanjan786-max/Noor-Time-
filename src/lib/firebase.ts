@@ -1,17 +1,24 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, setLogLevel } from 'firebase/firestore';
-import firebaseConfig from '../../firebase-applet-config.json';
-
-// Silence offline warnings
-setLogLevel('silent');
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import {
+  getFirestore,
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+} from "firebase/firestore";
+import firebaseConfig from "../../firebase-applet-config.json";
 
 const app = initializeApp(firebaseConfig);
+
+// Initialize Firestore with offline persistence enabled
 export const db = initializeFirestore(
   app,
   {
-    localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()}),
+    localCache: persistentLocalCache({
+      tabManager: persistentMultipleTabManager(),
+    }),
   },
-  firebaseConfig.firestoreDatabaseId || '(default)'
+  firebaseConfig.firestoreDatabaseId,
 );
-export const auth = getAuth();
+
+export const auth = getAuth(app);

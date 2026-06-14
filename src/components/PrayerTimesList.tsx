@@ -569,7 +569,7 @@ export function PrayerTimesList({
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-end space-x-2 flex-1 text-right">
+                      <div className="flex items-center justify-center space-x-2 flex-1 text-center">
                         {editingPrayer === prayer.name ? (
                           <div className="flex items-center gap-2">
                             <input
@@ -587,7 +587,7 @@ export function PrayerTimesList({
                             </button>
                           </div>
                         ) : (
-                          <div className="font-semibold text-sm text-slate-800 tracking-tight flex items-center group/edit gap-2">
+                          <div className="font-semibold text-sm text-slate-800 tracking-tight flex items-center justify-center group/edit gap-2">
                             <button
                               onClick={() =>
                                 handleEditClick(prayer.name, prayer.time)

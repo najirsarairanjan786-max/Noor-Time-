@@ -6,6 +6,7 @@ import { useHijriDate } from "../hooks/useHijriDate";
 import { PrayerTimesList } from "../components/PrayerTimesList";
 import { RamadanTracker } from "../components/RamadanTracker";
 import { Sidebar } from "../components/Sidebar";
+import { LocationPickerModal } from "../components/LocationPickerModal";
 import { SAHIH_BUKHARI_HADEES } from "../data/hadees";
 import { useDailyDua } from "../hooks/useDailyDua";
 import { format } from "date-fns";
@@ -67,25 +68,9 @@ export function Home({ setView }: HomeProps) {
   const { hijriDate } = useHijriDate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const { t, isRTL } = useTranslation(settings.language);
   const dailyDua = useDailyDua();
-
-  const [salahTracker] = useLocalStorage("dailySalahTracker", {
-    date: new Date().toDateString(),
-    status: {
-      Fajr: false,
-      Dhuhr: false,
-      Asr: false,
-      Maghrib: false,
-      Isha: false,
-    } as Record<string, boolean>,
-  });
-
-  const completedPrayers = Object.values(salahTracker.status).filter(
-    Boolean,
-  ).length;
-  const totalPrayers = 5;
-  const progressPercentage = (completedPrayers / totalPrayers) * 100;
 
   // Initialize Alarm System
   useAlarmSystem(timings);
@@ -119,12 +104,8 @@ export function Home({ setView }: HomeProps) {
     return () => clearInterval(timer);
   }, []);
 
-  const handleLocationUpdate = async () => {
-    try {
-      await requestLocation();
-    } catch (e) {
-      alert("GPS location failed. Please check your browser permissions.");
-    }
+  const handleLocationUpdate = () => {
+    setIsLocationModalOpen(true);
   };
 
   return (
@@ -174,44 +155,34 @@ export function Home({ setView }: HomeProps) {
         {/* Top Bar content relative to bg */}
         <div className="relative z-10 max-w-lg mx-auto">
           {/* Header row 1 */}
-          <div className="flex justify-between items-center mb-6 relative">
-            <div className="flex items-center">
-              <button
-                onClick={() => setIsSidebarOpen(true)}
-                className="relative z-20 hover:opacity-80 transition p-2 -ml-2"
-              >
-                <div className="w-7 flex flex-col gap-[5px] items-start">
-                  <div className="h-[3px] w-7 bg-white rounded-full transition-all duration-300"></div>
-                  <div className="h-[3px] w-5 bg-white rounded-full transition-all duration-300"></div>
-                  <div className="h-[3px] w-7 bg-white rounded-full transition-all duration-300"></div>
-                </div>
-              </button>
-            </div>
+          <div className="flex items-center mb-6 relative">
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="relative z-20 hover:opacity-80 transition p-2 -ml-2 shrink-0"
+            >
+              <div className="w-7 flex flex-col gap-[5px] items-start">
+                <div className="h-[3px] w-7 bg-white rounded-full transition-all duration-300"></div>
+                <div className="h-[3px] w-5 bg-white rounded-full transition-all duration-300"></div>
+                <div className="h-[3px] w-7 bg-white rounded-full transition-all duration-300"></div>
+              </div>
+            </button>
+            <h1 className="text-xl font-black text-white tracking-wide drop-shadow-md relative z-20 whitespace-nowrap ml-2">
+              PrayerTimes
+            </h1>
 
-            {/* Center Title */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 mt-1">
-              <h1 className="text-2xl font-black text-white tracking-wide drop-shadow-md">
-                PrayerTimes
-              </h1>
-            </div>
-
-            {/* Right Side Options */}
-            <div className="flex items-center gap-3 relative z-20">
-              {/* Location */}
+            {/* Location next to PrayerTimes */}
+            <div className="ml-3 relative z-20 flex-1 flex items-center">
               <button
                 onClick={handleLocationUpdate}
-                className="flex bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20 px-2.5 py-1.5 rounded-full items-center gap-1.5 max-w-[120px] overflow-hidden group"
+                className="flex bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20 px-3 py-1.5 rounded-full items-center gap-2 max-w-[200px] w-full overflow-hidden group shadow-md"
               >
                 <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full flex-shrink-0 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse" />
                 <div
                   className="w-full flex-1 overflow-hidden relative"
-                  style={{ display: "flex", width: "80px" }}
+                  style={{ display: "flex" }}
                 >
-                  <div className="font-bold text-[10px] uppercase tracking-wider leading-tight text-white flex whitespace-nowrap overflow-visible">
-                    <span
-                      className="inline-block animate-marquee group-hover:block"
-                      style={{ paddingLeft: "100%" }}
-                    >
+                  <div className="font-bold text-[11px] uppercase tracking-wider leading-tight text-white w-full">
+                    <span className="truncate block w-full text-left">
                       {settings.location?.name || "Location"}
                     </span>
                   </div>
@@ -315,43 +286,6 @@ export function Home({ setView }: HomeProps) {
 
       <div className="px-3 relative z-20">
         <PrayerTimesList timings={timings} setView={setView} />
-
-        {/* Daily Prayers Progress Bar */}
-        <div
-          className="max-w-lg mx-auto mt-4 px-1"
-          onClick={() => setView("daily" as any)}
-        >
-          <div className="bg-white/10 backdrop-blur-md rounded-[16px] border border-white/20 p-4 shadow-lg cursor-pointer hover:bg-white-[0.15] transition-colors relative overflow-hidden group">
-            <div className="flex justify-between items-center mb-2 z-10 relative">
-              <div className="flex items-center gap-2">
-                <CheckSquare className="w-4 h-4 text-emerald-400" />
-                <span className="text-white font-bold text-sm tracking-wide">
-                  Daily Prayers
-                </span>
-              </div>
-              <span className="text-emerald-300 font-bold text-xs bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-400/20">
-                {completedPrayers}/{totalPrayers}
-              </span>
-            </div>
-            <div className="w-full bg-slate-800/60 rounded-full h-2.5 mb-1 z-10 relative overflow-hidden shadow-inner flex border border-white/5">
-              <motion.div
-                className="bg-emerald-400 h-2.5 transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(52,211,153,0.5)]"
-                initial={{ width: 0 }}
-                animate={{ width: `${progressPercentage}%` }}
-              />
-            </div>
-            <div className="text-[10px] text-white/50 z-10 relative text-right flex justify-between tracking-tight">
-              <span>Updated via Tracker</span>
-              <span>
-                {completedPrayers === totalPrayers
-                  ? "All done! 🎉"
-                  : "Keep going!"}
-              </span>
-            </div>
-            {/* Glow effect on hover */}
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-emerald-500/10 to-emerald-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-          </div>
-        </div>
 
         {/* Daily Hadith Section */}
         <div className="max-w-lg mx-auto mt-6 px-1">
@@ -618,6 +552,18 @@ export function Home({ setView }: HomeProps) {
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         setView={setView}
+      />
+      <LocationPickerModal
+        isOpen={isLocationModalOpen}
+        onClose={() => setIsLocationModalOpen(false)}
+        onSelect={(loc) => {
+          setSettings((prev) => ({
+            ...prev,
+            location: { lat: loc.latitude, lng: loc.longitude, name: loc.name },
+          }));
+        }}
+        initialLat={settings.location?.lat}
+        initialLng={settings.location?.lng}
       />
 
       <ThemeModal
