@@ -80,12 +80,14 @@ export function ProfileView({
       (window as any).recaptchaVerifier = null;
     }
 
-    // Create element if it doesn't exist just in case
-    if (!document.getElementById("recaptcha-container")) {
-      const el = document.createElement("div");
-      el.id = "recaptcha-container";
-      document.body.appendChild(el);
+    let container = document.getElementById("recaptcha-container");
+    if (container) {
+      container.remove();
     }
+
+    container = document.createElement("div");
+    container.id = "recaptcha-container";
+    document.body.appendChild(container);
 
     (window as any).recaptchaVerifier = new RecaptchaVerifier(
       auth,
@@ -384,7 +386,6 @@ export function ProfileView({
           </p>
         </div>
 
-        <div id="recaptcha-container"></div>
         {error && (
           <div className="bg-rose-900/40 text-rose-300 p-3 rounded-xl text-sm mb-6 border border-rose-800/50">
             {error}
