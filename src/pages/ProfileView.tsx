@@ -88,6 +88,8 @@ export function ProfileView({ setView, onSkip }: { setView: (view: string) => vo
         setError('Invalid phone number. Ensure it has a country code (e.g. +91).');
       } else if (err.message.includes('auth/unauthorized-domain')) {
         setError('Domain not authorized. Please add *.run.app in your Firebase Console under Authentication settings.');
+      } else if (err.message.includes('auth/operation-not-allowed')) {
+        setError('Phone login is disabled. Please enable the "Phone" provider in your Firebase Console settings.');
       } else if (err.message.includes('popup')) {
         setError('Popup blocked by browser or iframe. Open app in a new tab.');
       } else {
