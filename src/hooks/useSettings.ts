@@ -86,7 +86,7 @@ export function useSettings() {
             }
           },
           (error) => {
-            console.error("Error getting location: ", error);
+            console.warn("Error getting location: ", error);
             // Default to Makkah if location fails
             setSettings((prev) => ({
               ...prev,

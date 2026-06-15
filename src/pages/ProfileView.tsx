@@ -64,7 +64,7 @@ export function ProfileView({
             }
           }
         } catch (e) {
-          console.error("Error fetching profile", e);
+          console.warn("Error fetching profile", e);
         }
       };
 
@@ -73,29 +73,15 @@ export function ProfileView({
   }, [user]);
 
   const setupRecaptcha = () => {
-    if ((window as any).recaptchaVerifier) {
-      try {
-        (window as any).recaptchaVerifier.clear();
-      } catch (e) {}
-      (window as any).recaptchaVerifier = null;
+    if (!(window as any).recaptchaVerifier) {
+      (window as any).recaptchaVerifier = new RecaptchaVerifier(
+        auth,
+        "recaptcha-container",
+        {
+          size: "invisible",
+        },
+      );
     }
-
-    let container = document.getElementById("recaptcha-container");
-    if (container) {
-      container.remove();
-    }
-
-    container = document.createElement("div");
-    container.id = "recaptcha-container";
-    document.body.appendChild(container);
-
-    (window as any).recaptchaVerifier = new RecaptchaVerifier(
-      auth,
-      "recaptcha-container",
-      {
-        size: "invisible",
-      },
-    );
   };
 
   const handleSendOtp = async (e: FormEvent) => {
@@ -142,6 +128,8 @@ export function ProfileView({
           (window as any).recaptchaVerifier.clear();
           (window as any).recaptchaVerifier = null;
         }
+        const container = document.getElementById("recaptcha-container");
+        if (container) container.innerHTML = "";
       } catch (e) {}
     } finally {
       setLoading(false);
@@ -385,6 +373,8 @@ export function ProfileView({
             Welcome back to your account
           </p>
         </div>
+
+        <div id="recaptcha-container"></div>
 
         {error && (
           <div className="bg-rose-900/40 text-rose-300 p-3 rounded-xl text-sm mb-6 border border-rose-800/50">

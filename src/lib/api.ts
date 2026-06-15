@@ -51,7 +51,7 @@ export async function fetchPayerTimes(lat: number, lng: number, method: number =
       try {
         return JSON.parse(cached);
       } catch (e) {
-        console.error("Failed to parse cached prayer times", e);
+        console.warn("Failed to parse cached prayer times", e);
       }
     }
   }
@@ -82,7 +82,7 @@ export async function fetchHijriDate(date: Date): Promise<HijriDateInfo> {
       try {
         return JSON.parse(cached);
       } catch (e) {
-        console.error("Failed to parse cached hijri date", e);
+        console.warn("Failed to parse cached hijri date", e);
       }
     }
   }

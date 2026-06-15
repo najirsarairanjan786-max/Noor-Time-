@@ -115,7 +115,7 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
 
         setCalendarData(adjustedCalendar);
       } catch (e) {
-        console.error(e);
+        console.warn(e);
       } finally {
         setLoading(false);
       }

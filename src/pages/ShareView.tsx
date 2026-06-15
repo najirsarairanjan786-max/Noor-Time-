@@ -15,7 +15,7 @@ export function ShareView({ setView }: ShareViewProps) {
         url: window.location.href,
       }).catch((error) => {
         if (error.name !== 'AbortError' && !error.message?.includes('canceled')) {
-          console.error('Error sharing:', error);
+          console.warn('Error sharing:', error);
         }
       });
     } else {

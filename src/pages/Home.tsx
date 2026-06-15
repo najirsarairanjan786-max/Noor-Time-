@@ -93,7 +93,7 @@ export function Home({ setView }: HomeProps) {
 
   useEffect(() => {
     if (settings.autoLocation && !settings.location) {
-      requestLocation().catch(console.error);
+      requestLocation().catch(console.warn);
     }
   }, []);
 

@@ -21,7 +21,7 @@ export function LocationPrompt() {
           }
         } else if (result.state === 'granted') {
            if (settings.autoLocation) {
-               requestLocation().catch(console.error);
+               requestLocation().catch(console.warn);
            }
         }
         
@@ -36,13 +36,13 @@ export function LocationPrompt() {
              setShowPrompt(false);
              localStorage.removeItem('location_prompt_dismissed');
              if (settings.autoLocation) {
-                 requestLocation().catch(console.error);
+                 requestLocation().catch(console.warn);
              }
           }
         };
       } catch (error) {
         // Some older browsers might throw an error
-        console.error("Error asking for location permissions status", error);
+        console.warn("Error asking for location permissions status", error);
       }
     };
     

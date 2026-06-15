@@ -63,7 +63,7 @@ export function DailyView({ setView }: DailyViewProps) {
             error.name !== "AbortError" &&
             !error.message?.includes("canceled")
           ) {
-            console.error("Error sharing:", error);
+            console.warn("Error sharing:", error);
           }
         });
     } else {

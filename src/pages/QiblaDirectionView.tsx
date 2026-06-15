@@ -93,7 +93,7 @@ export function QiblaDirectionView({ setView }: QiblaDirectionViewProps) {
         }
       }
     } catch (e) {
-      console.error(e);
+      console.warn(e);
     } finally {
       setIsImproving(false);
     }

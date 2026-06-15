@@ -306,14 +306,14 @@ export function QuranView({ setView }: QuranViewProps) {
         audio.pause();
         setGlobalIsPlaying(false);
       } else {
-        audio.play().catch(console.error);
+        audio.play().catch(console.warn);
         setGlobalIsPlaying(true);
       }
     } else {
       audio.pause();
       const id = surahNumber.toString().padStart(3, "0");
       audio.src = `https://server8.mp3quran.net/afs/${id}.mp3`;
-      audio.play().catch(console.error);
+      audio.play().catch(console.warn);
       setPlayingGlobalSurah(surahNumber);
       setGlobalIsPlaying(true);
 
@@ -371,7 +371,7 @@ export function QuranView({ setView }: QuranViewProps) {
     // Attempt play without catching globally in a way that hides errors
     const playPromise = audio.play();
     if (playPromise !== undefined) {
-      playPromise.catch((e) => console.error("Audio playback failed", e));
+      playPromise.catch((e) => console.warn("Audio playback failed", e));
     }
   };
 
@@ -457,7 +457,7 @@ export function QuranView({ setView }: QuranViewProps) {
           setSurahs(data.data);
         }
       })
-      .catch(console.error);
+      .catch(console.warn);
   }, []);
 
   useEffect(() => {
@@ -480,7 +480,7 @@ export function QuranView({ setView }: QuranViewProps) {
           setLoadingBookmarks(false);
         })
         .catch((err) => {
-          console.error("Failed to load bookmarks", err);
+          console.warn("Failed to load bookmarks", err);
           setLoadingBookmarks(false);
         });
     }
@@ -531,7 +531,7 @@ export function QuranView({ setView }: QuranViewProps) {
           setLoading(false);
           return;
         } catch (e) {
-          console.error("Cache parsing error", e);
+          console.warn("Cache parsing error", e);
         }
       }
 
@@ -577,7 +577,7 @@ export function QuranView({ setView }: QuranViewProps) {
             setLoading(false);
           })
           .catch((err) => {
-            console.error(err);
+            console.warn(err);
             setLoading(false);
           });
       } else {
@@ -595,7 +595,7 @@ export function QuranView({ setView }: QuranViewProps) {
             setLoading(false);
           })
           .catch((err) => {
-            console.error(err);
+            console.warn(err);
             setLoading(false);
           });
       }
