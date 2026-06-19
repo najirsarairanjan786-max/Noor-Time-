@@ -22,6 +22,7 @@ import { ProfileView } from "./pages/ProfileView";
 import { Navigation } from "./components/Navigation";
 import { SyncStatus } from "./components/SyncStatus";
 import { LocationPrompt } from "./components/LocationPrompt";
+import { NotificationPrompt } from "./components/NotificationPrompt";
 import { AnimatePresence } from "motion/react";
 import { useSettings } from "./hooks/useSettings";
 import { useDataSync } from "./hooks/useDataSync";
@@ -176,6 +177,7 @@ export default function App() {
             </AnimatePresence>
 
             <LocationPrompt />
+            <NotificationPrompt />
             {!(currentView === "profile" && !user) && (
               <Navigation view={currentView} setView={setCurrentView} />
             )}
