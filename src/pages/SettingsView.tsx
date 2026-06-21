@@ -471,6 +471,34 @@ export function SettingsView({
 
         <div className="p-4 flex flex-col border-t border-emerald-800/40">
           <h3 className="text-emerald-100 font-medium mb-3 flex items-center gap-2">
+            <Globe className="w-5 h-5 text-emerald-400" /> Supabase Details (Noor)
+          </h3>
+          <div className="bg-emerald-950/50 p-3 rounded-lg border border-emerald-800/50 flex flex-col gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-emerald-300 font-medium">VITE SUPABASE URL</label>
+              <input
+                type="text"
+                placeholder="https://your-project.supabase.co"
+                value={settings.supabaseUrl || ""}
+                onChange={(e) => setSettings((p) => ({ ...p, supabaseUrl: e.target.value }))}
+                className="bg-emerald-950 border border-emerald-800 text-emerald-100 text-sm rounded-lg p-2 outline-none w-full"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-emerald-300 font-medium">VITE SUPABASE ANON KEY</label>
+              <input
+                type="password"
+                placeholder="eyJh......"
+                value={settings.supabaseAnonKey || ""}
+                onChange={(e) => setSettings((p) => ({ ...p, supabaseAnonKey: e.target.value }))}
+                className="bg-emerald-950 border border-emerald-800 text-emerald-100 text-sm rounded-lg p-2 outline-none w-full"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="p-4 flex flex-col border-t border-emerald-800/40">
+          <h3 className="text-emerald-100 font-medium mb-3 flex items-center gap-2">
             <Globe className="w-5 h-5 text-emerald-400" /> Database Sync
           </h3>
           <div className="bg-emerald-950/50 p-3 rounded-lg border border-emerald-800/50">

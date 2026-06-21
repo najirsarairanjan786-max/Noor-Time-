@@ -18,6 +18,8 @@ export interface AppSettings {
   pushNotificationsEnabled: boolean;
   customAlarms: Record<string, string>;
   prayerAlarmSounds: Record<string, string>;
+  supabaseUrl: string;
+  supabaseAnonKey: string;
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -38,6 +40,8 @@ const DEFAULT_SETTINGS: AppSettings = {
   silentMode: false,
   pushNotificationsEnabled: true,
   customAlarms: {},
+  supabaseUrl: "",
+  supabaseAnonKey: "",
 };
 
 export function useSettings() {

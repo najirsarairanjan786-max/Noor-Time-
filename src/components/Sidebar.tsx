@@ -3,7 +3,7 @@ import {
   BookOpen, MessageCircle, Settings, Globe, HeartHandshake, MapPin, 
   Cloud, Calculator, Compass, VolumeX, CalendarDays, Heart, Share2,
   Lightbulb, CalendarCheck, Radio, Star, Bell, Mail, Smartphone, ThumbsUp, X,
-  BookA, Bookmark, BookText, ArrowLeft
+  BookA, Bookmark, BookText, ArrowLeft, Sparkles
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { type Dispatch, type SetStateAction, useState } from 'react';
@@ -30,6 +30,7 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
     { icon: BookOpen, label: t('alQuran') || 'Al Quran', view: 'Quran' as ViewType, color: 'text-pink-400' },
     { icon: BookA, label: t('tajweed') || 'Tajweed', color: 'text-yellow-500' },
     { icon: BookText, label: t('hadees') || 'Hadees', color: 'text-orange-400' },
+    { icon: Sparkles, label: 'Chat with Noor', view: 'noor_ai' as ViewType, color: 'text-amber-400' },
     { icon: MessageCircle, label: t('qa') || 'Question and Answer', color: 'text-amber-500' },
     { icon: Settings, label: t('settings') || 'Settings', view: 'settings' as ViewType, color: 'text-red-500' },
     { icon: Globe, label: t('languages') || 'Languages', view: 'languages' as ViewType, color: 'text-blue-400' },
