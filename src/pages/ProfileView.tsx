@@ -73,14 +73,29 @@ export function ProfileView({
   }, [user]);
 
   const setupRecaptcha = () => {
-    if (!(window as any).recaptchaVerifier) {
-      (window as any).recaptchaVerifier = new RecaptchaVerifier(
-        auth,
-        "recaptcha-container",
-        {
-          size: "invisible",
-        },
-      );
+    try {
+      if (!(window as any).recaptchaVerifier) {
+        (window as any).recaptchaVerifier = new RecaptchaVerifier(
+          auth,
+          "recaptcha-container",
+          {
+            size: "invisible",
+            callback: (response: any) => {
+              console.log("reCAPTCHA solved:", response);
+            },
+            "expired-callback": () => {
+              console.log("reCAPTCHA expired");
+              setError("reCAPTCHA expired. Please try sending OTP again.");
+              if ((window as any).recaptchaVerifier) {
+                (window as any).recaptchaVerifier.clear();
+                (window as any).recaptchaVerifier = null;
+              }
+            },
+          },
+        );
+      }
+    } catch (e) {
+      console.error("Error setting up reCAPTCHA:", e);
     }
   };
 
@@ -111,11 +126,19 @@ export function ProfileView({
         );
       } else if (err.message.includes("auth/unauthorized-domain")) {
         setError(
-          "Domain not authorized. Please add *.run.app in your Firebase Console under Authentication settings.",
+          "Domain not authorized. Please add your Vercel or custom domain in your Firebase Console under Authentication -> Settings -> Authorized domains.",
         );
       } else if (err.message.includes("auth/operation-not-allowed")) {
         setError(
-          'Phone login is disabled. Please enable the "Phone" provider in your Firebase Console settings.',
+          "Phone login is disabled or project config is incorrect. Use your own Firebase project (via Settings or Vercel env vars) and enable the Phone provider.",
+        );
+      } else if (err.message.includes("auth/app-not-authorized")) {
+        setError(
+          "App not authorized for Phone Auth. If using Android WebView, enable Firebase App Check or add the package name to Firebase.",
+        );
+      } else if (err.code === "auth/captcha-check-failed") {
+        setError(
+          "reCAPTCHA verification failed. Please try again or check your network.",
         );
       } else if (err.message.includes("popup")) {
         setError("Popup blocked by browser or iframe. Open app in a new tab.");

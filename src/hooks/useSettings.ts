@@ -20,6 +20,14 @@ export interface AppSettings {
   prayerAlarmSounds: Record<string, string>;
   supabaseUrl: string;
   supabaseAnonKey: string;
+  firebaseConfig?: {
+    apiKey: string;
+    authDomain: string;
+    projectId: string;
+    storageBucket: string;
+    messagingSenderId: string;
+    appId: string;
+  };
 }
 
 const DEFAULT_SETTINGS: AppSettings = {

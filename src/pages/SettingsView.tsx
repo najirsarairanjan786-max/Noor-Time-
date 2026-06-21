@@ -471,29 +471,100 @@ export function SettingsView({
 
         <div className="p-4 flex flex-col border-t border-emerald-800/40">
           <h3 className="text-emerald-100 font-medium mb-3 flex items-center gap-2">
-            <Globe className="w-5 h-5 text-emerald-400" /> Supabase Details (Noor)
+            <Globe className="w-5 h-5 text-emerald-400" /> Supabase Details
+            (Noor)
           </h3>
           <div className="bg-emerald-950/50 p-3 rounded-lg border border-emerald-800/50 flex flex-col gap-3">
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-emerald-300 font-medium">VITE SUPABASE URL</label>
+              <label className="text-xs text-emerald-300 font-medium">
+                VITE SUPABASE URL
+              </label>
               <input
                 type="text"
                 placeholder="https://your-project.supabase.co"
                 value={settings.supabaseUrl || ""}
-                onChange={(e) => setSettings((p) => ({ ...p, supabaseUrl: e.target.value }))}
+                onChange={(e) =>
+                  setSettings((p) => ({ ...p, supabaseUrl: e.target.value }))
+                }
                 className="bg-emerald-950 border border-emerald-800 text-emerald-100 text-sm rounded-lg p-2 outline-none w-full"
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-emerald-300 font-medium">VITE SUPABASE ANON KEY</label>
+              <label className="text-xs text-emerald-300 font-medium">
+                VITE SUPABASE ANON KEY
+              </label>
               <input
                 type="password"
                 placeholder="eyJh......"
                 value={settings.supabaseAnonKey || ""}
-                onChange={(e) => setSettings((p) => ({ ...p, supabaseAnonKey: e.target.value }))}
+                onChange={(e) =>
+                  setSettings((p) => ({
+                    ...p,
+                    supabaseAnonKey: e.target.value,
+                  }))
+                }
                 className="bg-emerald-950 border border-emerald-800 text-emerald-100 text-sm rounded-lg p-2 outline-none w-full"
               />
             </div>
+          </div>
+        </div>
+
+        <div className="p-4 flex flex-col border-t border-emerald-800/40">
+          <h3 className="text-emerald-100 font-medium mb-3 flex items-center gap-2">
+            <Globe className="w-5 h-5 text-amber-400" /> Firebase Config (Auth)
+          </h3>
+          <p className="text-xs text-emerald-200/60 mb-3 leading-relaxed">
+            AI Studio's default Firebase project does not have Phone
+            Authentication enabled. To use Phone Auth, paste your own Firebase
+            config values below.
+          </p>
+          <div className="bg-emerald-950/50 p-3 rounded-lg border border-emerald-800/50 flex flex-col gap-3">
+            {[
+              { label: "API Key", key: "apiKey" },
+              { label: "Auth Domain", key: "authDomain" },
+              { label: "Project ID", key: "projectId" },
+              { label: "Storage Bucket", key: "storageBucket" },
+              { label: "Messaging Sender ID", key: "messagingSenderId" },
+              { label: "App ID", key: "appId" },
+            ].map(({ label, key }) => (
+              <div className="flex flex-col gap-1" key={key}>
+                <label className="text-xs text-emerald-300 font-medium">
+                  {label}
+                </label>
+                <input
+                  type={key === "apiKey" ? "password" : "text"}
+                  placeholder={`Your ${label}`}
+                  value={
+                    settings.firebaseConfig?.[
+                      key as keyof typeof settings.firebaseConfig
+                    ] || ""
+                  }
+                  onChange={(e) =>
+                    setSettings((p) => ({
+                      ...p,
+                      firebaseConfig: {
+                        ...(p.firebaseConfig || {
+                          apiKey: "",
+                          authDomain: "",
+                          projectId: "",
+                          storageBucket: "",
+                          messagingSenderId: "",
+                          appId: "",
+                        }),
+                        [key]: e.target.value,
+                      },
+                    }))
+                  }
+                  className="bg-emerald-950 border border-emerald-800 text-emerald-100 text-sm rounded-lg p-2 outline-none w-full"
+                />
+              </div>
+            ))}
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-2 w-full py-2 bg-emerald-700/50 text-emerald-100 text-sm font-medium rounded-lg hover:bg-emerald-600 transition"
+            >
+              Apply Changes (Reload)
+            </button>
           </div>
         </div>
 
