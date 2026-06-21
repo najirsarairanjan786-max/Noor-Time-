@@ -3,7 +3,7 @@ import {
   BookOpen, MessageCircle, Settings, Globe, HeartHandshake, MapPin, 
   Cloud, Calculator, Compass, VolumeX, CalendarDays, Heart, Share2,
   Lightbulb, CalendarCheck, Radio, Star, Bell, Mail, Smartphone, ThumbsUp, X,
-  BookA, Bookmark, BookText, ArrowLeft, Sparkles
+  BookA, Bookmark, BookText, ArrowLeft, Sparkles, Download
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { type Dispatch, type SetStateAction, useState } from 'react';
@@ -51,6 +51,7 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
     { icon: Mail, label: t('contactUs') || 'Contact Us', color: 'text-red-400' },
     { icon: Smartphone, label: t('moreApps') || 'More Apps', color: 'text-orange-600' },
     { icon: Share2, label: t('share') || 'Share', view: 'share' as ViewType, color: 'text-yellow-400' },
+    { icon: Download, label: 'Download APK', view: 'apk_download' as ViewType, color: 'text-emerald-400' },
     { icon: ThumbsUp, label: t('submitReview') || 'Submit Review', color: 'text-emerald-400' },
   ];
 
