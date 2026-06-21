@@ -31,6 +31,41 @@ service cloud.firestore {
         && data.userId == request.auth.uid;
     }
 
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['firstName', 'lastName', 'photoURL', 'email', 'phone', 'address', 'location', 'state', 'pinCode', 'country', 'updatedAt', 'userId'])
+        && data.keys().size() == 12
+        && data.firstName is string && data.firstName.size() <= 100
+        && data.lastName is string && data.lastName.size() <= 100
+        && data.photoURL is string && data.photoURL.size() <= 1024
+        && data.email is string && data.email.size() <= 100
+        && data.phone is string && data.phone.size() <= 50
+        && data.address is string && data.address.size() <= 200
+        && data.location is string && data.location.size() <= 100
+        && data.state is string && data.state.size() <= 100
+        && data.pinCode is string && data.pinCode.size() <= 20
+        && data.country is string && data.country.size() <= 100
+        && data.updatedAt is timestamp
+        && data.userId == request.auth.uid;
+    }
+
+    match /users/{userId} {
+      allow get: if isSignedIn() && isValidId(userId) && userId == request.auth.uid;
+      
+      allow create: if isSignedIn()
+                    && isValidId(userId)
+                    && userId == request.auth.uid
+                    && isValidUserProfile(incoming())
+                    && incoming().updatedAt == request.time;
+                    
+      allow update: if isSignedIn()
+                    && isValidId(userId)
+                    && userId == request.auth.uid
+                    && existing().userId == request.auth.uid
+                    && incoming().diff(existing()).affectedKeys().hasOnly(['firstName', 'lastName', 'photoURL', 'email', 'phone', 'address', 'location', 'state', 'pinCode', 'country', 'updatedAt'])
+                    && isValidUserProfile(incoming())
+                    && incoming().updatedAt == request.time;
+    }
+
     match /notes/{noteId} {
       allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
       allow get: if isSignedIn() && isValidId(noteId) && resource.data.userId == request.auth.uid;

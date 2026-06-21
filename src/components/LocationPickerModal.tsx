@@ -33,7 +33,7 @@ function MapUpdater({ position }: { position: [number, number] }) {
 interface LocationPickerModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelect: (location: { latitude: number; longitude: number; name: string }) => void;
+  onSelect: (location: { latitude: number; longitude: number; name: string, address?: any }) => void;
   initialLat?: number;
   initialLng?: number;
 }
@@ -42,6 +42,7 @@ export function LocationPickerModal({ isOpen, onClose, onSelect, initialLat, ini
   const [position, setPosition] = useState<[number, number]>([initialLat || 21.4225, initialLng || 39.8262]); // Default to Makkah
   const [isLoadingName, setIsLoadingName] = useState(false);
   const [locationName, setLocationName] = useState<string>("Select a location");
+  const [addressData, setAddressData] = useState<any>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -59,8 +60,10 @@ export function LocationPickerModal({ isOpen, onClose, onSelect, initialLat, ini
         const city = data.address?.city || data.address?.town || data.address?.village || data.address?.state || "Unknown Area";
         const country = data.address?.country || "";
         setLocationName(country ? `${city}, ${country}` : city);
+        setAddressData(data.address || null);
       } catch (e) {
         setLocationName("Selected Location");
+        setAddressData(null);
       }
       setIsLoadingName(false);
     };
@@ -73,7 +76,8 @@ export function LocationPickerModal({ isOpen, onClose, onSelect, initialLat, ini
     onSelect({
       latitude: position[0],
       longitude: position[1],
-      name: locationName
+      name: locationName,
+      address: addressData
     });
     onClose();
   };

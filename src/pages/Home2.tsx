@@ -225,12 +225,12 @@ export function Home2({ setView }: Home2Props) {
              {/* Timetable List */}
              <div className="flex flex-col gap-1 sm:gap-1.5 flex-grow">
                {[
-                  { name: 'FAJR', u: 'فَجَر', a: pts.Fajr.azan, j: pts.Fajr.jamaat },
-                  { name: 'ZUHAR', u: 'ظُهَر', a: pts.Zuhr.azan, j: pts.Zuhr.jamaat },
-                  { name: 'ASR', u: 'عَصَر', a: pts.Asr.azan, j: pts.Asr.jamaat },
-                  { name: 'MAGRIB', u: 'مَغْرِب', a: pts.Magrib.azan, j: pts.Magrib.jamaat },
-                  { name: 'ISHA\'', u: 'عِشَاء', a: pts.Isha.azan, j: pts.Isha.jamaat },
-                  { name: 'JUM\'AH', u: 'جُمُعَه', a: pts.Jumah.azan, j: pts.Jumah.jamaat },
+                  { name: 'फ़ज्र', u: 'فَجَر', a: pts.Fajr.azan, j: pts.Fajr.jamaat },
+                  { name: 'ज़ुहर', u: 'ظُهَر', a: pts.Zuhr.azan, j: pts.Zuhr.jamaat },
+                  { name: 'असर', u: 'عَصَر', a: pts.Asr.azan, j: pts.Asr.jamaat },
+                  { name: 'मग़रिब', u: 'مَغْرِب', a: pts.Magrib.azan, j: pts.Magrib.jamaat },
+                  { name: 'इशा', u: 'عِشَاء', a: pts.Isha.azan, j: pts.Isha.jamaat },
+                  { name: 'जुम्मा', u: 'جُمُعَه', a: pts.Jumah.azan, j: pts.Jumah.jamaat },
                 ].map((p, i) => (
                   <div key={i} className="flex gap-1.5 flex-1 max-h-[52px]">
                      {/* Left Half (Name + Azan) */}

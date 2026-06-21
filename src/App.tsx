@@ -113,82 +113,64 @@ export default function App() {
 
         <SyncStatus />
 
-        {!user && !skipLogin ? (
-          <ProfileView
-            setView={setCurrentView}
-            onSkip={() => setSkipLogin(true)}
-          />
-        ) : (
-          <>
-            <AnimatePresence mode="wait">
-              {currentView === "home" && <Home setView={setCurrentView} />}
-              {currentView === "home2" && <Home2 setView={setCurrentView} />}
-              {currentView === "calendar" && (
-                <CalendarView setView={setCurrentView} />
-              )}
-              {currentView === "settings" && (
-                <SettingsView setView={setCurrentView} />
-              )}
-              {currentView === "prayer" && (
-                <PrayerDetails setView={setCurrentView} />
-              )}
-              {currentView === "Quran" && (
-                <QuranView setView={setCurrentView} />
-              )}
-              {currentView === "Hadees" && (
-                <HadeesView setView={setCurrentView} />
-              )}
-              {currentView === "Tajweed" && (
-                <TajweedView setView={setCurrentView} />
-              )}
-              {currentView === "Adhkar" && (
-                <AdhkarView setView={setCurrentView} />
-              )}
-              {currentView === "Question & Answer" && (
-                <QuizView setView={setCurrentView} />
-              )}
-              {currentView === "qibla" && (
-                <QiblaDirectionView setView={setCurrentView} />
-              )}
-              {currentView === "languages" && (
-                <LanguagesView setView={setCurrentView} />
-              )}
-              {currentView === "donate" && (
-                <DonateView setView={setCurrentView} />
-              )}
-              {currentView === "share" && (
-                <ShareView setView={setCurrentView} />
-              )}
-              {currentView === "daily" && (
-                <DailyView setView={setCurrentView} />
-              )}
-              {currentView === "tasbeeh" && (
-                <TasbeehView setView={setCurrentView} />
-              )}
-              {currentView === "profile" && (
-                <ProfileView
-                  setView={setCurrentView}
-                  onSkip={() => setCurrentView("home")}
-                />
-              )}
-              {currentView === "jamat_silent" && (
-                <JamatSilentView setView={setCurrentView} />
-              )}
-              {currentView === "noor_ai" && (
-                <NoorAIView setView={setCurrentView} />
-              )}
-              {isFeatureView && (
-                <FeatureView title={currentView} setView={setCurrentView} />
-              )}
-            </AnimatePresence>
-
-            <LocationPrompt />
-            <NotificationPrompt />
-            {!(currentView === "profile" && !user) && (
-              <Navigation view={currentView} setView={setCurrentView} />
+        <>
+          <AnimatePresence mode="wait">
+            {currentView === "home" && <Home setView={setCurrentView} />}
+            {currentView === "home2" && <Home2 setView={setCurrentView} />}
+            {currentView === "calendar" && (
+              <CalendarView setView={setCurrentView} />
             )}
-          </>
-        )}
+            {currentView === "settings" && (
+              <SettingsView setView={setCurrentView} />
+            )}
+            {currentView === "prayer" && (
+              <PrayerDetails setView={setCurrentView} />
+            )}
+            {currentView === "Quran" && <QuranView setView={setCurrentView} />}
+            {currentView === "Hadees" && (
+              <HadeesView setView={setCurrentView} />
+            )}
+            {currentView === "Tajweed" && (
+              <TajweedView setView={setCurrentView} />
+            )}
+            {currentView === "Adhkar" && (
+              <AdhkarView setView={setCurrentView} />
+            )}
+            {currentView === "Question & Answer" && (
+              <QuizView setView={setCurrentView} />
+            )}
+            {currentView === "qibla" && (
+              <QiblaDirectionView setView={setCurrentView} />
+            )}
+            {currentView === "languages" && (
+              <LanguagesView setView={setCurrentView} />
+            )}
+            {currentView === "donate" && (
+              <DonateView setView={setCurrentView} />
+            )}
+            {currentView === "share" && <ShareView setView={setCurrentView} />}
+            {currentView === "daily" && <DailyView setView={setCurrentView} />}
+            {currentView === "tasbeeh" && (
+              <TasbeehView setView={setCurrentView} />
+            )}
+            {currentView === "profile" && (
+              <ProfileView setView={setCurrentView} />
+            )}
+            {currentView === "jamat_silent" && (
+              <JamatSilentView setView={setCurrentView} />
+            )}
+            {currentView === "noor_ai" && (
+              <NoorAIView setView={setCurrentView} />
+            )}
+            {isFeatureView && (
+              <FeatureView title={currentView} setView={setCurrentView} />
+            )}
+          </AnimatePresence>
+
+          <LocationPrompt />
+          <NotificationPrompt />
+          <Navigation view={currentView} setView={setCurrentView} />
+        </>
       </main>
     </div>
   );

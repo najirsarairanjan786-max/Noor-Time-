@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
+import { NewsFeed } from "../components/NewsFeed";
 import { useData } from "../hooks/useData";
 import { useSettings } from "../hooks/useSettings";
 import { useAlarmSystem } from "../hooks/useAlarmSystem";
@@ -499,53 +500,7 @@ export function Home({ setView }: HomeProps) {
           </div>
         </div>
 
-        {/* Daily Dua Section */}
-        <div className="max-w-lg mx-auto pb-6 px-1 mt-2">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="group relative rounded-3xl overflow-hidden cursor-pointer shadow-lg mb-8"
-            // onClick={() => setView("Dua" as any)} // Can wire this up to a dua page later if needed
-          >
-            <div
-              className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-              style={{
-                backgroundImage:
-                  'url("https://images.unsplash.com/photo-1519817650390-64a93db51149?q=80&w=800&auto=format&fit=crop")',
-              }}
-            />
-            <div className="absolute inset-0 bg-[#0f172a]/80 backdrop-blur-[2px] group-hover:bg-[#0f172a]/70 transition-colors duration-500" />
-            <div className="absolute inset-0 border border-emerald-500/20 rounded-3xl group-hover:border-emerald-500/40 transition-colors duration-500" />
-
-            <div className="relative p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Heart className="w-4 h-4 text-emerald-500" />
-                  <span className="text-emerald-500/90 text-xs font-bold uppercase tracking-widest">
-                    Dua of the Day
-                  </span>
-                </div>
-                <div className="text-white/40 text-xs font-mono font-medium">
-                  {dailyDua.title}
-                </div>
-              </div>
-
-              <p className="text-sm text-slate-300 leading-relaxed font-medium mb-3">
-                "{dailyDua.translation}"
-              </p>
-
-              <div className="flex justify-end border-t border-white/5 pt-3 mt-1">
-                <p
-                  className="font-arabic text-lg text-emerald-400/90 leading-normal text-right drop-shadow-sm"
-                  dir="rtl"
-                >
-                  {dailyDua.arabic}
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        </div>
+        <NewsFeed />
       </div>
 
       <Sidebar

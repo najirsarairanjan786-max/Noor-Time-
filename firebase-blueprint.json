@@ -12,12 +12,36 @@
         "userId": { "type": "string", "description": "Owner ID" }
       },
       "required": ["title", "content", "createdAt", "updatedAt", "userId"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "firstName": { "type": "string" },
+        "lastName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "location": { "type": "string" },
+        "state": { "type": "string" },
+        "pinCode": { "type": "string" },
+        "country": { "type": "string" },
+        "updatedAt": { "type": "number" },
+        "userId": { "type": "string" }
+      },
+      "required": ["firstName", "lastName", "photoURL", "email", "phone", "address", "location", "state", "pinCode", "country", "updatedAt", "userId"]
     }
   },
   "firestore": {
     "notes/{noteId}": {
       "schema": { "$ref": "#/entities/Note" },
       "description": "Stores user notes"
+    },
+    "users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Stores user profiles"
     }
   }
 }

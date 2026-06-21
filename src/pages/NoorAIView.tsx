@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import { ArrowLeft, Send, Sparkles, User, Loader2 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
