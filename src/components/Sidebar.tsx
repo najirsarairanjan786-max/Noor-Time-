@@ -3,7 +3,7 @@ import {
   BookOpen, MessageCircle, Settings, Globe, HeartHandshake, MapPin, 
   Cloud, Calculator, Compass, VolumeX, CalendarDays, Heart, Share2,
   Lightbulb, CalendarCheck, Radio, Star, Bell, Mail, Smartphone, ThumbsUp, X,
-  BookA, Bookmark, BookText, ArrowLeft, Sparkles, Download
+  BookA, Bookmark, BookText, ArrowLeft, Sparkles
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { type Dispatch, type SetStateAction, useState } from 'react';
@@ -35,7 +35,7 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
     { icon: Settings, label: t('settings') || 'Settings', view: 'settings' as ViewType, color: 'text-red-500' },
     { icon: Globe, label: t('languages') || 'Languages', view: 'languages' as ViewType, color: 'text-blue-400' },
     { icon: HeartHandshake, label: t('donate') || 'Donate Us', view: 'donate' as ViewType, color: 'text-fuchsia-400' },
-    { icon: MapPin, label: t('location') || 'Location Options', view: 'settings' as ViewType, color: 'text-yellow-400' },
+    { icon: MapPin, label: t('location') || 'Location', view: 'settings' as ViewType, color: 'text-yellow-400' },
     { icon: Cloud, label: t('sync') || 'Sync To Drive', color: 'text-green-500' },
     { icon: Calculator, label: t('qazaCalculator') || 'Qaza Namaz Calculator', color: 'text-blue-500' },
     { icon: Compass, label: t('qiblaDirection') || 'Qibla Direction', view: 'qibla' as ViewType, color: 'text-cyan-400' },
@@ -51,7 +51,6 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
     { icon: Mail, label: t('contactUs') || 'Contact Us', color: 'text-red-400' },
     { icon: Smartphone, label: t('moreApps') || 'More Apps', color: 'text-orange-600' },
     { icon: Share2, label: t('share') || 'Share', view: 'share' as ViewType, color: 'text-yellow-400' },
-    { icon: Download, label: 'Download APK', view: 'apk_download' as ViewType, color: 'text-emerald-400' },
     { icon: ThumbsUp, label: t('submitReview') || 'Submit Review', color: 'text-emerald-400' },
   ];
 

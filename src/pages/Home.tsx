@@ -515,6 +515,7 @@ export function Home({ setView }: HomeProps) {
           setSettings((prev) => ({
             ...prev,
             location: { lat: loc.latitude, lng: loc.longitude, name: loc.name },
+            autoLocation: false,
           }));
         }}
         initialLat={settings.location?.lat}

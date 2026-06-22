@@ -18,18 +18,7 @@ interface FeedVideo {
   date: string;
 }
 
-const DEFAULT_VIDEOS: FeedVideo[] = [
-  {
-    id: "v1",
-    url: "https://www.w3schools.com/html/mov_bbb.mp4", // Replace with your actual video URL
-    title: "ایسے افراد کو اپنے دل سے نکال دو!",
-    date: new Date().toLocaleDateString("en-GB", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      }),
-  },
-];
+const DEFAULT_VIDEOS: FeedVideo[] = [];
 
 export function NewsFeed() {
   const [videos, setVideos] = useState<FeedVideo[]>(DEFAULT_VIDEOS);

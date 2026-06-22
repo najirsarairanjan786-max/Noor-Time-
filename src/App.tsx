@@ -20,7 +20,6 @@ import { JamatSilentView } from "./pages/JamatSilentView";
 import { Home2 } from "./pages/Home2";
 import { ProfileView } from "./pages/ProfileView";
 import { NoorAIView } from "./pages/NoorAIView";
-import { DownloadApkView } from "./pages/DownloadApkView";
 import { Navigation } from "./components/Navigation";
 import { SyncStatus } from "./components/SyncStatus";
 import { LocationPrompt } from "./components/LocationPrompt";
@@ -50,7 +49,6 @@ export type ViewType =
   | "profile"
   | "jamat_silent"
   | "noor_ai"
-  | "apk_download"
   | string;
 
 export default function App() {
@@ -103,7 +101,6 @@ export default function App() {
     "profile",
     "jamat_silent",
     "noor_ai",
-    "apk_download",
   ];
   const isFeatureView = !standardViews.includes(currentView);
 
@@ -164,9 +161,6 @@ export default function App() {
             )}
             {currentView === "noor_ai" && (
               <NoorAIView setView={setCurrentView} />
-            )}
-            {currentView === "apk_download" && (
-              <DownloadApkView setView={setCurrentView} />
             )}
             {isFeatureView && (
               <FeatureView title={currentView} setView={setCurrentView} />
