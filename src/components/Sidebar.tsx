@@ -47,7 +47,7 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
     { icon: CalendarCheck, label: t('hijriCalendar') || 'Hijri Calendar', view: 'calendar' as ViewType, color: 'text-fuchsia-500' },
     { icon: Radio, label: t('madaniRadio') || 'Madani Radio', color: 'text-orange-500' },
     { icon: Bookmark, label: t('favoritePost') || 'Favorite Post', color: 'text-slate-400' },
-    { icon: Bell, label: t('notification') || 'Notification', color: 'text-indigo-400' },
+    { icon: Bell, label: t('notification') || 'Notification', view: 'notifications' as ViewType, color: 'text-indigo-400' },
     { icon: Mail, label: t('contactUs') || 'Contact Us', color: 'text-red-400' },
     { icon: Smartphone, label: t('moreApps') || 'More Apps', color: 'text-orange-600' },
     { icon: Share2, label: t('share') || 'Share', view: 'share' as ViewType, color: 'text-yellow-400' },

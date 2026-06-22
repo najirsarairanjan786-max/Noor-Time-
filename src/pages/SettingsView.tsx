@@ -164,19 +164,6 @@ export function SettingsView({
                 >
                   {isUpdating ? "Updating..." : "Update Location manually"}
                 </button>
-                {settings.autoLocation && (
-                  <button
-                    onClick={() => {
-                        setIsUpdating(true);
-                        requestLocation().finally(() => setIsUpdating(false));
-                    }}
-                    disabled={isUpdating}
-                    type="button"
-                    className="text-xs text-emerald-300 bg-emerald-900/50 px-3 py-1.5 rounded-full w-full hover:bg-emerald-800 transition shadow-sm border border-emerald-700/50 text-center disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    {isUpdating ? "Locating..." : "Refresh GPS Location"}
-                  </button>
-                )}
               </div>
             </div>
           </div>
