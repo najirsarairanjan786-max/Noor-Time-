@@ -22,6 +22,7 @@ import { ProfileView } from "./pages/ProfileView";
 import { NoorAIView } from "./pages/NoorAIView";
 import { NotificationsView } from "./pages/NotificationsView";
 import { StoreView } from "./pages/StoreView";
+import { ContactView } from "./pages/ContactView";
 import { Navigation } from "./components/Navigation";
 import { SyncStatus } from "./components/SyncStatus";
 import { LocationPrompt } from "./components/LocationPrompt";
@@ -107,6 +108,7 @@ export default function App() {
     "noor_ai",
     "notifications",
     "store",
+    "contact",
   ];
   const isFeatureView = !standardViews.includes(currentView);
 
@@ -173,6 +175,9 @@ export default function App() {
             )}
             {currentView === "store" && (
               <StoreView setView={setCurrentView} />
+            )}
+            {currentView === "contact" && (
+              <ContactView setView={setCurrentView} />
             )}
             {isFeatureView && (
               <FeatureView title={currentView} setView={setCurrentView} />
