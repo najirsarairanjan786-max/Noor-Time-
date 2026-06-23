@@ -8,6 +8,10 @@ service cloud.firestore {
     function isSignedIn() {
       return request.auth != null && request.auth.uid != null;
     }
+    
+    function isAdmin() {
+      return isSignedIn() && (exists(/databases/$(database)/documents/admins/$(request.auth.uid)) || request.auth.token.email == 'naziralquran786@gmail.com');
+    }
 
     function incoming() {
       return request.resource.data;
@@ -48,8 +52,93 @@ service cloud.firestore {
         && data.userId == request.auth.uid;
     }
 
+    function isValidAdmin(data) {
+      return data.keys().hasAll(['email', 'role', 'createdAt', 'updatedBy'])
+        && data.keys().size() == 4
+        && data.email is string && data.email.size() <= 100
+        && data.role is string && data.role.matches('^(superadmin|admin|editor)$')
+        && data.createdAt is timestamp
+        && data.updatedBy is string && data.updatedBy.size() <= 128;
+    }
+
+    function isValidVideo(data) {
+      return data.keys().hasAll(['title', 'url', 'category', 'thumbnail', 'featured', 'views', 'createdAt', 'updatedAt'])
+        && data.keys().size() == 8
+        && data.title is string && data.title.size() <= 200
+        && data.url is string && data.url.size() <= 1024
+        && data.category is string && data.category.size() <= 100
+        && data.thumbnail is string && data.thumbnail.size() <= 1024
+        && data.featured is bool
+        && data.views is number
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidProduct(data) {
+      return data.keys().hasAll(['name', 'price', 'description', 'category', 'stockStatus', 'featured', 'image', 'link', 'createdAt'])
+        && data.keys().size() == 9
+        && data.name is string && data.name.size() <= 200
+        && data.price is number
+        && data.description is string && data.description.size() <= 5000
+        && data.category is string && data.category.size() <= 100
+        && data.stockStatus is string && data.stockStatus.matches('^(in_stock|out_of_stock)$')
+        && data.featured is bool
+        && data.image is string && data.image.size() <= 1024
+        && data.link is string && data.link.size() <= 1024
+        && data.createdAt is timestamp;
+    }
+
+    function isValidApkRelease(data) {
+      return data.keys().hasAll(['version', 'url', 'size', 'notes', 'forceUpdate', 'createdAt'])
+        && data.keys().size() == 6
+        && data.version is string && data.version.size() <= 50
+        && data.url is string && data.url.size() <= 1024
+        && data.size is string && data.size.size() <= 50
+        && data.notes is string && data.notes.size() <= 5000
+        && data.forceUpdate is bool
+        && data.createdAt is timestamp;
+    }
+
+    function isValidNotification(data) {
+      return data.keys().hasAll(['title', 'message', 'category', 'scheduledFor', 'status', 'createdAt'])
+        && data.keys().size() == 6
+        && data.title is string && data.title.size() <= 200
+        && data.message is string && data.message.size() <= 1000
+        && data.category is string && data.category.size() <= 100
+        && data.scheduledFor is timestamp
+        && data.status is string && data.status.matches('^(pending|sent|failed)$')
+        && data.createdAt is timestamp;
+    }
+
+    function isValidContent(data) {
+      return data.keys().hasAll(['type', 'title', 'body', 'author', 'imageUrl', 'createdAt'])
+        && data.keys().size() == 6
+        && data.type is string && data.type.matches('^(hadith|article|quote|banner)$')
+        && data.title is string && data.title.size() <= 200
+        && data.body is string && data.body.size() <= 50000
+        && data.author is string && data.author.size() <= 100
+        && data.imageUrl is string && data.imageUrl.size() <= 1024
+        && data.createdAt is timestamp;
+    }
+
+    function isValidAppSetting(data) {
+      return data.keys().hasAll(['appName', 'appLogo', 'splashScreen', 'admobAppId', 'admobBannerId', 'admobInterstitialId', 'socialLinks', 'contactInfo', 'modifiedAt'])
+        && data.keys().size() == 9
+        && data.appName is string && data.appName.size() <= 100
+        && data.appLogo is string && data.appLogo.size() <= 1024
+        && data.splashScreen is string && data.splashScreen.size() <= 1024
+        && data.admobAppId is string && data.admobAppId.size() <= 200
+        && data.admobBannerId is string && data.admobBannerId.size() <= 200
+        && data.admobInterstitialId is string && data.admobInterstitialId.size() <= 200
+        && data.socialLinks is string && data.socialLinks.size() <= 2000
+        && data.contactInfo is string && data.contactInfo.size() <= 2000
+        && data.modifiedAt is timestamp;
+    }
+
     match /users/{userId} {
-      allow get: if isSignedIn() && isValidId(userId) && userId == request.auth.uid;
+      allow list: if isAdmin();
+      allow get: if isSignedIn() && isValidId(userId) && (userId == request.auth.uid || isAdmin());
+      allow delete: if isAdmin() && isValidId(userId);
       
       allow create: if isSignedIn()
                     && isValidId(userId)
@@ -59,8 +148,8 @@ service cloud.firestore {
                     
       allow update: if isSignedIn()
                     && isValidId(userId)
-                    && userId == request.auth.uid
-                    && existing().userId == request.auth.uid
+                    && (userId == request.auth.uid || isAdmin())
+                    && existing().userId == userId
                     && incoming().diff(existing()).affectedKeys().hasOnly(['firstName', 'lastName', 'photoURL', 'email', 'phone', 'address', 'location', 'state', 'pinCode', 'country', 'updatedAt'])
                     && isValidUserProfile(incoming())
                     && incoming().updatedAt == request.time;
@@ -87,6 +176,55 @@ service cloud.firestore {
       allow delete: if isSignedIn() 
                     && isValidId(noteId) 
                     && existing().userId == request.auth.uid;
+    }
+
+    match /admins/{adminId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && isValidId(adminId) && isValidAdmin(incoming());
+      allow update: if isAdmin() && isValidId(adminId) && isValidAdmin(incoming());
+      allow delete: if isAdmin() && isValidId(adminId);
+    }
+
+    match /videos/{videoId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidId(videoId) && isValidVideo(incoming());
+      allow update: if isAdmin() && isValidId(videoId) && isValidVideo(incoming());
+      allow delete: if isAdmin() && isValidId(videoId);
+    }
+
+    match /products/{productId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidId(productId) && isValidProduct(incoming());
+      allow update: if isAdmin() && isValidId(productId) && isValidProduct(incoming());
+      allow delete: if isAdmin() && isValidId(productId);
+    }
+
+    match /apk_releases/{releaseId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidId(releaseId) && isValidApkRelease(incoming());
+      allow update: if isAdmin() && isValidId(releaseId) && isValidApkRelease(incoming());
+      allow delete: if isAdmin() && isValidId(releaseId);
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn();
+      allow create: if isAdmin() && isValidId(notificationId) && isValidNotification(incoming());
+      allow update: if isAdmin() && isValidId(notificationId) && isValidNotification(incoming());
+      allow delete: if isAdmin() && isValidId(notificationId);
+    }
+
+    match /content/{contentId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidId(contentId) && isValidContent(incoming());
+      allow update: if isAdmin() && isValidId(contentId) && isValidContent(incoming());
+      allow delete: if isAdmin() && isValidId(contentId);
+    }
+
+    match /app_settings/{settingId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidId(settingId) && isValidAppSetting(incoming());
+      allow update: if isAdmin() && isValidId(settingId) && isValidAppSetting(incoming());
+      allow delete: if isAdmin() && isValidId(settingId);
     }
   }
 }

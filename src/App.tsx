@@ -21,6 +21,7 @@ import { Home2 } from "./pages/Home2";
 import { ProfileView } from "./pages/ProfileView";
 import { NoorAIView } from "./pages/NoorAIView";
 import { NotificationsView } from "./pages/NotificationsView";
+import { StoreView } from "./pages/StoreView";
 import { Navigation } from "./components/Navigation";
 import { SyncStatus } from "./components/SyncStatus";
 import { LocationPrompt } from "./components/LocationPrompt";
@@ -51,6 +52,7 @@ export type ViewType =
   | "jamat_silent"
   | "noor_ai"
   | "notifications"
+  | "store"
   | string;
 
 export default function App() {
@@ -104,6 +106,7 @@ export default function App() {
     "jamat_silent",
     "noor_ai",
     "notifications",
+    "store",
   ];
   const isFeatureView = !standardViews.includes(currentView);
 
@@ -167,6 +170,9 @@ export default function App() {
             )}
             {currentView === "notifications" && (
               <NotificationsView setView={setCurrentView} />
+            )}
+            {currentView === "store" && (
+              <StoreView setView={setCurrentView} />
             )}
             {isFeatureView && (
               <FeatureView title={currentView} setView={setCurrentView} />

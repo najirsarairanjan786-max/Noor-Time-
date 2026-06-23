@@ -1,6 +1,7 @@
 import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
+import { AdminApp } from './admin/AdminApp.tsx';
 import { AuthProvider } from './hooks/useAuth';
 import './index.css';
 import { registerSW } from 'virtual:pwa-register';
@@ -14,10 +15,12 @@ const updateSW = registerSW({
   },
 });
 
+const isAdminRoute = window.location.pathname.startsWith('/admin');
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AuthProvider>
-      <App />
+      {isAdminRoute ? <AdminApp /> : <App />}
     </AuthProvider>
   </StrictMode>,
 );

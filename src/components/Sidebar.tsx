@@ -3,7 +3,7 @@ import {
   BookOpen, MessageCircle, Settings, Globe, HeartHandshake, MapPin, 
   Cloud, Calculator, Compass, VolumeX, CalendarDays, Heart, Share2,
   Lightbulb, CalendarCheck, Radio, Star, Bell, Mail, Smartphone, ThumbsUp, X,
-  BookA, Bookmark, BookText, ArrowLeft, Sparkles
+  BookA, Bookmark, BookText, ArrowLeft, Sparkles, ShoppingBag
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { type Dispatch, type SetStateAction, useState } from 'react';
@@ -34,6 +34,7 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
     { icon: MessageCircle, label: t('qa') || 'Question and Answer', color: 'text-amber-500' },
     { icon: Settings, label: t('settings') || 'Settings', view: 'settings' as ViewType, color: 'text-red-500' },
     { icon: Globe, label: t('languages') || 'Languages', view: 'languages' as ViewType, color: 'text-blue-400' },
+    { icon: ShoppingBag, label: t('store') || 'Islamic Store', view: 'store' as ViewType, color: 'text-emerald-400' },
     { icon: HeartHandshake, label: t('donate') || 'Donate Us', view: 'donate' as ViewType, color: 'text-fuchsia-400' },
     { icon: MapPin, label: t('location') || 'Location', view: 'settings' as ViewType, color: 'text-yellow-400' },
     { icon: Cloud, label: t('sync') || 'Sync To Drive', color: 'text-green-500' },

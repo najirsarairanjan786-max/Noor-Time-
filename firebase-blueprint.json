@@ -32,6 +32,110 @@
         "userId": { "type": "string" }
       },
       "required": ["firstName", "lastName", "photoURL", "email", "phone", "address", "location", "state", "pinCode", "country", "updatedAt", "userId"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "Admin users allowed to access the dashboard",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "role": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "updatedBy": { "type": "string" }
+      },
+      "required": ["email", "role", "createdAt", "updatedBy"]
+    },
+    "Video": {
+      "title": "Video",
+      "description": "Islamic videos",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "url": { "type": "string" },
+        "category": { "type": "string" },
+        "thumbnail": { "type": "string" },
+        "featured": { "type": "boolean" },
+        "views": { "type": "number" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["title", "url", "category", "thumbnail", "featured", "views", "createdAt", "updatedAt"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Store products",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "stockStatus": { "type": "string" },
+        "featured": { "type": "boolean" },
+        "image": { "type": "string" },
+        "link": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["name", "price", "description", "category", "stockStatus", "featured", "image", "link", "createdAt"]
+    },
+    "ApkRelease": {
+      "title": "ApkRelease",
+      "description": "APK release configurations and download links",
+      "type": "object",
+      "properties": {
+        "version": { "type": "string" },
+        "url": { "type": "string" },
+        "size": { "type": "string" },
+        "notes": { "type": "string" },
+        "forceUpdate": { "type": "boolean" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["version", "url", "size", "notes", "forceUpdate", "createdAt"]
+    },
+    "AppNotification": {
+      "title": "AppNotification",
+      "description": "Push notification records",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "category": { "type": "string" },
+        "scheduledFor": { "type": "number" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["title", "message", "category", "scheduledFor", "status", "createdAt"]
+    },
+    "Content": {
+      "title": "Content",
+      "description": "Hadith, articles, quotes, banners",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string" },
+        "title": { "type": "string" },
+        "body": { "type": "string" },
+        "author": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["type", "title", "body", "author", "imageUrl", "createdAt"]
+    },
+    "AppSetting": {
+      "title": "AppSetting",
+      "description": "Global Application Settings",
+      "type": "object",
+      "properties": {
+        "appName": { "type": "string" },
+        "appLogo": { "type": "string" },
+        "splashScreen": { "type": "string" },
+        "admobAppId": { "type": "string" },
+        "admobBannerId": { "type": "string" },
+        "admobInterstitialId": { "type": "string" },
+        "socialLinks": { "type": "string" },
+        "contactInfo": { "type": "string" },
+        "modifiedAt": { "type": "number" }
+      },
+      "required": ["appName", "appLogo", "splashScreen", "admobAppId", "admobBannerId", "admobInterstitialId", "socialLinks", "contactInfo", "modifiedAt"]
     }
   },
   "firestore": {
@@ -42,6 +146,34 @@
     "users/{userId}": {
       "schema": { "$ref": "#/entities/UserProfile" },
       "description": "Stores user profiles"
+    },
+    "admins/{userId}": {
+      "schema": { "$ref": "#/entities/Admin" },
+      "description": "Stores admin roles mapping auth UID to role"
+    },
+    "videos/{videoId}": {
+      "schema": { "$ref": "#/entities/Video" },
+      "description": "Stores Islamic videos"
+    },
+    "products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "Stores Islamic store products"
+    },
+    "apk_releases/{releaseId}": {
+      "schema": { "$ref": "#/entities/ApkRelease" },
+      "description": "Stores APK release definitions"
+    },
+    "notifications/{notificationId}": {
+      "schema": { "$ref": "#/entities/AppNotification" },
+      "description": "Stores notifications sent or scheduled"
+    },
+    "content/{contentId}": {
+      "schema": { "$ref": "#/entities/Content" },
+      "description": "Stores Hadith, articles, quotes, banners"
+    },
+    "app_settings/{settingId}": {
+      "schema": { "$ref": "#/entities/AppSetting" },
+      "description": "Stores app configuration like AdMob IDs and branding"
     }
   }
 }
