@@ -140,13 +140,22 @@ export function SettingsView({
         </p>
       </div>
 
-      {isAdmin && (
+      {isAdmin ? (
         <div className="glass-panel p-4 mb-4">
           <button
             onClick={() => (window.location.href = "/admin")}
             className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-md border border-slate-700"
           >
             Go to /admin
+          </button>
+        </div>
+      ) : (
+        <div className="flex justify-center mb-4">
+          <button
+            onClick={() => (window.location.href = "/admin")}
+            className="text-xs text-slate-400 hover:text-emerald-500 transition-colors"
+          >
+            Developer Login
           </button>
         </div>
       )}
