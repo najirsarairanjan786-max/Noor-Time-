@@ -135,6 +135,16 @@ service cloud.firestore {
         && data.modifiedAt is timestamp;
     }
 
+    function isValidContactMessage(data) {
+      return data.keys().hasAll(['name', 'email', 'message', 'status', 'createdAt'])
+        && data.keys().size() == 5
+        && data.name is string && data.name.size() <= 100
+        && data.email is string && data.email.size() <= 100
+        && data.message is string && data.message.size() <= 5000
+        && data.status is string && data.status.matches('^(unread|read)$')
+        && data.createdAt is timestamp;
+    }
+
     match /users/{userId} {
       allow list: if isAdmin();
       allow get: if isSignedIn() && isValidId(userId) && (userId == request.auth.uid || isAdmin());
@@ -225,6 +235,13 @@ service cloud.firestore {
       allow create: if isAdmin() && isValidId(settingId) && isValidAppSetting(incoming());
       allow update: if isAdmin() && isValidId(settingId) && isValidAppSetting(incoming());
       allow delete: if isAdmin() && isValidId(settingId);
+    }
+
+    match /contact_messages/{messageId} {
+      allow read: if isAdmin();
+      allow create: if isValidId(messageId) && isValidContactMessage(incoming());
+      allow update: if isAdmin() && isValidId(messageId) && isValidContactMessage(incoming());
+      allow delete: if isAdmin() && isValidId(messageId);
     }
   }
 }
