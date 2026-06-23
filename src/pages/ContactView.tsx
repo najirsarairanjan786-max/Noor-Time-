@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, User, Send } from 'lucide-react';
+import { ArrowLeft, User, Send, CheckCircle2 } from 'lucide-react';
 import { ViewType } from '../App';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 interface ContactViewProps {
   setView: (view: ViewType) => void;
@@ -11,6 +13,43 @@ export function ContactView({ setView }: ContactViewProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async () => {
+    if (!name || !email || !message) {
+      setError('Please fill in all fields');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      await addDoc(collection(db, 'contact_messages'), {
+        name,
+        email,
+        message,
+        createdAt: serverTimestamp(),
+        status: 'unread'
+      });
+      
+      setSuccess(true);
+      setName('');
+      setEmail('');
+      setMessage('');
+      
+      setTimeout(() => {
+        setSuccess(false);
+      }, 3000);
+    } catch (err) {
+      console.error('Error submitting message:', err);
+      setError('Failed to send message. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <motion.div
@@ -34,6 +73,19 @@ export function ContactView({ setView }: ContactViewProps) {
       </div>
 
       <div className="p-4 space-y-4">
+        {success && (
+          <div className="bg-emerald-50 text-emerald-600 p-3 rounded-xl flex items-center gap-2 text-sm">
+            <CheckCircle2 className="w-5 h-5" />
+            Message sent successfully!
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-red-50 text-red-600 p-3 rounded-xl text-sm">
+            {error}
+          </div>
+        )}
+
         {/* Name Card */}
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100/50 flex items-start gap-4">
           <div className="mt-1">
@@ -81,8 +133,12 @@ export function ContactView({ setView }: ContactViewProps) {
 
         {/* Submit Button */}
         <div className="pt-4 flex justify-center">
-          <button className="w-[85%] bg-[#5085db] hover:bg-[#4375c8] text-white font-bold py-3 rounded-full transition-colors shadow-sm tracking-wide text-sm">
-            SUBMIT
+          <button 
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="w-[85%] bg-[#5085db] hover:bg-[#4375c8] disabled:opacity-50 text-white font-bold py-3 rounded-full transition-colors shadow-sm tracking-wide text-sm"
+          >
+            {isSubmitting ? 'SUBMITTING...' : 'SUBMIT'}
           </button>
         </div>
       </div>

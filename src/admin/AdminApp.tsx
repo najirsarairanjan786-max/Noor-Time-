@@ -11,6 +11,7 @@ import { ContentManager } from "./pages/ContentManager";
 import { UsersManager } from "./pages/UsersManager";
 import { SettingsManager } from "./pages/SettingsManager";
 import { ReportsAnalytics } from "./pages/ReportsAnalytics";
+import { MessagesManager } from "./pages/MessagesManager";
 import { db } from "../lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 
@@ -23,7 +24,8 @@ export type AdminView =
   | "content"
   | "users"
   | "settings"
-  | "reports";
+  | "reports"
+  | "messages";
 
 export function AdminApp() {
   const { user, loading } = useAuth();
@@ -100,6 +102,7 @@ export function AdminApp() {
       {currentView === "users" && <UsersManager />}
       {currentView === "settings" && <SettingsManager />}
       {currentView === "reports" && <ReportsAnalytics />}
+      {currentView === "messages" && <MessagesManager />}
     </AdminLayout>
   );
 }

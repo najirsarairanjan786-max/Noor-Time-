@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { LayoutDashboard, Video, ShoppingBag, Smartphone, Bell, BookText, Users, Settings, BarChart, LogOut, Menu } from "lucide-react";
+import { LayoutDashboard, Video, ShoppingBag, Smartphone, Bell, BookText, Users, Settings, BarChart, LogOut, Menu, Mail } from "lucide-react";
 import { AdminView } from "../AdminApp";
 import { useAuth } from "../../hooks/useAuth";
 import { useState } from "react";
@@ -21,6 +21,7 @@ export function AdminLayout({ children, currentView, setCurrentView }: AdminLayo
     { id: "apk", label: "APK Manager", icon: Smartphone },
     { id: "notifications", label: "Notifications", icon: Bell },
     { id: "content", label: "Content", icon: BookText },
+    { id: "messages", label: "Messages", icon: Mail },
     { id: "users", label: "Users", icon: Users },
     { id: "reports", label: "Reports", icon: BarChart },
     { id: "settings", label: "Settings", icon: Settings },
