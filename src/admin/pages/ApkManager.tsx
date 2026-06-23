@@ -22,7 +22,7 @@ export function ApkManager() {
           setRelease(docSnap.data() as any);
         }
       } catch (e) {
-        console.error("Error fetching apk config: ", e);
+        console.warn("Error fetching apk config: ", e);
       }
     };
     fetchRelease();

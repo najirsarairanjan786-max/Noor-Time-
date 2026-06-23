@@ -25,7 +25,7 @@ export function SettingsManager() {
           setSettings(docSnap.data() as any);
         }
       } catch (e) {
-        console.error("Error fetching settings: ", e);
+        console.warn("Error fetching settings: ", e);
       }
     };
     fetchSettings();

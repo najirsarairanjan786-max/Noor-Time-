@@ -1,10 +1,19 @@
 import { useState, useEffect } from "react";
-import { Plus, Video, Search, Edit2, Trash2 } from "lucide-react";
-import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
+import { Plus, Video, Search, Edit2, Trash2, X } from "lucide-react";
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
 export function VideosManager() {
   const [videos, setVideos] = useState<any[]>([]);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newVideo, setNewVideo] = useState({
+    title: "",
+    url: "",
+    thumbnail: "",
+    category: "",
+    duration: ""
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const q = query(collection(db, "videos"), orderBy("createdAt", "desc"));
@@ -15,6 +24,24 @@ export function VideosManager() {
     return unsubscribe;
   }, []);
 
+  const handleAddVideo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await addDoc(collection(db, "videos"), {
+        ...newVideo,
+        views: 0,
+        createdAt: serverTimestamp(),
+      });
+      setIsAddModalOpen(false);
+      setNewVideo({ title: "", url: "", thumbnail: "", category: "", duration: "" });
+    } catch (error) {
+      console.error("Error adding video: ", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -22,11 +49,78 @@ export function VideosManager() {
           <h2 className="text-2xl font-bold text-slate-800">Video Management</h2>
           <p className="text-slate-500">Manage all Islamic videos in the app</p>
         </div>
-        <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-colors">
+        <button 
+          onClick={() => setIsAddModalOpen(true)}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-colors"
+        >
           <Plus className="w-5 h-5" />
           Add New Video
         </button>
       </div>
+
+      {isAddModalOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-slate-800">Add New Video</h3>
+              <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleAddVideo} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Title</label>
+                <input 
+                  type="text" required
+                  value={newVideo.title} onChange={e => setNewVideo({...newVideo, title: e.target.value})}
+                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Video URL</label>
+                <input 
+                  type="url" required
+                  value={newVideo.url} onChange={e => setNewVideo({...newVideo, url: e.target.value})}
+                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Thumbnail URL</label>
+                <input 
+                  type="url" required
+                  value={newVideo.thumbnail} onChange={e => setNewVideo({...newVideo, thumbnail: e.target.value})}
+                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Category</label>
+                  <input 
+                    type="text" required
+                    value={newVideo.category} onChange={e => setNewVideo({...newVideo, category: e.target.value})}
+                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Duration</label>
+                  <input 
+                    type="text" placeholder="e.g. 5:30" required
+                    value={newVideo.duration} onChange={e => setNewVideo({...newVideo, duration: e.target.value})}
+                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                  />
+                </div>
+              </div>
+              <button 
+                type="submit" disabled={isSubmitting}
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-50 mt-6"
+              >
+                {isSubmitting ? "Adding..." : "Add Video"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
         <div className="p-4 border-b border-slate-100 flex gap-4">

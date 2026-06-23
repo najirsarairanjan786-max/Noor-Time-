@@ -1,10 +1,16 @@
 import { useState, useEffect } from "react";
-import { Plus, Bell, Search, Edit2, Trash2 } from "lucide-react";
-import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
+import { Plus, Bell, Search, Edit2, Trash2, X } from "lucide-react";
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
 export function NotificationsManager() {
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newNotification, setNewNotification] = useState({
+    title: "",
+    message: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const q = query(collection(db, "notifications"), orderBy("createdAt", "desc"));
@@ -15,6 +21,24 @@ export function NotificationsManager() {
     return unsubscribe;
   }, []);
 
+  const handleAddNotification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await addDoc(collection(db, "notifications"), {
+        ...newNotification,
+        status: "sent",
+        createdAt: serverTimestamp(),
+      });
+      setIsAddModalOpen(false);
+      setNewNotification({ title: "", message: "" });
+    } catch (error) {
+      console.error("Error adding notification: ", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -22,11 +46,52 @@ export function NotificationsManager() {
           <h2 className="text-2xl font-bold text-slate-800">Notification Center</h2>
           <p className="text-slate-500">Send push notifications to all users</p>
         </div>
-        <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-colors">
+        <button 
+          onClick={() => setIsAddModalOpen(true)}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-colors"
+        >
           <Plus className="w-5 h-5" />
           New Notification
         </button>
       </div>
+
+      {isAddModalOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-slate-800">Send Notification</h3>
+              <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleAddNotification} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Title</label>
+                <input 
+                  type="text" required
+                  value={newNotification.title} onChange={e => setNewNotification({...newNotification, title: e.target.value})}
+                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Message</label>
+                <textarea 
+                  required rows={3}
+                  value={newNotification.message} onChange={e => setNewNotification({...newNotification, message: e.target.value})}
+                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none resize-none"
+                ></textarea>
+              </div>
+              <button 
+                type="submit" disabled={isSubmitting}
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-50 mt-6"
+              >
+                {isSubmitting ? "Sending..." : "Send Notification"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
         <div className="p-4 border-b border-slate-100 flex gap-4">
