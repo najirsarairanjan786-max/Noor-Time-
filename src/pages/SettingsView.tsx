@@ -13,10 +13,12 @@ import {
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 
-import { useState, Dispatch, SetStateAction } from "react";
+import { useState, Dispatch, SetStateAction, useEffect } from "react";
 import { ViewType } from "../App";
 import { ThemeModal } from "../components/ThemeModal";
 import { LocationPickerModal } from "../components/LocationPickerModal";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../lib/firebase";
 
 export function SettingsView({
   setView,
@@ -30,6 +32,21 @@ export function SettingsView({
   const [newAlarmName, setNewAlarmName] = useState("");
   const [newAlarmTime, setNewAlarmTime] = useState("");
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (user?.email === "naziralquran786@gmail.com") {
+      setIsAdmin(true);
+      return;
+    }
+    if (user) {
+      getDoc(doc(db, "admins", user.uid)).then((docSnap) => {
+        setIsAdmin(docSnap.exists());
+      }).catch(console.error);
+    } else {
+      setIsAdmin(false);
+    }
+  }, [user]);
 
   const addCustomAlarm = () => {
     if (newAlarmName && newAlarmTime) {
@@ -468,6 +485,18 @@ export function SettingsView({
           </div>
         </div>
       </div>
+
+      {isAdmin && (
+        <div className="glass-panel p-4">
+          <button
+            onClick={() => (window.location.href = "/admin")}
+            className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+          >
+            Admin Panel
+          </button>
+        </div>
+      )}
+      
       <LocationPickerModal
         isOpen={isLocationModalOpen}
         onClose={() => setIsLocationModalOpen(false)}
