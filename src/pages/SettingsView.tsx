@@ -140,6 +140,17 @@ export function SettingsView({
         </p>
       </div>
 
+      {isAdmin && (
+        <div className="glass-panel p-4 mb-4">
+          <button
+            onClick={() => (window.location.href = "/admin")}
+            className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-md border border-slate-700"
+          >
+            Go to /admin
+          </button>
+        </div>
+      )}
+
       <div className="glass-panel p-2">
         <div className="p-4 flex flex-col border-b border-emerald-800/40">
           <div className="flex items-center justify-between w-full">
@@ -485,17 +496,6 @@ export function SettingsView({
           </div>
         </div>
       </div>
-
-      {isAdmin && (
-        <div className="glass-panel p-4">
-          <button
-            onClick={() => (window.location.href = "/admin")}
-            className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
-          >
-            Admin Panel
-          </button>
-        </div>
-      )}
       
       <LocationPickerModal
         isOpen={isLocationModalOpen}
