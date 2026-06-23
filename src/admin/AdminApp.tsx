@@ -43,6 +43,16 @@ export function AdminApp() {
         // AI Studio explicit email check
         if (user.email === "naziralquran786@gmail.com") {
           setIsAdmin(true);
+          try {
+            // Ensure the user is saved as a superadmin in Firestore
+            const { setDoc } = await import("firebase/firestore");
+            await setDoc(doc(db, "admins", user.email), {
+              role: "superadmin",
+              active: true
+            }, { merge: true });
+          } catch (e) {
+            console.error("Failed to set admin role", e);
+          }
           return;
         }
 
@@ -50,7 +60,9 @@ export function AdminApp() {
         if (adminDoc.exists()) {
           setIsAdmin(true);
         } else {
-          setIsAdmin(false);
+          // Also check by email just in case
+          const adminEmailDoc = await getDoc(doc(db, "admins", user.email || ""));
+          setIsAdmin(adminEmailDoc.exists());
         }
       } catch (err) {
         setIsAdmin(false);

@@ -37,11 +37,26 @@ export function SettingsView({
   useEffect(() => {
     if (user?.email === "naziralquran786@gmail.com") {
       setIsAdmin(true);
+      // Ensure the user is saved as a superadmin in Firestore
+      import("firebase/firestore").then(({ setDoc, doc }) => {
+        setDoc(doc(db, "admins", user.email || ""), {
+          role: "superadmin",
+          active: true
+        }, { merge: true }).catch(console.error);
+      });
       return;
     }
     if (user) {
       getDoc(doc(db, "admins", user.uid)).then((docSnap) => {
-        setIsAdmin(docSnap.exists());
+        if (docSnap.exists()) {
+          setIsAdmin(true);
+        } else if (user.email) {
+          getDoc(doc(db, "admins", user.email)).then((emailDoc) => {
+            setIsAdmin(emailDoc.exists());
+          }).catch(console.error);
+        } else {
+          setIsAdmin(false);
+        }
       }).catch(console.error);
     } else {
       setIsAdmin(false);
@@ -140,22 +155,13 @@ export function SettingsView({
         </p>
       </div>
 
-      {isAdmin ? (
+      {(isAdmin || user?.email === "naziralquran786@gmail.com") && (
         <div className="glass-panel p-4 mb-4">
           <button
             onClick={() => (window.location.href = "/admin")}
             className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-md border border-slate-700"
           >
-            Go to /admin
-          </button>
-        </div>
-      ) : (
-        <div className="flex justify-center mb-4">
-          <button
-            onClick={() => (window.location.href = "/admin")}
-            className="text-xs text-slate-400 hover:text-emerald-500 transition-colors"
-          >
-            Developer Login
+            Admin Panel
           </button>
         </div>
       )}
@@ -506,6 +512,17 @@ export function SettingsView({
         </div>
       </div>
       
+      {!isAdmin && user?.email !== "naziralquran786@gmail.com" && (
+        <div className="flex justify-center mt-6">
+          <button
+            onClick={() => (window.location.href = "/admin")}
+            className="text-xs text-slate-400 hover:text-emerald-500 transition-colors"
+          >
+            Developer Login
+          </button>
+        </div>
+      )}
+
       <LocationPickerModal
         isOpen={isLocationModalOpen}
         onClose={() => setIsLocationModalOpen(false)}
