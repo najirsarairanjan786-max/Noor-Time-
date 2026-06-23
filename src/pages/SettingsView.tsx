@@ -512,17 +512,6 @@ export function SettingsView({
         </div>
       </div>
       
-      {!isAdmin && user?.email !== "naziralquran786@gmail.com" && (
-        <div className="flex justify-center mt-6">
-          <button
-            onClick={() => (window.location.href = "/admin")}
-            className="text-xs text-slate-400 hover:text-emerald-500 transition-colors"
-          >
-            Developer Login
-          </button>
-        </div>
-      )}
-
       <LocationPickerModal
         isOpen={isLocationModalOpen}
         onClose={() => setIsLocationModalOpen(false)}

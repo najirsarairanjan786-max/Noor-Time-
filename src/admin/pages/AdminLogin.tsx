@@ -22,7 +22,12 @@ export function AdminLogin() {
       if (user.email !== "naziralquran786@gmail.com") {
         const adminDoc = await getDoc(doc(db, "admins", user.uid));
         if (!adminDoc.exists()) {
-          setError("You do not have access to the admin panel.");
+          const emailDoc = await getDoc(doc(db, "admins", user.email || ""));
+          if (!emailDoc.exists()) {
+             setError("You do not have access to the admin panel.");
+             // Automatically log them out since they are not admin
+             auth.signOut();
+          }
         }
       }
     } catch (err: any) {

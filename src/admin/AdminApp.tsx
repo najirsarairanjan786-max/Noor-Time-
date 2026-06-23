@@ -79,6 +79,12 @@ export function AdminApp() {
     );
   }
 
+  if (user && !isAdmin) {
+    // Redirect normal users to the main app
+    window.location.href = "/";
+    return null;
+  }
+
   if (!user || !isAdmin) {
     return <AdminLogin />;
   }
