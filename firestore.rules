@@ -223,7 +223,7 @@ service cloud.firestore {
     }
 
     match /notifications/{notificationId} {
-      allow read: if isSignedIn();
+      allow read: if true;
       allow create: if isAdmin() && isValidId(notificationId) && isValidNotification(incoming());
       allow update: if isAdmin() && isValidId(notificationId) && isValidNotification(incoming());
       allow delete: if isAdmin() && isValidId(notificationId);
@@ -245,9 +245,9 @@ service cloud.firestore {
 
     match /contact_messages/{messageId} {
       allow read: if isAdmin();
-      allow create: if isValidId(messageId) && isValidContactMessage(incoming());
-      allow update: if isAdmin() && isValidId(messageId) && isValidContactMessage(incoming());
-      allow delete: if isAdmin() && isValidId(messageId);
+      allow create: if true;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
     }
   }
 }

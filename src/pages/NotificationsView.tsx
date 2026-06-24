@@ -1,31 +1,30 @@
 import { motion } from "motion/react";
 import { ArrowLeft, Bell } from "lucide-react";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useState, useEffect } from "react";
 import { ViewType } from "../App";
 import { useTranslation } from "../lib/i18n";
 import { useSettings } from "../hooks/useSettings";
+import { collection, query, onSnapshot } from "firebase/firestore";
+import { db } from "../lib/firebase";
 
 export function NotificationsView({ setView }: { setView: Dispatch<SetStateAction<ViewType>> }) {
   const { settings } = useSettings();
   const { t } = useTranslation(settings.language);
+  const [notifications, setNotifications] = useState<any[]>([]);
 
-  // We can add mock notifications here or a placeholder if empty
-  const mockNotifications = [
-    {
-      id: 1,
-      title: "New feature available!",
-      message: "Check out the new Madani Radio in the side menu.",
-      date: "Today, 10:00 AM",
-      read: false
-    },
-    {
-      id: 2,
-      title: "Prayer Time Update",
-      message: "Asr time will shift by 5 minutes starting tomorrow.",
-      date: "Yesterday, 2:30 PM",
-      read: true
-    }
-  ];
+  useEffect(() => {
+    const q = query(collection(db, "notifications"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      let data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      data.sort((a: any, b: any) => {
+        const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+        const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+        return timeB - timeA;
+      });
+      setNotifications(data);
+    });
+    return unsubscribe;
+  }, []);
 
   return (
     <motion.div
@@ -48,25 +47,29 @@ export function NotificationsView({ setView }: { setView: Dispatch<SetStateActio
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
-        {mockNotifications.map(notification => (
-          <div 
-            key={notification.id} 
-            className={`p-4 rounded-xl border transition-colors ${notification.read ? 'bg-emerald-900/30 border-emerald-800/30' : 'bg-emerald-900 border-emerald-500/30'}`}
-          >
-            <div className="flex items-start justify-between">
-              <h3 className={`font-medium text-sm ${notification.read ? 'text-emerald-100' : 'text-white'}`}>
-                {notification.title}
-              </h3>
-              {!notification.read && (
-                <div className="w-2 h-2 rounded-full bg-emerald-400 mt-1"></div>
-              )}
-            </div>
-            <p className="text-xs text-emerald-200/70 mt-1">{notification.message}</p>
-            <div className="text-[10px] text-emerald-500/70 mt-3 font-medium">
-              {notification.date}
-            </div>
+        {notifications.length === 0 ? (
+          <div className="text-center text-emerald-200/50 mt-10">
+            <Bell className="w-12 h-12 mx-auto mb-3 opacity-20" />
+            <p>No notifications yet</p>
           </div>
-        ))}
+        ) : (
+          notifications.map(notification => (
+            <div 
+              key={notification.id} 
+              className={`p-4 rounded-xl border transition-colors bg-emerald-900 border-emerald-500/30`}
+            >
+              <div className="flex items-start justify-between">
+                <h3 className={`font-medium text-sm text-white`}>
+                  {notification.title}
+                </h3>
+              </div>
+              <p className="text-xs text-emerald-200/70 mt-1">{notification.message}</p>
+              <div className="text-[10px] text-emerald-500/70 mt-3 font-medium">
+                {notification.createdAt?.toDate ? new Date(notification.createdAt.toDate()).toLocaleString() : "Just now"}
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </motion.div>
   );
