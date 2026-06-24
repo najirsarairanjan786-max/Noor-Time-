@@ -163,6 +163,12 @@ service cloud.firestore {
                     && incoming().diff(existing()).affectedKeys().hasOnly(['firstName', 'lastName', 'photoURL', 'email', 'phone', 'address', 'location', 'state', 'pinCode', 'country', 'updatedAt'])
                     && isValidUserProfile(incoming())
                     && incoming().updatedAt == request.time;
+
+      match /noor_messages/{messageId} {
+        allow read: if isSignedIn() && request.auth.uid == userId;
+        allow create: if isSignedIn() && request.auth.uid == userId;
+        allow delete: if isSignedIn() && request.auth.uid == userId;
+      }
     }
 
     match /notes/{noteId} {

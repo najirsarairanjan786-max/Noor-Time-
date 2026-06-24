@@ -16,6 +16,8 @@ export function MessagesManager() {
         ...doc.data()
       }));
       setMessages(data);
+    }, (error) => {
+      console.error("Error fetching messages:", error);
     });
 
     return unsubscribe;
