@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Plus, Bell, Search, Edit2, Trash2, X } from "lucide-react";
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, addDoc, deleteDoc, doc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
 export function NotificationsManager() {
@@ -26,12 +26,24 @@ export function NotificationsManager() {
     return unsubscribe;
   }, []);
 
+  const handleDeleteNotification = async (id: string) => {
+    if (window.confirm("Are you sure you want to delete this notification?")) {
+      try {
+        await deleteDoc(doc(db, "notifications", id));
+      } catch (error) {
+        console.error("Error deleting notification:", error);
+      }
+    }
+  };
+
   const handleAddNotification = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
       await addDoc(collection(db, "notifications"), {
         ...newNotification,
+        category: "general",
+        scheduledFor: serverTimestamp(),
         status: "sent",
         createdAt: serverTimestamp(),
       });
@@ -39,6 +51,7 @@ export function NotificationsManager() {
       setNewNotification({ title: "", message: "" });
     } catch (error) {
       console.error("Error adding notification: ", error);
+      alert("Error adding notification. Check console for details.");
     } finally {
       setIsSubmitting(false);
     }
@@ -145,7 +158,10 @@ export function NotificationsManager() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <button className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                        <button 
+                          onClick={() => handleDeleteNotification(notif.id)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
