@@ -48,7 +48,6 @@ export function ContentManager() {
       setNewContent({ title: "", type: "hadith", text: "", source: "" });
     } catch (error: any) {
       console.error("Error adding content: ", error);
-      alert("Error adding content: " + (error.message || "Unknown error"));
     } finally {
       setIsSubmitting(false);
     }

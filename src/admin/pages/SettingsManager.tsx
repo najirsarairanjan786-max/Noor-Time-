@@ -38,10 +38,9 @@ export function SettingsManager() {
         ...settings,
         modifiedAt: Date.now()
       });
-      alert("Settings saved successfully!");
+      // Settings saved successfully
     } catch (e) {
       console.error("Error saving settings: ", e);
-      alert("Error saving settings");
     } finally {
       setIsSaving(false);
     }

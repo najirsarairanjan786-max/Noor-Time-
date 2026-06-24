@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Plus, Bell, Search, Edit2, Trash2, X } from "lucide-react";
-import { collection, query, orderBy, onSnapshot, addDoc, deleteDoc, doc, Timestamp } from "firebase/firestore";
+import { Plus, Bell, Search, Edit2, Trash2, X, CheckCircle, AlertCircle } from "lucide-react";
+import { collection, query, orderBy, onSnapshot, addDoc, updateDoc, deleteDoc, doc, Timestamp, serverTimestamp } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
 export function NotificationsManager() {
@@ -11,6 +11,7 @@ export function NotificationsManager() {
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [statusMsg, setStatusMsg] = useState({ type: "", text: "" });
 
   useEffect(() => {
     const q = query(collection(db, "notifications"));
@@ -27,33 +28,60 @@ export function NotificationsManager() {
   }, []);
 
   const handleDeleteNotification = async (id: string) => {
+    setStatusMsg({ type: "", text: "" });
     try {
       await deleteDoc(doc(db, "notifications", id));
+      setStatusMsg({ type: "success", text: "Notification deleted successfully!" });
+      setTimeout(() => setStatusMsg({ type: "", text: "" }), 5000);
     } catch (error: any) {
       console.error("Error deleting notification:", error);
+      setStatusMsg({ type: "error", text: "Error deleting notification: " + (error.message || "Unknown error") });
     }
   };
 
   const handleAddNotification = async (e: any) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setStatusMsg({ type: "", text: "" });
     try {
-      // Use Timestamp.now() instead of serverTimestamp() to avoid hanging if clock sync fails
       const payload = {
         ...newNotification,
         category: "general",
-        scheduledFor: Date.now(),
-        status: "sent",
-        createdAt: Date.now(),
+        scheduledFor: serverTimestamp(),
+        status: "pending",
+        createdAt: serverTimestamp(),
       };
       
-      await addDoc(collection(db, "notifications"), payload);
+      const docRef = await addDoc(collection(db, "notifications"), payload);
+      
+      try {
+        const response = await fetch("/api/send-notification", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ notificationId: docRef.id }),
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to send push notifications");
+        }
+        
+        setStatusMsg({ type: "success", text: "Push notification sent successfully to devices!" });
+      } catch (apiError: any) {
+        console.error("API Error:", apiError);
+        setStatusMsg({ type: "error", text: "Notification saved to history but push delivery failed: " + apiError.message });
+        await updateDoc(docRef, { status: "failed" });
+      }
       
       setIsAddModalOpen(false);
       setNewNotification({ title: "", message: "" });
+      setTimeout(() => setStatusMsg({ type: "", text: "" }), 8000);
     } catch (error: any) {
       console.error("Error adding notification: ", error);
-      alert("Error adding notification: " + (error.message || "Unknown error"));
+      setStatusMsg({ type: "error", text: "Error sending notification: " + (error.message || "Unknown error") });
     } finally {
       setIsSubmitting(false);
     }
@@ -74,6 +102,13 @@ export function NotificationsManager() {
           New Notification
         </button>
       </div>
+
+      {statusMsg.text && (
+        <div className={`p-4 rounded-xl flex items-center gap-3 ${statusMsg.type === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+          {statusMsg.type === 'success' ? <CheckCircle className="w-5 h-5 text-emerald-600" /> : <AlertCircle className="w-5 h-5 text-red-600" />}
+          <p className="font-medium">{statusMsg.text}</p>
+        </div>
+      )}
 
       {isAddModalOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">

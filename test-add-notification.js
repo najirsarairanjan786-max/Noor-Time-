@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
-import { getFirestore, collection, addDoc, deleteDoc, doc } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, deleteDoc, doc, Timestamp } from 'firebase/firestore';
 import { readFile } from 'fs/promises';
 
 async function run() {
@@ -14,9 +14,9 @@ async function run() {
       title: "Test Delete",
       message: "Test msg",
       category: "general",
-      scheduledFor: Date.now(),
+      scheduledFor: Timestamp.now(),
       status: "sent",
-      createdAt: Date.now(),
+      createdAt: Timestamp.now(),
     });
     console.log("Created doc:", docRef.id);
     

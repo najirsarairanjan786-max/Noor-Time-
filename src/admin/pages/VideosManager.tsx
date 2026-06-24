@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
-import { Plus, Video, Search, Edit2, Trash2, X } from "lucide-react";
-import { collection, query, orderBy, onSnapshot, addDoc, deleteDoc, doc, Timestamp } from "firebase/firestore";
-import { db } from "../../lib/firebase";
+import { useState, useEffect, useRef } from "react";
+import { Plus, Video, Search, Edit2, Trash2, X, Upload } from "lucide-react";
+import { collection, query, orderBy, onSnapshot, addDoc, deleteDoc, doc } from "firebase/firestore";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { db, storage } from "../../lib/firebase";
 
 export function VideosManager() {
   const [videos, setVideos] = useState<any[]>([]);
@@ -13,7 +14,13 @@ export function VideosManager() {
     category: "",
     duration: ""
   });
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  const videoFileInputRef = useRef<HTMLInputElement>(null);
+  const thumbnailFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const q = query(collection(db, "videos"), orderBy("createdAt", "desc"));
@@ -32,22 +39,59 @@ export function VideosManager() {
     }
   };
 
+  const uploadFile = async (file: File, path: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const storageRef = ref(storage, path);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setUploadProgress(progress);
+        },
+        (error) => {
+          reject(error);
+        },
+        async () => {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          resolve(downloadURL);
+        }
+      );
+    });
+  };
+
   const handleAddVideo = async (e: any) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setUploadProgress(0);
     try {
+      let finalVideoUrl = newVideo.url;
+      let finalThumbnailUrl = newVideo.thumbnail;
+
+      if (videoFile) {
+        finalVideoUrl = await uploadFile(videoFile, `videos/${Date.now()}_${videoFile.name}`);
+      }
+      if (thumbnailFile) {
+        finalThumbnailUrl = await uploadFile(thumbnailFile, `thumbnails/${Date.now()}_${thumbnailFile.name}`);
+      }
+
       await addDoc(collection(db, "videos"), {
         ...newVideo,
+        url: finalVideoUrl,
+        thumbnail: finalThumbnailUrl,
         views: 0,
         createdAt: Date.now(),
       });
       setIsAddModalOpen(false);
       setNewVideo({ title: "", url: "", thumbnail: "", category: "", duration: "" });
+      setVideoFile(null);
+      setThumbnailFile(null);
     } catch (error: any) {
       console.error("Error adding video: ", error);
-      alert("Error adding video: " + (error.message || "Unknown error"));
     } finally {
       setIsSubmitting(false);
+      setUploadProgress(0);
     }
   };
 
@@ -83,48 +127,127 @@ export function VideosManager() {
                 <input 
                   type="text" required
                   value={newVideo.title} onChange={e => setNewVideo({...newVideo, title: e.target.value})}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                  className="w-full px-4 py-2 bg-slate-50 text-slate-900 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
                 />
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Video URL</label>
-                <input 
-                  type="url" required
-                  value={newVideo.url} onChange={e => setNewVideo({...newVideo, url: e.target.value})}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
-                />
+                <label className="block text-sm font-medium text-slate-700 mb-1">Video Source (Upload or URL)</label>
+                <div className="flex gap-2">
+                  <input 
+                    type="url" 
+                    placeholder="Enter video URL"
+                    value={newVideo.url} 
+                    onChange={e => {
+                      setNewVideo({...newVideo, url: e.target.value});
+                      if (e.target.value) setVideoFile(null);
+                    }}
+                    className="flex-1 px-4 py-2 bg-slate-50 text-slate-900 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                    disabled={!!videoFile}
+                    required={!videoFile}
+                  />
+                  <input 
+                    type="file" 
+                    accept="video/*" 
+                    className="hidden" 
+                    ref={videoFileInputRef}
+                    onChange={(e) => {
+                      if (e.target.files?.[0]) {
+                        setVideoFile(e.target.files[0]);
+                        setNewVideo({...newVideo, url: ""});
+                      }
+                    }}
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => videoFileInputRef.current?.click()}
+                    className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${videoFile ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}`}
+                  >
+                    <Upload className="w-4 h-4" />
+                    {videoFile ? 'Selected' : 'Upload'}
+                  </button>
+                </div>
+                {videoFile && <p className="text-xs text-emerald-600 mt-1">File selected: {videoFile.name}</p>}
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Thumbnail URL</label>
-                <input 
-                  type="url" required
-                  value={newVideo.thumbnail} onChange={e => setNewVideo({...newVideo, thumbnail: e.target.value})}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
-                />
+                <label className="block text-sm font-medium text-slate-700 mb-1">Thumbnail Source (Upload or URL)</label>
+                <div className="flex gap-2">
+                  <input 
+                    type="url" 
+                    placeholder="Enter thumbnail URL"
+                    value={newVideo.thumbnail} 
+                    onChange={e => {
+                      setNewVideo({...newVideo, thumbnail: e.target.value});
+                      if (e.target.value) setThumbnailFile(null);
+                    }}
+                    className="flex-1 px-4 py-2 bg-slate-50 text-slate-900 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                    disabled={!!thumbnailFile}
+                    required={!thumbnailFile}
+                  />
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    className="hidden" 
+                    ref={thumbnailFileInputRef}
+                    onChange={(e) => {
+                      if (e.target.files?.[0]) {
+                        setThumbnailFile(e.target.files[0]);
+                        setNewVideo({...newVideo, thumbnail: ""});
+                      }
+                    }}
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => thumbnailFileInputRef.current?.click()}
+                    className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${thumbnailFile ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}`}
+                  >
+                    <Upload className="w-4 h-4" />
+                    {thumbnailFile ? 'Selected' : 'Upload'}
+                  </button>
+                </div>
+                {thumbnailFile && <p className="text-xs text-emerald-600 mt-1">File selected: {thumbnailFile.name}</p>}
               </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Category</label>
-                  <input 
-                    type="text" required
+                  <select 
+                    required
                     value={newVideo.category} onChange={e => setNewVideo({...newVideo, category: e.target.value})}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
-                  />
+                    className="w-full px-4 py-2 bg-slate-50 text-slate-900 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                  >
+                    <option value="">Select Category</option>
+                    <option value="Quran">Quran</option>
+                    <option value="Hadith">Hadith</option>
+                    <option value="Lecture">Lecture</option>
+                    <option value="Naat">Naat</option>
+                    <option value="Dua">Dua</option>
+                    <option value="Kids">Kids</option>
+                    <option value="Other">Other</option>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Duration</label>
                   <input 
                     type="text" placeholder="e.g. 5:30" required
                     value={newVideo.duration} onChange={e => setNewVideo({...newVideo, duration: e.target.value})}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                    className="w-full px-4 py-2 bg-slate-50 text-slate-900 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
                   />
                 </div>
               </div>
+
+              {uploadProgress > 0 && uploadProgress < 100 && (
+                <div className="w-full bg-slate-200 rounded-full h-2.5 mt-4">
+                  <div className="bg-emerald-600 h-2.5 rounded-full" style={{ width: `${uploadProgress}%` }}></div>
+                </div>
+              )}
+
               <button 
                 type="submit" disabled={isSubmitting}
                 className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-50 mt-6"
               >
-                {isSubmitting ? "Adding..." : "Add Video"}
+                {isSubmitting ? `Uploading... ${uploadProgress > 0 ? Math.round(uploadProgress) + '%' : ''}` : "Add Video"}
               </button>
             </form>
           </div>
@@ -138,7 +261,7 @@ export function VideosManager() {
             <input 
               type="text"
               placeholder="Search videos..."
-              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 text-slate-900 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
             />
           </div>
         </div>

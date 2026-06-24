@@ -46,7 +46,6 @@ export function StoreManager() {
       setNewProduct({ name: "", price: "", category: "", image: "", description: "", stockStatus: "in_stock" });
     } catch (error: any) {
       console.error("Error adding product: ", error);
-      alert("Error adding product: " + (error.message || "Unknown error"));
     } finally {
       setIsSubmitting(false);
     }
@@ -84,7 +83,7 @@ export function StoreManager() {
                 <input 
                   type="text" required
                   value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                  className="w-full px-4 py-2 bg-slate-50 text-slate-900 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -93,16 +92,24 @@ export function StoreManager() {
                   <input 
                     type="number" step="0.01" required min="0"
                     value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                    className="w-full px-4 py-2 bg-slate-50 text-slate-900 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Category</label>
-                  <input 
-                    type="text" required
+                  <select 
+                    required
                     value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
-                  />
+                    className="w-full px-4 py-2 bg-slate-50 text-slate-900 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                  >
+                    <option value="">Select Category</option>
+                    <option value="Clothing">Clothing</option>
+                    <option value="Books">Books</option>
+                    <option value="Accessories">Accessories</option>
+                    <option value="Perfume">Perfume (Attar)</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Other">Other</option>
+                  </select>
                 </div>
               </div>
               <div>
@@ -110,14 +117,14 @@ export function StoreManager() {
                 <input 
                   type="url" required
                   value={newProduct.image} onChange={e => setNewProduct({...newProduct, image: e.target.value})}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                  className="w-full px-4 py-2 bg-slate-50 text-slate-900 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
                 <select 
                   value={newProduct.stockStatus} onChange={e => setNewProduct({...newProduct, stockStatus: e.target.value})}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                  className="w-full px-4 py-2 bg-slate-50 text-slate-900 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
                 >
                   <option value="in_stock">In Stock</option>
                   <option value="out_of_stock">Out of Stock</option>
@@ -141,7 +148,7 @@ export function StoreManager() {
             <input 
               type="text"
               placeholder="Search products..."
-              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 text-slate-900 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
             />
           </div>
         </div>

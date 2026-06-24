@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocalStorage } from "usehooks-ts";
+import { collection, addDoc } from "firebase/firestore";
+import { db } from "./lib/firebase";
 import { Home } from "./pages/Home";
 import { CalendarView } from "./pages/CalendarView";
 import { SettingsView } from "./pages/SettingsView";
@@ -31,6 +33,7 @@ import { AnimatePresence } from "motion/react";
 import { useSettings } from "./hooks/useSettings";
 import { useDataSync } from "./hooks/useDataSync";
 import { useAuth } from "./hooks/useAuth";
+import { useFCM } from "./hooks/useFCM";
 
 export type ViewType =
   | "home"
@@ -61,10 +64,29 @@ export default function App() {
   const { settings } = useSettings();
   useDataSync();
   const { user, loading } = useAuth();
+  useFCM();
   const [skipLogin, setSkipLogin] = useLocalStorage(
     "islamic-app-skip-login",
     false,
   );
+
+  useEffect(() => {
+    const trackInstall = async () => {
+      const isInstalled = localStorage.getItem("noor_app_installed_tracked");
+      if (!isInstalled) {
+        try {
+          await addDoc(collection(db, "app_installs"), {
+            timestamp: Date.now(),
+            userAgent: navigator.userAgent
+          });
+          localStorage.setItem("noor_app_installed_tracked", "true");
+        } catch (error) {
+          console.warn("Could not track app install:", error);
+        }
+      }
+    };
+    trackInstall();
+  }, []);
 
   useEffect(() => {
     document.documentElement.classList.add("theme-transition");

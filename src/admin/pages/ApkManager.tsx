@@ -35,10 +35,9 @@ export function ApkManager() {
         ...release,
         createdAt: Date.now()
       });
-      alert("APK Release info updated!");
+      // Release info updated
     } catch (e) {
       console.error("Error saving apk release: ", e);
-      alert("Error saving config");
     } finally {
       setIsSaving(false);
     }

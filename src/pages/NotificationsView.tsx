@@ -17,8 +17,8 @@ export function NotificationsView({ setView }: { setView: Dispatch<SetStateActio
     const unsubscribe = onSnapshot(q, (snapshot) => {
       let data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       data.sort((a: any, b: any) => {
-        const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
-        const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+        const timeA = typeof a.createdAt === 'number' ? a.createdAt : (a.createdAt?.toMillis ? a.createdAt.toMillis() : 0);
+        const timeB = typeof b.createdAt === 'number' ? b.createdAt : (b.createdAt?.toMillis ? b.createdAt.toMillis() : 0);
         return timeB - timeA;
       });
       setNotifications(data);
@@ -65,7 +65,7 @@ export function NotificationsView({ setView }: { setView: Dispatch<SetStateActio
               </div>
               <p className="text-xs text-emerald-200/70 mt-1">{notification.message}</p>
               <div className="text-[10px] text-emerald-500/70 mt-3 font-medium">
-                {notification.createdAt?.toDate ? new Date(notification.createdAt.toDate()).toLocaleString() : "Just now"}
+                {typeof notification.createdAt === 'number' ? new Date(notification.createdAt).toLocaleString() : (notification.createdAt?.toDate ? new Date(notification.createdAt.toDate()).toLocaleString() : "Just now")}
               </div>
             </div>
           ))

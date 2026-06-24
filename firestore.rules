@@ -105,9 +105,9 @@ service cloud.firestore {
         && data.title is string && data.title.size() <= 200
         && data.message is string && data.message.size() <= 1000
         && data.category is string && data.category.size() <= 100
-        && data.scheduledFor is timestamp
+        && (data.scheduledFor is timestamp || data.scheduledFor is number)
         && data.status is string && data.status.matches('^(pending|sent|failed)$')
-        && data.createdAt is timestamp;
+        && (data.createdAt is timestamp || data.createdAt is number);
     }
 
     function isValidContent(data) {
@@ -145,6 +145,13 @@ service cloud.firestore {
         && data.createdAt is timestamp;
     }
 
+    match /app_installs/{installId} {
+      allow read: if isAdmin();
+      allow create: if true;
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
     match /users/{userId} {
       allow list: if isAdmin();
       allow get: if isSignedIn() && isValidId(userId) && (userId == request.auth.uid || isAdmin());
@@ -168,6 +175,10 @@ service cloud.firestore {
         allow read: if isSignedIn() && request.auth.uid == userId;
         allow create: if isSignedIn() && request.auth.uid == userId;
         allow delete: if isSignedIn() && request.auth.uid == userId;
+      }
+
+      match /fcmTokens/{tokenId} {
+        allow read, write: if isSignedIn() && request.auth.uid == userId;
       }
     }
 
