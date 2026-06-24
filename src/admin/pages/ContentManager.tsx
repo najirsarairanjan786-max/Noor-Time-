@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Plus, BookText, Search, Edit2, Trash2, X } from "lucide-react";
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, addDoc, deleteDoc, doc, Timestamp } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
 export function ContentManager() {
@@ -28,18 +28,27 @@ export function ContentManager() {
     return unsubscribe;
   }, []);
 
-  const handleAddContent = async (e: React.FormEvent) => {
+  const handleDeleteContent = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, "content", id));
+    } catch (error: any) {
+      console.error("Error deleting content:", error);
+    }
+  };
+
+  const handleAddContent = async (e: any) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
       await addDoc(collection(db, "content"), {
         ...newContent,
-        createdAt: serverTimestamp(),
+        createdAt: Date.now(),
       });
       setIsAddModalOpen(false);
       setNewContent({ title: "", type: "hadith", text: "", source: "" });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding content: ", error);
+      alert("Error adding content: " + (error.message || "Unknown error"));
     } finally {
       setIsSubmitting(false);
     }
@@ -165,7 +174,7 @@ export function ContentManager() {
                         <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                           <Edit2 className="w-4 h-4" />
                         </button>
-                        <button className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                        <button onClick={() => handleDeleteContent(item.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>

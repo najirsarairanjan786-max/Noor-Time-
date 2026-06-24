@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Plus, Bell, Search, Edit2, Trash2, X } from "lucide-react";
-import { collection, query, orderBy, onSnapshot, addDoc, deleteDoc, doc, serverTimestamp } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, addDoc, deleteDoc, doc, Timestamp } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
 export function NotificationsManager() {
@@ -17,8 +17,8 @@ export function NotificationsManager() {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       let data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       data.sort((a: any, b: any) => {
-        const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
-        const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+        const timeA = typeof a.createdAt === 'number' ? a.createdAt : (a.createdAt?.toMillis ? a.createdAt.toMillis() : 0);
+        const timeB = typeof b.createdAt === 'number' ? b.createdAt : (b.createdAt?.toMillis ? b.createdAt.toMillis() : 0);
         return timeB - timeA;
       });
       setNotifications(data);
@@ -27,31 +27,33 @@ export function NotificationsManager() {
   }, []);
 
   const handleDeleteNotification = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this notification?")) {
-      try {
-        await deleteDoc(doc(db, "notifications", id));
-      } catch (error) {
-        console.error("Error deleting notification:", error);
-      }
+    try {
+      await deleteDoc(doc(db, "notifications", id));
+    } catch (error: any) {
+      console.error("Error deleting notification:", error);
     }
   };
 
-  const handleAddNotification = async (e: React.FormEvent) => {
+  const handleAddNotification = async (e: any) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await addDoc(collection(db, "notifications"), {
+      // Use Timestamp.now() instead of serverTimestamp() to avoid hanging if clock sync fails
+      const payload = {
         ...newNotification,
         category: "general",
-        scheduledFor: serverTimestamp(),
+        scheduledFor: Date.now(),
         status: "sent",
-        createdAt: serverTimestamp(),
-      });
+        createdAt: Date.now(),
+      };
+      
+      await addDoc(collection(db, "notifications"), payload);
+      
       setIsAddModalOpen(false);
       setNewNotification({ title: "", message: "" });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding notification: ", error);
-      alert("Error adding notification. Check console for details.");
+      alert("Error adding notification: " + (error.message || "Unknown error"));
     } finally {
       setIsSubmitting(false);
     }

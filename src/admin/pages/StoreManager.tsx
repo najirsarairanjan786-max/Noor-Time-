@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Plus, ShoppingBag, Search, Edit2, Trash2, X } from "lucide-react";
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, addDoc, deleteDoc, doc, Timestamp } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
 export function StoreManager() {
@@ -25,19 +25,28 @@ export function StoreManager() {
     return unsubscribe;
   }, []);
 
-  const handleAddProduct = async (e: React.FormEvent) => {
+  const handleDeleteProduct = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, "products", id));
+    } catch (error: any) {
+      console.error("Error deleting product:", error);
+    }
+  };
+
+  const handleAddProduct = async (e: any) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
       await addDoc(collection(db, "products"), {
         ...newProduct,
         price: parseFloat(newProduct.price),
-        createdAt: serverTimestamp(),
+        createdAt: Date.now(),
       });
       setIsAddModalOpen(false);
       setNewProduct({ name: "", price: "", category: "", image: "", description: "", stockStatus: "in_stock" });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding product: ", error);
+      alert("Error adding product: " + (error.message || "Unknown error"));
     } finally {
       setIsSubmitting(false);
     }
@@ -179,7 +188,7 @@ export function StoreManager() {
                         <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                           <Edit2 className="w-4 h-4" />
                         </button>
-                        <button className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                        <button onClick={() => handleDeleteProduct(prod.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>

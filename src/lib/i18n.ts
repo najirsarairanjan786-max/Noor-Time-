@@ -8,6 +8,7 @@ export const translations = {
     settings: "Settings",
     profile: "Profile",
     invalidEmail: "Invalid email ID",
+    store: "Islamic Store",
     // Home
     nextPrayer: "Next Prayer",
     in: "in",

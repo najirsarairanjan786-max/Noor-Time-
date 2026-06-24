@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Plus, Video, Search, Edit2, Trash2, X } from "lucide-react";
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, addDoc, deleteDoc, doc, Timestamp } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
 export function VideosManager() {
@@ -24,19 +24,28 @@ export function VideosManager() {
     return unsubscribe;
   }, []);
 
-  const handleAddVideo = async (e: React.FormEvent) => {
+  const handleDeleteVideo = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, "videos", id));
+    } catch (error: any) {
+      console.error("Error deleting video:", error);
+    }
+  };
+
+  const handleAddVideo = async (e: any) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
       await addDoc(collection(db, "videos"), {
         ...newVideo,
         views: 0,
-        createdAt: serverTimestamp(),
+        createdAt: Date.now(),
       });
       setIsAddModalOpen(false);
       setNewVideo({ title: "", url: "", thumbnail: "", category: "", duration: "" });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding video: ", error);
+      alert("Error adding video: " + (error.message || "Unknown error"));
     } finally {
       setIsSubmitting(false);
     }
@@ -170,7 +179,7 @@ export function VideosManager() {
                         <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                           <Edit2 className="w-4 h-4" />
                         </button>
-                        <button className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                        <button onClick={() => handleDeleteVideo(vid.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
