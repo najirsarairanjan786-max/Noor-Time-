@@ -52,47 +52,125 @@ router.post('/api/send-notification', async (req, res) => {
 
     const { title, message, category } = notificationDoc.data() || {};
     
-    // 1. Fetch all tokens from users
+    // 1. Fetch all tokens from users mapping to user UIDs and document IDs
     const usersSnapshot = await db.collection('users').get();
-    const tokens: string[] = [];
+    const userTokens: { userId: string; token: string; docId: string }[] = [];
 
     for (const userDoc of usersSnapshot.docs) {
       const tokensSnapshot = await userDoc.ref.collection('fcmTokens').get();
       tokensSnapshot.forEach(tokenDoc => {
-        if (tokenDoc.data().token) {
-          tokens.push(tokenDoc.data().token);
+        const tokenData = tokenDoc.data();
+        if (tokenData && tokenData.token) {
+          userTokens.push({
+            userId: userDoc.id,
+            token: tokenData.token,
+            docId: tokenDoc.id
+          });
         }
       });
     }
 
-    if (tokens.length === 0) {
-      await notificationRef.update({ status: 'sent', note: "No registered devices found, saved to history" });
-      return res.status(200).json({ message: "No registered devices found, saved to history." });
+    // Filter to get unique tokens (so we don't send duplicate notifications to the same device token)
+    const uniqueUserTokens = Array.from(
+      new Map(userTokens.map(ut => [ut.token, ut])).values()
+    );
+
+    if (uniqueUserTokens.length === 0) {
+      await notificationRef.update({ 
+        status: 'sent', 
+        note: "No registered devices found, saved to history" 
+      });
+      return res.status(200).json({ 
+        success: true,
+        message: "No registered devices found. Notification saved to history." 
+      });
     }
 
-    // 2. Send messages via FCM
+    const tokens = uniqueUserTokens.map(ut => ut.token);
+
+    // 2. Send messages via FCM with background and terminated support configurations
     const payload = {
       notification: {
-        title,
-        body: message,
+        title: title || "New Notification",
+        body: message || "",
       },
       data: {
-        category: category || "general"
+        category: category || "general",
+        title: title || "",
+        body: message || "",
       },
-      tokens: [...new Set(tokens)] // Remove duplicates
+      android: {
+        priority: 'high' as const,
+        notification: {
+          sound: 'default',
+          channelId: 'high_importance_channel',
+          visibility: 'public',
+          defaultSound: true,
+          defaultVibrateTimings: true,
+          defaultLightSettings: true,
+          clickAction: 'FLUTTER_NOTIFICATION_CLICK',
+        }
+      },
+      apns: {
+        headers: {
+          'apns-priority': '10',
+        },
+        payload: {
+          aps: {
+            sound: 'default',
+          }
+        }
+      },
+      webpush: {
+        headers: {
+          Urgency: 'high',
+        },
+        notification: {
+          body: message || "",
+          icon: '/icon-192.png',
+          badge: '/icon-192.png',
+          requireInteraction: true,
+        }
+      },
+      tokens: tokens
     };
 
     const response = await getMessaging().sendEachForMulticast(payload);
 
-    // 3. Clean up invalid tokens
+    // 3. Clean up invalid/failed tokens from Firestore
     if (response.failureCount > 0) {
-      const failedTokens: string[] = [];
+      console.log(`${response.failureCount} tokens failed to deliver.`);
+      const tokensToDelete: { userId: string; docId: string }[] = [];
+      
       response.responses.forEach((resp, idx) => {
         if (!resp.success) {
-          failedTokens.push(tokens[idx]);
+          const failedToken = uniqueUserTokens[idx];
+          const errorCode = resp.error?.code;
+          console.warn(`Token failed with error [${errorCode}]: ${failedToken.token}`);
+          
+          if (
+            errorCode === 'messaging/registration-token-not-registered' ||
+            errorCode === 'messaging/invalid-registration-token' ||
+            errorCode === 'messaging/invalid-argument'
+          ) {
+            tokensToDelete.push({
+              userId: failedToken.userId,
+              docId: failedToken.docId
+            });
+          }
         }
       });
-      console.log('Failed tokens:', failedTokens);
+      
+      if (tokensToDelete.length > 0) {
+        console.log(`Cleaning up ${tokensToDelete.length} stale FCM tokens from Firestore...`);
+        const batch = db.batch();
+        tokensToDelete.forEach(t => {
+          const tokenDocRef = db.collection('users').doc(t.userId).collection('fcmTokens').doc(t.docId);
+          batch.delete(tokenDocRef);
+        });
+        await batch.commit();
+        console.log(`FCM tokens cleanup complete.`);
+      }
     }
 
     // Update status
@@ -104,6 +182,7 @@ router.post('/api/send-notification', async (req, res) => {
 
     res.status(200).json({
       success: true,
+      message: `Notification sent successfully to ${response.successCount} devices!`,
       successCount: response.successCount,
       failureCount: response.failureCount
     });
