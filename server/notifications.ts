@@ -103,12 +103,9 @@ router.post('/api/send-notification', async (req, res) => {
         priority: 'high' as const,
         notification: {
           sound: 'default',
-          channelId: 'high_importance_channel',
-          visibility: 'public',
           defaultSound: true,
           defaultVibrateTimings: true,
           defaultLightSettings: true,
-          clickAction: 'FLUTTER_NOTIFICATION_CLICK',
         }
       },
       apns: {
