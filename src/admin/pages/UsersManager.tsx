@@ -20,7 +20,7 @@ export function UsersManager() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-800">User Management</h2>
-          <p className="text-slate-500">Manage all registered users</p>
+          <p className="text-slate-500">Manage all registered users. Total Users: <span className="font-bold text-emerald-600">{users.length}</span></p>
         </div>
       </div>
 
