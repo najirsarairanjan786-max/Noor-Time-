@@ -260,8 +260,8 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
                 <div className="absolute top-1 left-1 md:top-1.5 md:left-1.5 leading-none">
                   <span
                     className={cn(
-                      "text-[9px] md:text-xs font-sans opacity-70",
-                      isToday || isSelected ? "opacity-100 text-white" : "text-emerald-200"
+                      "text-[10px] md:text-xs font-sans font-medium",
+                      isToday || isSelected ? "text-white" : "text-amber-400"
                     )}
                   >
                     {day.gregorian.day}
@@ -317,10 +317,10 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
                   <CalendarDays className="w-6 h-6" />
                 </div>
                 <div>
-                  <h4 className="text-white font-medium text-lg tracking-tight">
+                  <h4 className="text-amber-400 font-medium text-lg tracking-tight">
                     {d.gregorian.day} {d.gregorian.month.en} {d.gregorian.date.split("-")[2]}
                   </h4>
-                  <p className="text-emerald-300/80 text-sm">{d.hijri.day} {d.hijri.month.en} {d.hijri.year}</p>
+                  <p className="text-emerald-100/90 text-sm">{d.hijri.day} {d.hijri.month.en} {d.hijri.year}</p>
                 </div>
               </div>
               
@@ -376,7 +376,7 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
                     selectedDate === day.gregorian.date ? "border-emerald-400 bg-white/20" : "border-white/20 hover:bg-white/15")}
                 >
                   <div className="flex justify-between items-center text-sm">
-                    <span className="font-medium text-emerald-100 bg-black/20 px-3 py-1.5 rounded-lg whitespace-nowrap">
+                    <span className="font-medium text-amber-300 bg-black/20 px-3 py-1.5 rounded-lg whitespace-nowrap">
                       {day.gregorian.day} {day.gregorian.month.en}
                     </span>
                     <span
