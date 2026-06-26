@@ -9,6 +9,7 @@ import {
   MapPin,
   CheckCircle2,
   XCircle,
+  LogOut,
 } from "lucide-react";
 import { useLocalStorage } from "usehooks-ts";
 import { useSettings } from "../hooks/useSettings";
@@ -21,7 +22,7 @@ import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 export function ProfileView({ setView }: { setView: (view: string) => void }) {
   const { settings } = useSettings();
   const { t } = useTranslation(settings.language);
-  const { user } = useAuth();
+  const { user, signIn, logOut } = useAuth();
   const [localProfile, setLocalProfile] = useLocalStorage(
     "islamic-app-local-profile",
     {
@@ -59,10 +60,10 @@ export function ProfileView({ setView }: { setView: (view: string) => void }) {
           const docSnap = await getDoc(doc(db, "users", user.uid));
           if (docSnap.exists()) {
             const data = docSnap.data();
-            setFirstName(data.firstName || "");
-            setLastName(data.lastName || "");
-            setPhotoURL(data.photoURL || "");
-            setEmail(data.email || "");
+            setFirstName(data.firstName || user.displayName?.split(' ')[0] || "");
+            setLastName(data.lastName || user.displayName?.split(' ').slice(1).join(' ') || "");
+            setPhotoURL(data.photoURL || user.photoURL || "");
+            setEmail(data.email || user.email || "");
             setPhone(data.phone || "");
             setAddress(data.address || "");
             setLocation(data.location || "");
@@ -70,10 +71,10 @@ export function ProfileView({ setView }: { setView: (view: string) => void }) {
             setPinCode(data.pinCode || "");
             setCountry(data.country || "");
             setLocalProfile({
-              firstName: data.firstName || "",
-              lastName: data.lastName || "",
-              photoURL: data.photoURL || "",
-              email: data.email || "",
+              firstName: data.firstName || user.displayName?.split(' ')[0] || "",
+              lastName: data.lastName || user.displayName?.split(' ').slice(1).join(' ') || "",
+              photoURL: data.photoURL || user.photoURL || "",
+              email: data.email || user.email || "",
               phone: data.phone || "",
               address: data.address || "",
               location: data.location || "",
@@ -81,6 +82,12 @@ export function ProfileView({ setView }: { setView: (view: string) => void }) {
               pinCode: data.pinCode || "",
               country: data.country || "",
             });
+          } else {
+            // Auto-populate from Google if no doc exists yet
+            setFirstName(user.displayName?.split(' ')[0] || "");
+            setLastName(user.displayName?.split(' ').slice(1).join(' ') || "");
+            setPhotoURL(user.photoURL || "");
+            setEmail(user.email || "");
           }
         } catch (error) {
           console.error("Error loading profile from Firebase:", error);
@@ -88,7 +95,7 @@ export function ProfileView({ setView }: { setView: (view: string) => void }) {
       }
     }
     loadUserProfile();
-  }, [user]);
+  }, [user, setLocalProfile]);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -330,15 +337,28 @@ export function ProfileView({ setView }: { setView: (view: string) => void }) {
           </div>
 
           <div>
-            <label className="block text-emerald-200/70 text-xs font-semibold mb-1 ml-1">
-              Email
-            </label>
+            <div className="flex justify-between items-center mb-1 ml-1 mr-1">
+              <label className="block text-emerald-200/70 text-xs font-semibold">
+                Email {user && <span className="text-emerald-400 font-normal">(Connected to Google)</span>}
+              </label>
+              {user ? (
+                <button
+                  type="button"
+                  onClick={logOut}
+                  className="text-xs flex items-center gap-1 text-red-400 hover:text-red-300 transition-colors"
+                >
+                  <LogOut className="w-3 h-3" /> Sign Out
+                </button>
+              ) : null}
+            </div>
+            
             <div className="relative">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className={`w-full bg-black/30 border rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors pr-10 ${
+                readOnly={!!user}
+                className={`w-full ${user ? 'bg-black/50 opacity-80 cursor-not-allowed' : 'bg-black/30'} border rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors pr-10 ${
                   email.length > 0
                     ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
                       ? "border-emerald-500/50 focus:border-emerald-400"
@@ -359,6 +379,22 @@ export function ProfileView({ setView }: { setView: (view: string) => void }) {
             </div>
             {email.length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && (
               <p className="text-red-400 text-xs mt-1 ml-1">{t("invalidEmail")}</p>
+            )}
+            
+            {!user && (
+              <button
+                type="button"
+                onClick={signIn}
+                className="mt-3 w-full py-2.5 bg-white text-slate-800 hover:bg-slate-100 font-medium rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 text-sm"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24">
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+                Connect with Google
+              </button>
             )}
           </div>
 

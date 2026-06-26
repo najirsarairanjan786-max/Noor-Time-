@@ -33,6 +33,7 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
     { icon: Sparkles, label: 'Chat with Noor', view: 'noor_ai' as ViewType, color: 'text-amber-400' },
     { icon: MessageCircle, label: t('qa') || 'Question and Answer', color: 'text-amber-500' },
     { icon: Settings, label: t('settings') || 'Settings', view: 'settings' as ViewType, color: 'text-red-500' },
+    ...(user?.email === "naziralquran786@gmail.com" ? [{ icon: Settings, label: 'Admin Panel', action: () => window.location.href = '/admin', color: 'text-red-500' }] : []),
     { icon: Globe, label: t('languages') || 'Languages', view: 'languages' as ViewType, color: 'text-blue-400' },
     { icon: ShoppingBag, label: t('store') || 'Islamic Store', view: 'store' as ViewType, color: 'text-emerald-400' },
     { icon: HeartHandshake, label: t('donate') || 'Donate Us', view: 'donate' as ViewType, color: 'text-fuchsia-400' },
@@ -55,7 +56,11 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
     { icon: ThumbsUp, label: t('submitReview') || 'Submit Review', color: 'text-emerald-400' },
   ];
 
-  const handleItemClick = (item: typeof menuItems[0]) => {
+  const handleItemClick = (item: any) => {
+    if (item.action) {
+      item.action();
+      return;
+    }
     if (item.view) {
       setView(item.view);
       onClose();
