@@ -144,26 +144,26 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
       <div className="absolute top-4 left-4 right-4 flex justify-between items-center z-10">
         <button 
           onClick={() => setView('home')}
-          className="p-2 bg-pink-900/50 hover:bg-pink-800/80 rounded-full text-pink-100 transition-colors flex items-center gap-2"
+          className="p-2 bg-emerald-900/50 hover:bg-emerald-800/80 rounded-full text-emerald-100 transition-colors flex items-center gap-2"
         >
           <ChevronLeft className="w-6 h-6" />
           <span className="text-sm font-medium pr-1">Back</span>
         </button>
         <button
           onClick={goToToday}
-          className="p-2 bg-pink-900/50 hover:bg-pink-800/80 rounded-full text-pink-100 transition-colors flex items-center gap-2 pl-3 pr-4"
+          className="p-2 bg-emerald-900/50 hover:bg-emerald-800/80 rounded-full text-emerald-100 transition-colors flex items-center gap-2 pl-3 pr-4"
         >
           <CalendarIcon className="w-4 h-4" />
           <span className="text-sm font-medium">Today</span>
         </button>
       </div>
 
-      <div className="flex items-center justify-between mb-8 bg-pink-900/60 backdrop-blur-lg border border-pink-500/20 shadow-2xl rounded-2xl p-4 relative">
+      <div className="flex items-center justify-between mb-8 bg-emerald-900/60 backdrop-blur-lg border border-emerald-500/20 shadow-2xl rounded-2xl p-4 relative">
         <button
           onClick={prevMonth}
-          className="p-2 bg-pink-800/40 rounded-full hover:bg-pink-700/50 transition focus:outline-none focus:ring-2 focus:ring-pink-500/50"
+          className="p-2 bg-emerald-800/40 rounded-full hover:bg-emerald-700/50 transition focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
         >
-          <ChevronLeft className="w-6 h-6 text-pink-200" />
+          <ChevronLeft className="w-6 h-6 text-emerald-200" />
         </button>
         <div className="text-center">
           <h2 className="text-xl font-bold font-sans tracking-tight text-white">
@@ -171,7 +171,7 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
           </h2>
           {calendarData.length > 0 && (
             <p
-              className="text-sm font-serif text-pink-300 mt-1 font-arabic"
+              className="text-sm font-serif text-emerald-300 mt-1 font-arabic"
               dir="rtl"
             >
               {calendarData[0].hijri.month.ar} /{" "}
@@ -187,16 +187,16 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
         </div>
         <button
           onClick={nextMonth}
-          className="p-2 bg-pink-800/40 rounded-full hover:bg-pink-700/50 transition focus:outline-none focus:ring-2 focus:ring-pink-500/50"
+          className="p-2 bg-emerald-800/40 rounded-full hover:bg-emerald-700/50 transition focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
         >
-          <ChevronRight className="w-6 h-6 text-pink-200" />
+          <ChevronRight className="w-6 h-6 text-emerald-200" />
         </button>
       </div>
 
-      <div className="bg-pink-900/60 backdrop-blur-lg border border-pink-500/20 shadow-2xl rounded-2xl p-4 overflow-hidden relative">
+      <div className="bg-emerald-900/60 backdrop-blur-lg border border-emerald-500/20 shadow-2xl rounded-2xl p-4 overflow-hidden relative">
         {loading && (
-          <div className="absolute inset-0 bg-pink-950/50 z-10 flex items-center justify-center backdrop-blur-sm">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-400"></div>
+          <div className="absolute inset-0 bg-emerald-950/50 z-10 flex items-center justify-center backdrop-blur-sm">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-400"></div>
           </div>
         )}
 
@@ -212,10 +212,10 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
           ].map((d) => (
             <div
               key={d.en}
-              className="text-center font-semibold text-pink-400/80 p-1 flex flex-col items-center justify-center leading-tight"
+              className="text-center font-semibold text-emerald-400/80 p-1 flex flex-col items-center justify-center leading-tight"
             >
               <span className="text-xs md:text-sm font-arabic">{d.ur}</span>
-              <span className="text-[10px] md:text-xs text-pink-200/70 font-sans mt-0.5">{d.en}</span>
+              <span className="text-[10px] md:text-xs text-emerald-200/70 font-sans mt-0.5">{d.en}</span>
             </div>
           ))}
         </div>
@@ -250,18 +250,18 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
                 className={cn(
                   "aspect-square p-1 md:p-2 flex flex-col items-center justify-center rounded-xl relative cursor-pointer transition-all",
                   isToday
-                    ? "bg-pink-500/80 text-white shadow-md border border-pink-400/50"
+                    ? "bg-emerald-500/80 text-white shadow-md border border-emerald-400/50"
                     : isSelected 
-                    ? "bg-pink-400/40 text-pink-50 shadow-sm border border-pink-300/60"
-                    : "hover:bg-pink-800/50 bg-pink-900/20 text-pink-100",
-                  hasEvents && !isToday && !isSelected && "border border-pink-400/30",
+                    ? "bg-emerald-400/40 text-emerald-50 shadow-sm border border-emerald-300/60"
+                    : "hover:bg-emerald-800/50 bg-emerald-900/20 text-emerald-100",
+                  hasEvents && !isToday && !isSelected && "border border-emerald-400/30",
                 )}
               >
                 <div className="absolute top-1 left-1 md:top-1.5 md:left-1.5 leading-none">
                   <span
                     className={cn(
                       "text-[9px] md:text-xs font-sans opacity-70",
-                      isToday || isSelected ? "opacity-100 text-white" : "text-pink-200"
+                      isToday || isSelected ? "opacity-100 text-white" : "text-emerald-200"
                     )}
                   >
                     {day.gregorian.day}
@@ -271,7 +271,7 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
                   <span
                     className={cn(
                       "text-lg md:text-2xl font-arabic leading-none",
-                      isToday || isSelected ? "font-bold text-white text-shadow" : "text-pink-50"
+                      isToday || isSelected ? "font-bold text-white text-shadow" : "text-emerald-50"
                     )}
                   >
                     {arabicHijriDay}
@@ -279,8 +279,8 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
                 </div>
                 {hasEvents && (
                   <>
-                    <div className={cn("absolute top-1 right-1 w-1 h-1 md:w-1.5 md:h-1.5 rounded-full animate-pulse", isToday ? "bg-white" : "bg-pink-300")}></div>
-                    <span className={cn("absolute bottom-0 text-[8px] md:text-[10px] truncate w-full text-center px-0.5 leading-none", isToday ? "text-pink-100" : "text-pink-200")}>
+                    <div className={cn("absolute top-1 right-1 w-1 h-1 md:w-1.5 md:h-1.5 rounded-full animate-pulse", isToday ? "bg-white" : "bg-emerald-300")}></div>
+                    <span className={cn("absolute bottom-0 text-[8px] md:text-[10px] truncate w-full text-center px-0.5 leading-none", isToday ? "text-emerald-100" : "text-emerald-200")}>
                       {day.hijri.holidays[0]}
                     </span>
                   </>
@@ -309,43 +309,43 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-6 bg-pink-900/40 backdrop-blur-md rounded-2xl p-5 border border-pink-500/20 shadow-lg w-full max-w-lg mx-auto"
+            className="mt-6 bg-emerald-900/40 backdrop-blur-md rounded-2xl p-5 border border-emerald-500/20 shadow-lg w-full max-w-lg mx-auto"
           >
-            <div className="flex justify-between items-center border-b border-pink-500/20 pb-4 mb-4">
+            <div className="flex justify-between items-center border-b border-emerald-500/20 pb-4 mb-4">
               <div className="flex items-center gap-3">
-                <div className="bg-pink-500/20 text-pink-200 p-2.5 rounded-xl border border-pink-500/30">
+                <div className="bg-emerald-500/20 text-emerald-200 p-2.5 rounded-xl border border-emerald-500/30">
                   <CalendarDays className="w-6 h-6" />
                 </div>
                 <div>
                   <h4 className="text-white font-medium text-lg tracking-tight">
                     {d.gregorian.day} {d.gregorian.month.en} {d.gregorian.date.split("-")[2]}
                   </h4>
-                  <p className="text-pink-300/80 text-sm">{d.hijri.day} {d.hijri.month.en} {d.hijri.year}</p>
+                  <p className="text-emerald-300/80 text-sm">{d.hijri.day} {d.hijri.month.en} {d.hijri.year}</p>
                 </div>
               </div>
               
               <div className="text-right" dir="rtl">
-                <h4 className="text-pink-50 font-arabic font-bold text-2xl">
+                <h4 className="text-emerald-50 font-arabic font-bold text-2xl">
                   {arabicHijriDay} {d.hijri.month.ar}
                 </h4>
-                <p className="text-pink-300/80 font-arabic text-sm">{arabicHijriYear} ہجری</p>
+                <p className="text-emerald-300/80 font-arabic text-sm">{arabicHijriYear} ہجری</p>
               </div>
             </div>
             
             {d.hijri.holidays.length > 0 ? (
                <div className="flex flex-col gap-2">
-                 <span className="text-xs text-pink-300 uppercase tracking-widest font-bold">Events on this day</span>
+                 <span className="text-xs text-emerald-300 uppercase tracking-widest font-bold">Events on this day</span>
                  {d.hijri.holidays.map((h, i) => (
                    <span
                      key={i}
-                     className="text-white text-sm bg-pink-500/80 border border-pink-400/50 px-4 py-2.5 rounded-xl flex items-center shadow-sm"
+                     className="text-white text-sm bg-emerald-500/80 border border-emerald-400/50 px-4 py-2.5 rounded-xl flex items-center shadow-sm"
                    >
                      {h}
                    </span>
                  ))}
                </div>
             ) : (
-               <p className="text-pink-200/50 text-sm italic">No special Islamic events on this day.</p>
+               <p className="text-emerald-200/50 text-sm italic">No special Islamic events on this day.</p>
             )}
           </motion.div>
         );
@@ -373,14 +373,14 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
                   key={`event-list-${day.gregorian.date}`}
                   onClick={() => setSelectedDate(day.gregorian.date)}
                   className={cn("bg-white/10 backdrop-blur-md rounded-2xl p-4 border flex flex-col gap-3 shadow-lg cursor-pointer transition-colors", 
-                    selectedDate === day.gregorian.date ? "border-pink-400 bg-white/20" : "border-white/20 hover:bg-white/15")}
+                    selectedDate === day.gregorian.date ? "border-emerald-400 bg-white/20" : "border-white/20 hover:bg-white/15")}
                 >
                   <div className="flex justify-between items-center text-sm">
-                    <span className="font-medium text-pink-100 bg-black/20 px-3 py-1.5 rounded-lg whitespace-nowrap">
+                    <span className="font-medium text-emerald-100 bg-black/20 px-3 py-1.5 rounded-lg whitespace-nowrap">
                       {day.gregorian.day} {day.gregorian.month.en}
                     </span>
                     <span
-                      className="font-arabic font-medium text-pink-50 bg-black/20 px-3 py-1.5 rounded-lg whitespace-nowrap"
+                      className="font-arabic font-medium text-emerald-50 bg-black/20 px-3 py-1.5 rounded-lg whitespace-nowrap"
                       dir="rtl"
                     >
                       {arabicHijriDay} {day.hijri.month.ar} {arabicHijriYear}
@@ -390,7 +390,7 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
                     {day.hijri.holidays.map((h, i) => (
                       <span
                         key={i}
-                        className="text-white font-bold text-sm bg-pink-500/80 border border-pink-400/50 px-4 py-1.5 rounded-full text-center w-full shadow-sm"
+                        className="text-white font-bold text-sm bg-emerald-500/80 border border-emerald-400/50 px-4 py-1.5 rounded-full text-center w-full shadow-sm"
                       >
                         {h}
                       </span>
@@ -400,7 +400,7 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
               );
             })}
           {calendarData.filter((day) => day.hijri.holidays.length > 0).length === 0 && (
-            <p className="text-pink-200/70 text-center py-4 bg-white/5 rounded-2xl border border-white/10">
+            <p className="text-emerald-200/70 text-center py-4 bg-white/5 rounded-2xl border border-white/10">
               No events this month.
             </p>
           )}

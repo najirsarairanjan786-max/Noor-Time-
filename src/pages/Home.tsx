@@ -23,7 +23,6 @@ import {
   Book,
   HelpCircle,
   ShieldAlert,
-  BadgeInfo,
   Home as HomeIcon,
   Clock,
   Compass,

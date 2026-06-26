@@ -363,6 +363,7 @@ export function SettingsView({
                     className="bg-emerald-950 border-none text-emerald-300 text-xs text-right outline-none cursor-pointer flex-1"
                   >
                     <option value="default">App Default</option>
+                    <option value="off">Off (No Alert)</option>
                     <option value="beep">Beep</option>
                     <option value="chime">Chime</option>
                     <option value="azan-mecca">Makkah Adhan</option>

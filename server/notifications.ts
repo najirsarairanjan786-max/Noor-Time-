@@ -50,7 +50,7 @@ router.post('/api/send-notification', async (req, res) => {
       return res.status(404).json({ error: "Notification not found." });
     }
 
-    const { title, message, category } = notificationDoc.data() || {};
+    const { title, message, category, imageUrl } = notificationDoc.data() || {};
     
     // 1. Fetch all tokens from users mapping to user UIDs and document IDs
     const usersSnapshot = await db.collection('users').get();
@@ -89,15 +89,17 @@ router.post('/api/send-notification', async (req, res) => {
     const tokens = uniqueUserTokens.map(ut => ut.token);
 
     // 2. Send messages via FCM with background and terminated support configurations
-    const payload = {
+    const payload: any = {
       notification: {
         title: title || "New Notification",
         body: message || "",
+        ...(imageUrl ? { imageUrl } : {})
       },
       data: {
         category: category || "general",
         title: title || "",
         body: message || "",
+        ...(imageUrl ? { image: imageUrl } : {})
       },
       android: {
         priority: 'high' as const,
@@ -106,17 +108,20 @@ router.post('/api/send-notification', async (req, res) => {
           defaultSound: true,
           defaultVibrateTimings: true,
           defaultLightSettings: true,
+          ...(imageUrl ? { imageUrl } : {})
         }
       },
       apns: {
         headers: {
           'apns-priority': '10',
+          ...(imageUrl ? { 'mutable-content': '1' } : {})
         },
         payload: {
           aps: {
             sound: 'default',
           }
-        }
+        },
+        ...(imageUrl ? { fcmOptions: { imageUrl } } : {})
       },
       webpush: {
         headers: {
@@ -127,6 +132,7 @@ router.post('/api/send-notification', async (req, res) => {
           icon: '/icon-192.png',
           badge: '/icon-192.png',
           requireInteraction: true,
+          ...(imageUrl ? { image: imageUrl } : {})
         }
       },
       tokens: tokens

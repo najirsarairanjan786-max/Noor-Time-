@@ -9,6 +9,7 @@ export function NotificationsManager() {
   const [newNotification, setNewNotification] = useState({
     title: "",
     message: "",
+    imageUrl: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMsg, setStatusMsg] = useState({ type: "", text: "" });
@@ -77,7 +78,7 @@ export function NotificationsManager() {
       }
       
       setIsAddModalOpen(false);
-      setNewNotification({ title: "", message: "" });
+      setNewNotification({ title: "", message: "", imageUrl: "" });
       setTimeout(() => setStatusMsg({ type: "", text: "" }), 8000);
     } catch (error: any) {
       console.error("Error adding notification: ", error);
@@ -137,6 +138,15 @@ export function NotificationsManager() {
                   className="w-full px-4 py-2 bg-slate-50 text-slate-900 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none resize-none"
                 ></textarea>
               </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Image URL (Optional)</label>
+                <input 
+                  type="url"
+                  placeholder="https://example.com/image.jpg"
+                  value={newNotification.imageUrl} onChange={e => setNewNotification({...newNotification, imageUrl: e.target.value})}
+                  className="w-full px-4 py-2 bg-slate-50 text-slate-900 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                />
+              </div>
               <button 
                 type="submit" disabled={isSubmitting}
                 className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-50 mt-6"
@@ -181,8 +191,15 @@ export function NotificationsManager() {
                 notifications.map((notif) => (
                   <tr key={notif.id} className="hover:bg-slate-50">
                     <td className="px-6 py-4 max-w-md">
-                      <p className="font-medium text-slate-800 line-clamp-1">{notif.title}</p>
-                      <p className="text-slate-500 line-clamp-1">{notif.message}</p>
+                      <div className="flex items-center gap-3">
+                        {notif.imageUrl && (
+                          <img src={notif.imageUrl} alt="" className="w-10 h-10 rounded-lg object-cover bg-slate-100" />
+                        )}
+                        <div>
+                          <p className="font-medium text-slate-800 line-clamp-1">{notif.title}</p>
+                          <p className="text-slate-500 line-clamp-1">{notif.message}</p>
+                        </div>
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${

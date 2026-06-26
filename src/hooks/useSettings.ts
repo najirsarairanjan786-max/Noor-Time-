@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLocalStorage } from "usehooks-ts";
+import { doc, setDoc } from "firebase/firestore";
+import { db, auth } from "../lib/firebase";
 
 export interface AppSettings {
   location: { lat: number; lng: number; name: string } | null;
@@ -57,6 +59,46 @@ export function useSettings() {
     "islamic-app-settings-v11",
     DEFAULT_SETTINGS,
   );
+
+  // Sync essential settings to Firestore for the background prayer time scheduler
+  useEffect(() => {
+    if (!auth.currentUser) return;
+    if (!settings.location) return;
+
+    const syncSettings = async () => {
+      try {
+        const userRef = doc(db, "users", auth.currentUser!.uid);
+        await setDoc(userRef, {
+          prayerSettings: {
+            location: settings.location,
+            method: settings.method,
+            school: settings.school,
+            alarmsEnabled: settings.alarmsEnabled,
+            pushNotificationsEnabled: settings.pushNotificationsEnabled,
+            prayerAlarmSounds: settings.prayerAlarmSounds || {},
+            alarmSound: settings.alarmSound,
+            preAlarmMinutes: settings.preAlarmMinutes,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+          }
+        }, { merge: true });
+      } catch (err) {
+        console.error("Failed to sync settings to Firestore:", err);
+      }
+    };
+    
+    // Debounce the sync slightly
+    const timeout = setTimeout(syncSettings, 2000);
+    return () => clearTimeout(timeout);
+  }, [
+    settings.location, 
+    settings.method, 
+    settings.school, 
+    settings.alarmsEnabled, 
+    settings.pushNotificationsEnabled, 
+    settings.prayerAlarmSounds, 
+    settings.alarmSound, 
+    settings.preAlarmMinutes
+  ]);
 
   // Helper to request geolocation
   const requestLocation = useCallback((): Promise<void> => {

@@ -2,6 +2,7 @@ import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import notificationRoutes from "./server/notifications";
+import { startScheduler } from "./server/scheduler";
 
 async function startServer() {
   const app = express();
@@ -15,6 +16,9 @@ async function startServer() {
   });
   
   app.use(notificationRoutes);
+
+  // Start background cron jobs
+  startScheduler();
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
