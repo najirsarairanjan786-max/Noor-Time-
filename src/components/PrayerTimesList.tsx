@@ -104,6 +104,7 @@ export function PrayerTimesList({
       Asr: true,
       Isha: true,
       Jumma: true,
+      JummaKhutbah: true,
       Tahajjud: true,
     },
   );
@@ -186,39 +187,51 @@ export function PrayerTimesList({
 
   const isFriday = now.getDay() === 5; // 0 is Sunday, 5 is Friday
 
-  const prayers = [
-    {
-      name: "Fajr",
-      label: t("fajr"),
-      time: settings.customTimings?.["Fajr"] || timings.Fajr,
-    },
-    isFriday
-      ? {
-          name: "Jumma",
-          label: t("jumma"),
-          time: settings.customTimings?.["Jumma"] || timings.Dhuhr,
-        }
-      : {
-          name: "Zuhr",
-          label: t("dhuhr"),
-          time: settings.customTimings?.["Zuhr"] || timings.Dhuhr,
-        },
-    {
-      name: `Asr${schoolName}`,
-      label: t("asr"),
-      time: settings.customTimings?.[`Asr${schoolName}`] || timings.Asr,
-    },
-    {
-      name: "Maghrib",
-      label: t("maghrib"),
-      time: settings.customTimings?.["Maghrib"] || timings.Maghrib,
-    },
-    {
-      name: `Isha${schoolName}`,
-      label: t("isha"),
-      time: settings.customTimings?.[`Isha${schoolName}`] || timings.Isha,
-    },
-  ];
+  const dhuhrTimeObjForJuma = timings ? parse(timings.Dhuhr.split(" ")[0], "HH:mm", now) : now;
+  const defaultKhutbahTime = format(dhuhrTimeObjForJuma, "HH:mm");
+  const defaultJumaTime = format(addMinutes(dhuhrTimeObjForJuma, 30), "HH:mm");
+
+  const prayers = [];
+  prayers.push({
+    name: "Fajr",
+    label: t("fajr"),
+    time: settings.customTimings?.["Fajr"] || timings.Fajr,
+  });
+
+  if (isFriday) {
+    prayers.push({
+      name: "JummaKhutbah",
+      label: "Juma Khutbah",
+      time: settings.customTimings?.["JummaKhutbah"] || defaultKhutbahTime,
+    });
+    prayers.push({
+      name: "Jumma",
+      label: "Juma Prayer",
+      time: settings.customTimings?.["Jumma"] || defaultJumaTime,
+    });
+  } else {
+    prayers.push({
+      name: "Zuhr",
+      label: t("dhuhr"),
+      time: settings.customTimings?.["Zuhr"] || timings.Dhuhr,
+    });
+  }
+
+  prayers.push({
+    name: `Asr${schoolName}`,
+    label: t("asr"),
+    time: settings.customTimings?.[`Asr${schoolName}`] || timings.Asr,
+  });
+  prayers.push({
+    name: "Maghrib",
+    label: t("maghrib"),
+    time: settings.customTimings?.["Maghrib"] || timings.Maghrib,
+  });
+  prayers.push({
+    name: `Isha${schoolName}`,
+    label: t("isha"),
+    time: settings.customTimings?.[`Isha${schoolName}`] || timings.Isha,
+  });
 
   let nextPrayerIndex = prayers.findIndex((p, idx) => {
     const prayerTime = parse(p.time.split(" ")[0], "HH:mm", now);

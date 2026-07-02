@@ -8,8 +8,8 @@ import {
   PrayerTimes, 
   Madhab 
 } from 'adhan';
-import { format, addMinutes } from 'date-fns';
-import { toZonedTime } from 'date-fns-tz';
+import { format, addMinutes, subMinutes } from 'date-fns';
+import { toZonedTime, formatInTimeZone } from 'date-fns-tz';
 
 const PRAYER_NAMES = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
 
@@ -56,27 +56,71 @@ export function startScheduler() {
           const localDate = toZonedTime(now, timezone);
           const prayerTimes = new PrayerTimes(coordinates, localDate, params);
           
-          const prayers = [
+          const userDayOfWeek = parseInt(formatInTimeZone(now, timezone, 'i')); // 1=Mon, ..., 5=Fri
+          const currentMinute = formatInTimeZone(now, timezone, 'HH:mm');
+
+          const prayers: Array<{name: string, time?: Date, localTimeString?: string, isJuma?: boolean, isKhutbah?: boolean, isThursdayReminder?: boolean}> = [
             { name: 'Fajr', time: prayerTimes.fajr },
-            { name: 'Dhuhr', time: prayerTimes.dhuhr },
             { name: 'Asr', time: prayerTimes.asr },
             { name: 'Maghrib', time: prayerTimes.maghrib },
             { name: 'Isha', time: prayerTimes.isha },
           ];
+
+          if (userDayOfWeek === 5) { // Friday
+            const defaultKhutbahTimeString = formatInTimeZone(prayerTimes.dhuhr, timezone, 'HH:mm');
+            const defaultJumaTime = addMinutes(prayerTimes.dhuhr, 30);
+            const defaultJumaTimeString = formatInTimeZone(defaultJumaTime, timezone, 'HH:mm');
+
+            const khutbahTimeStr = settings.customTimings?.['JummaKhutbah'] || defaultKhutbahTimeString;
+            const jumaTimeStr = settings.customTimings?.['Jumma'] || defaultJumaTimeString;
+
+            prayers.push({ name: 'JummaKhutbah', localTimeString: khutbahTimeStr, isKhutbah: true });
+            prayers.push({ name: 'Jumma', localTimeString: jumaTimeStr, isJuma: true });
+          } else {
+            prayers.push({ name: 'Dhuhr', time: prayerTimes.dhuhr });
+          }
+
+          if (userDayOfWeek === 4) { // Thursday
+            const defaultJumaTime = addMinutes(prayerTimes.dhuhr, 30);
+            const defaultJumaTimeString = formatInTimeZone(defaultJumaTime, timezone, 'HH:mm');
+            const jumaTimeStr = settings.customTimings?.['Jumma'] || defaultJumaTimeString;
+            prayers.push({ name: 'Jumma', localTimeString: jumaTimeStr, isJuma: true, isThursdayReminder: true });
+          }
           
+          const subtractMinsStr = (timeStr: string, mins: number) => {
+            const [h, m] = timeStr.split(':').map(Number);
+            const totalMins = h * 60 + m - mins;
+            const newH = Math.floor((totalMins + 24 * 60) / 60) % 24;
+            const newM = (totalMins + 24 * 60) % 60;
+            return `${newH.toString().padStart(2, '0')}:${newM.toString().padStart(2, '0')}`;
+          };
+
           for (const prayer of prayers) {
-            if (!prayer.time) continue;
+            if (!prayer.time && !prayer.localTimeString) continue;
             
-            // Format both times to 'HH:mm' for minute-level precision matching
-            const currentMinute = format(now, 'HH:mm');
-            const prayerMinute = format(prayer.time, 'HH:mm');
+            let prayerMinute = '';
+            let formattedTime = '';
+
+            if (prayer.localTimeString) {
+               prayerMinute = prayer.localTimeString;
+               const [h, m] = prayerMinute.split(':').map(Number);
+               const suffix = h >= 12 ? 'PM' : 'AM';
+               const displayH = h % 12 || 12;
+               formattedTime = `${displayH}:${m.toString().padStart(2, '0')} ${suffix}`;
+            } else if (prayer.time) {
+               prayerMinute = formatInTimeZone(prayer.time, timezone, 'HH:mm');
+               formattedTime = formatInTimeZone(prayer.time, timezone, 'h:mm a');
+            }
             
             // Check pre-alarm
-            const preAlarmMins = settings.preAlarmMinutes || 0;
+            let preAlarmMins = settings.preAlarmMinutes || 0;
+            if (prayer.isKhutbah) preAlarmMins = 60;
+            else if (prayer.isJuma && !prayer.isThursdayReminder) preAlarmMins = 15;
+            else if (prayer.isThursdayReminder) preAlarmMins = 0; // The reminder itself triggers exactly at that minute
+
             let preAlarmMinute = null;
             if (preAlarmMins > 0) {
-              const preAlarmTime = addMinutes(prayer.time, -preAlarmMins);
-              preAlarmMinute = format(preAlarmTime, 'HH:mm');
+              preAlarmMinute = subtractMinsStr(prayerMinute, preAlarmMins);
             }
             
             let isPrayerTime = currentMinute === prayerMinute;
@@ -86,15 +130,34 @@ export function startScheduler() {
             if (soundPref === 'off') continue;
             
             if (isPrayerTime || isPreAlarmTime) {
-              const formattedTime = format(toZonedTime(prayer.time, timezone), 'h:mm a');
-              let message = isPrayerTime 
-                ? `${prayer.name} Prayer Time - ${formattedTime} in ${settings.location.name}. It is time for prayer.`
-                : `${prayer.name} Prayer will start in ${preAlarmMins} minutes at ${formattedTime}.`;
-                
-              let title = isPrayerTime ? `Time for ${prayer.name}` : `Upcoming: ${prayer.name}`;
-              
-              // Note: the native app or service worker needs to map these to actual sounds if using standard Web Push,
-              // but for FCM to Android wrappers we can send the sound name.
+              let message = '';
+              let title = '';
+
+              if (prayer.isThursdayReminder) {
+                 title = 'Tomorrow is Juma!';
+                 message = `Juma prayer will be at ${formattedTime} tomorrow in ${settings.location.name}.`;
+              } else if (prayer.isKhutbah) {
+                 if (isPrayerTime) {
+                    title = 'Time for Juma Khutbah';
+                    message = `Juma Khutbah starts now at ${formattedTime} in ${settings.location.name}.`;
+                 } else {
+                    title = 'Upcoming: Juma Khutbah';
+                    message = `Juma Khutbah will start in 1 hour at ${formattedTime}.`;
+                 }
+              } else if (prayer.isJuma) {
+                 if (isPrayerTime) {
+                    title = 'Time for Juma Prayer';
+                    message = `Juma Prayer starts now at ${formattedTime} in ${settings.location.name}.`;
+                 } else {
+                    title = 'Upcoming: Juma Prayer';
+                    message = `Juma Prayer will start in 15 minutes at ${formattedTime}.`;
+                 }
+              } else {
+                 title = isPrayerTime ? `Time for ${prayer.name}` : `Upcoming: ${prayer.name}`;
+                 message = isPrayerTime 
+                   ? `${prayer.name} Prayer Time - ${formattedTime} in ${settings.location.name}. It is time for prayer.`
+                   : `${prayer.name} Prayer will start in ${preAlarmMins} minutes at ${formattedTime}.`;
+              }
               
               await sendPrayerNotificationToUser(doc.id, title, message, soundPref);
             }

@@ -78,6 +78,7 @@ export function useSettings() {
             prayerAlarmSounds: settings.prayerAlarmSounds || {},
             alarmSound: settings.alarmSound,
             preAlarmMinutes: settings.preAlarmMinutes,
+            customTimings: settings.customTimings || {},
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
           }
         }, { merge: true });
@@ -97,7 +98,8 @@ export function useSettings() {
     settings.pushNotificationsEnabled, 
     settings.prayerAlarmSounds, 
     settings.alarmSound, 
-    settings.preAlarmMinutes
+    settings.preAlarmMinutes,
+    settings.customTimings
   ]);
 
   // Helper to request geolocation

@@ -212,19 +212,5 @@ export default function App() {
         </>
       </main>
     </div>
-  );import { useEffect } from "react";
-
-function App() {
-  useEffect(() => {
-    if ("Notification" in window) {
-      Notification.requestPermission().then((permission) => {
-        console.log("Notification Permission:", permission);
-      });
-    }
-  }, []);
-
-  return (
-    // आपका UI
   );
-}
 }
