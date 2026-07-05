@@ -1,4 +1,4 @@
-import { X, Check } from 'lucide-react';
+import { X, Check } from "@/src/lib/icons";
 import { useState, useEffect } from 'react';
 import { useSettings } from '../hooks/useSettings';
 

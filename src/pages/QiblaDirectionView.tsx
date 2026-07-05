@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Target } from "lucide-react";
+import { ArrowLeft, Target } from "@/src/lib/icons";
 import { type Dispatch, type SetStateAction } from "react";
 import { useSettings } from "../hooks/useSettings";
 

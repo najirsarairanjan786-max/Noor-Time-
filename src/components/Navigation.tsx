@@ -1,12 +1,12 @@
-import { motion, AnimatePresence } from "motion/react";
-import {
-  Settings as SettingsIcon,
-  CalendarDays,
-  BookOpen,
-  Clock,
-  MoonStar,
-  UserCircle,
-} from "lucide-react";
+import { motion, AnimatePresence } from 'motion/react';
+import { Home } from "lucide-react";
+import { Clock } from "@/src/lib/icons";
+import { 
+  GearIcon as SettingsIcon,
+  HijriCalendarIcon as CalendarDays,
+  BookOpenIcon as BookOpen,
+  UserIcon as UserCircle
+} from "@/src/lib/icons";
 import { Dispatch, SetStateAction, useState, useRef, useEffect } from "react";
 import { useSettings } from "../hooks/useSettings";
 import { useTranslation } from "../lib/i18n";
@@ -34,7 +34,7 @@ export function Navigation({
     ? `${localProfile.firstName} ${localProfile.lastName}`.trim() : t("profile");
 
   const TABS = [
-    { id: "home", icon: MoonStar, label: t("home") },
+    { id: "home", icon: Home, label: t("home") },
     { id: "prayer", icon: BookOpen, label: t("tajweed") },
     { id: "calendar", icon: CalendarDays, label: t("calendar") },
     { id: "settings", icon: SettingsIcon, label: t("settings") },

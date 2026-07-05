@@ -5,15 +5,17 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "vite build && esbuild server.ts --bundle --platform=node --format=esm --packages=external --sourcemap --outfile=dist/server.js",
-    "start": "node dist/server.js",
+    "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --external:express --external:firebase-admin --external:node-cron --external:vite --sourcemap --outfile=dist/server.cjs",
+    "start": "NODE_ENV=production node dist/server.cjs",
     "preview": "vite preview",
-    "clean": "rm -rf dist server.js",
+    "clean": "rm -rf dist server.js server.cjs",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",
+    "@phosphor-icons/react": "^2.1.10",
     "@supabase/supabase-js": "^2.108.2",
+    "@tabler/icons-react": "^3.44.0",
     "@tailwindcss/vite": "^4.1.14",
     "@types/leaflet": "^1.9.21",
     "@vitejs/plugin-react": "^5.0.4",
@@ -31,6 +33,7 @@
     "node-cron": "^4.5.0",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
+    "react-icons": "^5.7.0",
     "react-leaflet": "^5.0.0",
     "recharts": "^3.8.1",
     "tailwind-merge": "^3.6.0",

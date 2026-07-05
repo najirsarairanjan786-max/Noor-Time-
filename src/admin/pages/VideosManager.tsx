@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Plus, Video, Search, Edit2, Trash2, X, Upload } from "lucide-react";
+import { Plus, Video, Search, Edit2, Trash2, X, Upload } from "@/src/lib/icons";
 import { collection, query, orderBy, onSnapshot, addDoc, deleteDoc, doc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../../lib/firebase";

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
+import { showNotification } from "../lib/notifications";
 import { motion, AnimatePresence } from "motion/react";
-import { Bell, X } from "lucide-react";
+import { Bell, X } from "@/src/lib/icons";
 import { useSettings } from "../hooks/useSettings";
 
 export function NotificationPrompt() {
@@ -39,7 +40,7 @@ export function NotificationPrompt() {
         }));
 
         try {
-          new Notification("Notifications Active", {
+          showNotification("Notifications Active", {
             body: "You will now receive prayer time alerts.",
             icon: "/icon.png",
           });

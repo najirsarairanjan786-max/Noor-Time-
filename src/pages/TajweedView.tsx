@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, Play, Pause } from 'lucide-react';
+import { ArrowLeft, Play, Pause } from "@/src/lib/icons";
 import { type ViewType } from '../App';
 
 interface TajweedViewProps {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "motion/react";
-import { ArrowLeft, Send, Sparkles, User, Loader2, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Send, Sparkles, User, Loader2, Image as ImageIcon } from "@/src/lib/icons";
 import { useAuth } from "../hooks/useAuth";
 import { db } from "../lib/firebase";
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";

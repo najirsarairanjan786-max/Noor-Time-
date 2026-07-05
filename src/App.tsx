@@ -25,6 +25,7 @@ import { NoorAIView } from "./pages/NoorAIView";
 import { NotificationsView } from "./pages/NotificationsView";
 import { StoreView } from "./pages/StoreView";
 import { ContactView } from "./pages/ContactView";
+import { JantriView } from "./pages/JantriView";
 import { Navigation } from "./components/Navigation";
 import { SyncStatus } from "./components/SyncStatus";
 import { LocationPrompt } from "./components/LocationPrompt";
@@ -34,6 +35,8 @@ import { useSettings } from "./hooks/useSettings";
 import { useDataSync } from "./hooks/useDataSync";
 import { useAuth } from "./hooks/useAuth";
 import { useFCM } from "./hooks/useFCM";
+import { useAnniversaryAlarms } from "./hooks/useAnniversaryAlarms";
+import { useTasbeehAlarms } from "./hooks/useTasbeehAlarms";
 
 export type ViewType =
   | "home"
@@ -57,14 +60,17 @@ export type ViewType =
   | "noor_ai"
   | "notifications"
   | "store"
+  | "jantri"
   | string;
 
 export default function App() {
-  const [currentView, setCurrentView] = useState<ViewType>("home");
+  const [currentView, setCurrentView] = useState<ViewType>("calendar");
   const { settings } = useSettings();
   useDataSync();
   const { user, loading } = useAuth();
   useFCM();
+  useAnniversaryAlarms();
+  useTasbeehAlarms();
   const [skipLogin, setSkipLogin] = useLocalStorage(
     "islamic-app-skip-login",
     false,
@@ -131,6 +137,7 @@ export default function App() {
     "notifications",
     "store",
     "contact",
+    "jantri",
   ];
   const isFeatureView = !standardViews.includes(currentView);
 
@@ -200,6 +207,9 @@ export default function App() {
             )}
             {currentView === "contact" && (
               <ContactView setView={setCurrentView} />
+            )}
+            {currentView === "jantri" && (
+              <JantriView setView={setCurrentView} />
             )}
             {isFeatureView && (
               <FeatureView title={currentView} setView={setCurrentView} />

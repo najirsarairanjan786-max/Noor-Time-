@@ -6,7 +6,7 @@ import {
   Pause,
   Volume2,
   VolumeX,
-} from "lucide-react";
+} from "@/src/lib/icons";
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import { db } from "../lib/firebase";
 

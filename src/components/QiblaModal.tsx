@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { X } from "@/src/lib/icons";
 import { type Dispatch, type SetStateAction } from "react";
 
 type ViewType = "home" | "calendar" | "settings" | "prayer" | string;

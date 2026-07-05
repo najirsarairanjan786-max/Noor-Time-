@@ -1,5 +1,5 @@
 import React from 'react';
-import { CloudRain, Cloud, Sun, CloudLightning, Snowflake, MapPin, Loader2 } from 'lucide-react';
+import { CloudRain, Cloud, Sun, CloudLightning, Snowflake, MapPin, Loader2 } from "@/src/lib/icons";
 import { useWeather } from '../hooks/useWeather';
 import { useSettings } from '../hooks/useSettings';
 import { RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';

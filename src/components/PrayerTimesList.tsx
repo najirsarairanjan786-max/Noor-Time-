@@ -1,26 +1,8 @@
+import { Snowflake, CloudLightning, BookOpen, Volume2, VolumeX, Check, Moon, CloudRain, Sun, Cloud, AlertCircle, Compass, MapPin, Search, Pencil, AlarmClock, CloudSun, CloudFog, X } from "@/src/lib/icons";
+
+
 import { PrayerTimings } from "../lib/api";
-import {
-  Volume2,
-  VolumeX,
-  Compass,
-  BookOpen,
-  MapPin,
-  Search,
-  Pencil,
-  Check,
-  Clock,
-  Sun,
-  Sunrise,
-  HelpCircle,
-  AlarmClock,
-  X,
-  CloudSun,
-  Cloud,
-  CloudFog,
-  CloudRain,
-  Snowflake,
-  CloudLightning,
-} from "lucide-react";
+
 import {
   parse,
   format,
@@ -201,12 +183,12 @@ export function PrayerTimesList({
   if (isFriday) {
     prayers.push({
       name: "JummaKhutbah",
-      label: "Juma Khutbah",
+      label: "जुमा खुत्बा",
       time: settings.customTimings?.["JummaKhutbah"] || defaultKhutbahTime,
     });
     prayers.push({
       name: "Jumma",
-      label: "Juma Prayer",
+      label: "जुमा",
       time: settings.customTimings?.["Jumma"] || defaultJumaTime,
     });
   } else {

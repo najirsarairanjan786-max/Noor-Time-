@@ -10,7 +10,7 @@ import {
   CheckCircle2,
   XCircle,
   LogOut,
-} from "lucide-react";
+} from "@/src/lib/icons";
 import { useLocalStorage } from "usehooks-ts";
 import { useSettings } from "../hooks/useSettings";
 import { useTranslation } from "../lib/i18n";

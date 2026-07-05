@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { showNotification } from "../lib/notifications";
 import { PrayerTimings } from '../lib/api';
 import { parse, format, differenceInMinutes, isSameMinute, addMinutes } from 'date-fns';
 import { useLocalStorage } from 'usehooks-ts';
@@ -79,7 +80,7 @@ export function useAlarmSystem(timings: PrayerTimings | null) {
 
     // Notification
     if (settings.pushNotificationsEnabled && 'Notification' in window && Notification.permission === 'granted') {
-      new Notification(`🕌 ${prayerName} Prayer`, {
+      showNotification(`🕌 ${prayerName} Prayer`, {
         body: message,
         icon: '/icon-192.png' // Make sure you have this in real PWA
       });

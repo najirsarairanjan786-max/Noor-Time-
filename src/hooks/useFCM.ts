@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { showNotification } from "../lib/notifications";
 import { getMessaging, getToken, onMessage, isSupported } from 'firebase/messaging';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -71,7 +72,7 @@ export function useFCM() {
           if (payload.notification) {
             // The browser will not show a push notification if the tab is in focus,
             // so we can show it manually or use a toast
-            new Notification(payload.notification.title || 'New Notification', {
+            showNotification(payload.notification.title || 'New Notification', {
               body: payload.notification.body
             });
           }

@@ -60,15 +60,7 @@ if (finalConfig.projectId === defaultFirebaseConfig.projectId) {
 const app = initializeApp(finalConfig);
 
 // Initialize Firestore with offline persistence enabled
-export const db = initializeFirestore(
-  app,
-  {
-    localCache: persistentLocalCache({
-      tabManager: persistentMultipleTabManager(),
-    }),
-  },
-  finalConfig.firestoreDatabaseId
-);
+export const db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) }, finalConfig.firestoreDatabaseId || "(default)");
 
 export const auth = getAuth(app);
 export const storage = getStorage(app);

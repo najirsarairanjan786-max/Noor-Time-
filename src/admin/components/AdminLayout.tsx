@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { LayoutDashboard, Video, ShoppingBag, Smartphone, Bell, BookText, Users, Settings, BarChart, LogOut, Menu, Mail } from "lucide-react";
+import { LayoutDashboard, Video, ShoppingBag, Smartphone, Bell, BookText, Users, Settings, BarChart, LogOut, Menu, Mail } from "@/src/lib/icons";
 import { AdminView } from "../AdminApp";
 import { useAuth } from "../../hooks/useAuth";
 import { useState } from "react";

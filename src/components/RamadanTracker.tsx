@@ -2,13 +2,18 @@ import React, { useState, useEffect } from "react";
 import { PrayerTimings } from "../lib/api";
 import { format, parse, isAfter, isBefore, differenceInSeconds } from "date-fns";
 import { motion } from "motion/react";
-import { MoonStar, SunMedium, Clock } from "lucide-react";
+import { SunMedium, Clock, LanternCrescentIcon as MoonStar } from "@/src/lib/icons";
+import { HijriDateInfo } from "../lib/api";
+import { useTranslation } from "../lib/i18n";
+import { useSettings } from "../hooks/useSettings";
 
 interface RamadanTrackerProps {
   timings: PrayerTimings | null;
+  hijri?: HijriDateInfo | null;
 }
-
-export function RamadanTracker({ timings }: RamadanTrackerProps) {
+export function RamadanTracker({ timings, hijri }: RamadanTrackerProps) {
+  const { settings } = useSettings();
+  const { t } = useTranslation(settings.language);
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
@@ -18,15 +23,17 @@ export function RamadanTracker({ timings }: RamadanTrackerProps) {
 
   if (!timings) return null;
 
+  const isRamadan = hijri?.month?.number === 9;
+
   // Parse timings
   const todayStr = format(now, "dd-MM-yyyy");
-  const fajrTime = parse(`${todayStr} ${timings.Fajr}`, "dd-MM-yyyy HH:mm", new Date());
-  const maghribTime = parse(`${todayStr} ${timings.Maghrib}`, "dd-MM-yyyy HH:mm", new Date());
+  const fajrTime = parse(`${todayStr} ${timings.Fajr.split(" ")[0]}`, "dd-MM-yyyy HH:mm", new Date());
+  const maghribTime = parse(`${todayStr} ${timings.Maghrib.split(" ")[0]}`, "dd-MM-yyyy HH:mm", new Date());
 
   // Determine state
   let isFasting = false;
   let targetTime = fajrTime;
-  let title = "Suhoor Ends In";
+  let title = isRamadan ? "Sehri Ends In" : t("suhoorTime") || "Sehri Ends In";
   let totalDuration = 1;
   let elapsed = 0;
   let progress = 0;
@@ -35,7 +42,7 @@ export function RamadanTracker({ timings }: RamadanTrackerProps) {
     // Before Fajr
     isFasting = false;
     targetTime = fajrTime;
-    title = "Suhoor Ends In";
+    title = "Sehri Ends In";
     // We don't have previous Maghrib, approximate with 12 hours max for ring
     totalDuration = 12 * 3600;
     elapsed = totalDuration - differenceInSeconds(targetTime, now);
@@ -43,7 +50,7 @@ export function RamadanTracker({ timings }: RamadanTrackerProps) {
     // After Maghrib
     isFasting = false;
     targetTime = new Date(fajrTime.getTime() + 24 * 60 * 60 * 1000); // Next day's fajr approx
-    title = "Suhoor Ends In";
+    title = "Sehri Ends In";
     totalDuration = differenceInSeconds(targetTime, maghribTime);
     elapsed = differenceInSeconds(now, maghribTime);
   } else {
@@ -92,10 +99,16 @@ export function RamadanTracker({ timings }: RamadanTrackerProps) {
                 {s.toString().padStart(2, '0')}
               </span>
             </div>
+            
             <div className="mt-3 text-sm font-medium text-slate-300 flex items-center gap-2">
               <Clock className="w-4 h-4 text-slate-400" />
-              {isFasting ? "Current Fast" : "Preparing for Fast"}
+              {!isRamadan ? (
+                <span className="text-amber-400">{t("availableDuringRamadan") || "Available during Ramadan"}</span>
+              ) : (
+                isFasting ? "Current Fast" : "Preparing for Fast"
+              )}
             </div>
+
           </div>
 
           <div className="relative flex items-center justify-center">
@@ -113,7 +126,7 @@ export function RamadanTracker({ timings }: RamadanTrackerProps) {
                 cy="50"
                 r={circleRadius}
                 fill="none"
-                stroke={isFasting ? "#fbbf24" : "#10b981"}
+                stroke={!isRamadan ? "#64748b" : (isFasting ? "#fbbf24" : "#10b981")}
                 strokeWidth="8"
                 strokeDasharray={circleCircumference}
                 initial={{ strokeDashoffset: circleCircumference }}

@@ -1,18 +1,19 @@
-import { motion, AnimatePresence } from 'motion/react';
+
+import { Dispatch, SetStateAction, useState } from "react";
+import { ViewType } from "../App";
+import { cn } from "../lib/utils";
+import { useSettings } from "../hooks/useSettings";
+import { useTranslation } from "../lib/i18n";
+import { useAuth } from "../hooks/useAuth";
+import { motion, AnimatePresence } from "motion/react";
 import { 
-  BookOpen, MessageCircle, Settings, Globe, HeartHandshake, MapPin, 
-  Cloud, Calculator, Compass, VolumeX, CalendarDays, Heart, Share2,
-  Lightbulb, CalendarCheck, Radio, Star, Bell, Mail, Smartphone, ThumbsUp, X,
-  BookA, Bookmark, BookText, ArrowLeft, Sparkles, ShoppingBag
-} from 'lucide-react';
-import { cn } from '../lib/utils';
-import { type Dispatch, type SetStateAction, useState } from 'react';
-import { useSettings } from '../hooks/useSettings';
-import { useTranslation } from '../lib/i18n';
-
-import { useAuth } from '../hooks/useAuth';
-
-type ViewType = 'home' | 'calendar' | 'settings' | 'prayer' | 'languages' | string;
+  MessageCircle, Handshake as HeartHandshake, MapPin, 
+  Cloud, VolumeX, ShareNetwork as Share2,
+  Lightbulb, CalendarCheck, SpeakerHigh as Radio, Envelope as Mail, DeviceMobile as Smartphone, ThumbsUp, X,
+  BookOpenText as BookA, BookOpen as BookText, ArrowLeft, Sparkle as Sparkles, ShoppingBag,
+  Gear as Settings, Globe, HandCoins as Calculator, Compass, CalendarBlank as CalendarDays, Heart, DotsThreeCircle as Star,
+  Bell, Bookmark, BookOpen
+} from "@/src/lib/icons";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -41,6 +42,7 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
     { icon: Cloud, label: t('sync') || 'Sync To Drive', color: 'text-green-500' },
     { icon: Calculator, label: t('qazaCalculator') || 'Qaza Namaz Calculator', color: 'text-blue-500' },
     { icon: Compass, label: t('qiblaDirection') || 'Qibla Direction', view: 'qibla' as ViewType, color: 'text-cyan-400' },
+    { icon: BookOpen, label: t('jantri') || 'Islamic Jantri', view: 'jantri' as ViewType, color: 'text-amber-300' },
     { icon: VolumeX, label: t('silentMode') || 'Silent Mode', isSilentMode: true, color: 'text-purple-400' },
     { icon: CalendarDays, label: t('monthlyPrayerTimes') || 'Monthly Prayer Times', view: 'calendar' as ViewType, color: 'text-emerald-500' },
     { icon: Heart, label: t('rohaniIlaj') || 'Rohani Ilaj', color: 'text-yellow-500' },

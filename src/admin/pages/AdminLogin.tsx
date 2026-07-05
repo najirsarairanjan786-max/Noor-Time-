@@ -2,7 +2,7 @@ import { useState } from "react";
 import { auth, db } from "../../lib/firebase";
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-import { Lock, Mail } from "lucide-react";
+import { Lock, Mail } from "@/src/lib/icons";
 
 export function AdminLogin() {
   const [email, setEmail] = useState("");

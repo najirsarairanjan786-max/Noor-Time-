@@ -4,7 +4,7 @@ import { ViewType } from "../App";
 import { useSettings } from "../hooks/useSettings";
 import { useData } from "../hooks/useData";
 import { useHijriDate } from "../hooks/useHijriDate";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun } from "@/src/lib/icons";
 
 interface Home2Props {
   setView: Dispatch<SetStateAction<ViewType>>;

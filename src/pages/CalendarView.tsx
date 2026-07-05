@@ -9,7 +9,7 @@ import {
   addMonths,
   subMonths,
 } from "date-fns";
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, CalendarDays } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, CalendarDays } from "@/src/lib/icons";
 import { cn } from "../lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { useSettings } from "../hooks/useSettings";
@@ -59,9 +59,11 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
               } catch(e) {}
             }
           }
+
           try {
             const r = await fetch(`https://api.aladhan.com/v1/gToHCalendar/${m}/${y}`);
             const data = await r.json();
+            if (!data || !Array.isArray(data.data)) throw new Error("Invalid data");
             if (typeof window !== 'undefined' && data) {
               localStorage.setItem(cacheKey, JSON.stringify(data));
             }
@@ -69,9 +71,12 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
           } catch(err) {
             if (typeof window !== 'undefined') {
               const cached = localStorage.getItem(cacheKey);
-              if (cached) return JSON.parse(cached);
+              if (cached) {
+                try { return JSON.parse(cached); } catch(e) {}
+              }
             }
-            throw err;
+            // fallback
+            return { data: [] };
           }
         };
 
@@ -81,10 +86,10 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
           fetchReq(next),
         ]);
 
-        const flatData = [...prevData.data, ...currData.data, ...nextData.data];
-        const startIndex = prevData.data.length;
+        const flatData = [...(prevData?.data || []), ...(currData?.data || []), ...(nextData?.data || [])];
+        const startIndex = prevData?.data?.length || 0;
 
-        const adjustedCalendar = currData.data.map((day: any, idx: number) => {
+        const adjustedCalendar = (currData?.data || []).map((day: any, idx: number) => {
           const flatIdx = startIndex + idx + offset;
           const mappedHijri = flatData[flatIdx]
             ? flatData[flatIdx].hijri

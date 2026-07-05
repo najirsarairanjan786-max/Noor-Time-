@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import { showNotification } from "../lib/notifications";
 import { useSettings } from "../hooks/useSettings";
 import {
   Moon,
@@ -10,7 +11,7 @@ import {
   Trash,
   Clock,
   Download,
-} from "lucide-react";
+} from "@/src/lib/icons";
 import { useAuth } from "../hooks/useAuth";
 
 import { useState, Dispatch, SetStateAction, useEffect } from "react";
@@ -260,7 +261,7 @@ export function SettingsView({
                           ...p,
                           pushNotificationsEnabled: true,
                         }));
-                        new Notification("Notifications Active", {
+                        showNotification("Notifications Active", {
                           body: "Prayer alerts are working perfectly.",
                           icon: "/icon-192.png",
                         });

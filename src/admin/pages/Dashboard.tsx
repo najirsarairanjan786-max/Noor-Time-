@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Users, Download, Video, ShoppingBag, Bell, Activity } from "lucide-react";
+import { Users, Download, Video, ShoppingBag, Bell, Activity } from "@/src/lib/icons";
 import { collection, getCountFromServer, query, orderBy, limit, getDocs } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 

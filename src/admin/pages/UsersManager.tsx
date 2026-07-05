@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Users, Search, Edit2, Trash2, Ban } from "lucide-react";
+import { Users, Search, Edit2, Trash2, Ban } from "@/src/lib/icons";
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 

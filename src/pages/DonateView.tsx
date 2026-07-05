@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { X, MoreVertical } from 'lucide-react';
+import { X, MoreVertical } from "@/src/lib/icons";
 import { ViewType } from '../App';
 
 interface DonateViewProps {

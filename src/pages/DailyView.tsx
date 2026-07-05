@@ -6,7 +6,7 @@ import {
   FileText,
   CheckCircle2,
   Circle,
-} from "lucide-react";
+} from "@/src/lib/icons";
 import { Dispatch, SetStateAction, useEffect } from "react";
 import { useLocalStorage } from "usehooks-ts";
 

@@ -1,49 +1,30 @@
-import { motion, AnimatePresence } from "motion/react";
-import { NewsFeed } from "../components/NewsFeed";
-import { useData } from "../hooks/useData";
-import { useSettings } from "../hooks/useSettings";
-import { useAlarmSystem } from "../hooks/useAlarmSystem";
-import { useHijriDate } from "../hooks/useHijriDate";
-import { PrayerTimesList } from "../components/PrayerTimesList";
-import { RamadanTracker } from "../components/RamadanTracker";
-import { Sidebar } from "../components/Sidebar";
-import { LocationPickerModal } from "../components/LocationPickerModal";
-import { SAHIH_BUKHARI_HADEES } from "../data/hadees";
-import { useDailyDua } from "../hooks/useDailyDua";
-import { format } from "date-fns";
-import React, { useState, useEffect } from "react";
-import { useLocalStorage } from "usehooks-ts";
-import {
-  Menu,
-  Moon,
-  Sun,
-  MoonStar,
-  CheckSquare,
-  Search,
-  Book,
-  HelpCircle,
-  ShieldAlert,
-  Home as HomeIcon,
-  Clock,
-  Compass,
-  BookOpen,
-  BookA,
-  Heart,
-  CalendarDays,
-  Star,
-  MessageCircle,
-  Radio,
-  Share2,
-  Smartphone,
-  BookText,
-  Sunrise,
-  UserCircle,
-} from "lucide-react";
-import { type Dispatch, type SetStateAction } from "react";
+
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { format } from 'date-fns';
+import { useSettings } from '../hooks/useSettings';
+import { useData } from '../hooks/useData';
+import { useHijriDate } from '../hooks/useHijriDate';
+import { useDailyDua } from '../hooks/useDailyDua';
+import { useAlarmSystem } from '../hooks/useAlarmSystem';
+import { PrayerTimesList } from '../components/PrayerTimesList';
+import { SAHIH_BUKHARI_HADEES } from '../data/hadees';
+import { NewsFeed } from '../components/NewsFeed';
+import { Sidebar } from '../components/Sidebar';
+import { LocationPickerModal } from '../components/LocationPickerModal';
 import { ThemeModal } from "../components/ThemeModal";
 import { useTranslation } from "../lib/i18n";
 import { useAuth } from "../hooks/useAuth";
-
+import { RamadanTracker } from "../components/RamadanTracker";
+import {
+  Menu, Sun, CheckSquare, Clock, MessageCircle, Radio, Share2, Smartphone, BookText, Sunrise, UserCircle,
+  Mosque, Kaaba, Compass, MoonStars, DotsThreeCircle, HandsPraying, HandCoins, StarAndCrescent, BellRing,
+  CalendarBlank, BookOpenText, Moon, Settings, Globe, MapPin, CloudSun, Search, Bookmark, Heart, History,
+  User, Bell, ShieldCheck, Phone, Mail, HelpCircle, ShieldWarning, FileText, Star, ShareNetwork, DownloadSimple,
+  UploadSimple, FloppyDisk, Trash, Pencil, Plus, Minus, CheckCircle, XCircle, Warning, Info, BookOpen,
+  CrescentMoonIcon, LanternCrescentIcon, BookOpenIcon, HijriCalendarIcon, TasbihIcon, BookA
+} from "@/src/lib/icons";
+import { type Dispatch, type SetStateAction } from "react";
 type ViewType =
   | "home"
   | "calendar"
@@ -197,7 +178,7 @@ export function Home({ setView }: HomeProps) {
                 onClick={() => setIsThemeModalOpen(true)}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full border border-white/40 text-xs font-semibold transition drop-shadow-md text-white"
               >
-                <Moon className="w-4 h-4 fill-white" />
+                <CrescentMoonIcon className="w-4 h-4 fill-white" />
                 Change Theme
               </button>
             </div>
@@ -220,7 +201,7 @@ export function Home({ setView }: HomeProps) {
 
               {hijriDate ? (
                 <div className="flex items-start gap-1 text-[13px] font-bold drop-shadow-md text-white mt-0.5">
-                  <MoonStar
+                  <LanternCrescentIcon
                     className="w-[16px] h-[16px] mt-0.5 text-white"
                     strokeWidth={2.2}
                   />
@@ -236,7 +217,7 @@ export function Home({ setView }: HomeProps) {
                 </div>
               ) : (
                 <div className="flex items-start gap-1 text-[13px] font-bold drop-shadow-md text-white mt-0.5">
-                  <MoonStar
+                  <LanternCrescentIcon
                     className="w-[16px] h-[16px] mt-0.5 text-white"
                     strokeWidth={2.2}
                   />
@@ -369,7 +350,7 @@ export function Home({ setView }: HomeProps) {
               {
                 label: "Quran",
                 i18nKey: "alQuran",
-                icon: <BookOpen />,
+                icon: <BookOpenIcon />,
                 glowText: "text-blue-400",
                 glowBg: "bg-blue-500",
               },
@@ -411,16 +392,23 @@ export function Home({ setView }: HomeProps) {
               {
                 label: "Share",
                 i18nKey: "share",
-                icon: <CalendarDays />,
+                icon: <Share2 />,
                 glowText: "text-cyan-400",
                 glowBg: "bg-cyan-500",
               },
               {
                 label: "Tasbih",
                 i18nKey: "tasbih",
-                icon: <Star />,
+                icon: <TasbihIcon />,
                 glowText: "text-rose-400",
                 glowBg: "bg-rose-500",
+              },
+              {
+                label: "Jantri",
+                i18nKey: "jantri",
+                icon: <CrescentMoonIcon />,
+                glowText: "text-amber-300",
+                glowBg: "bg-amber-500",
               },
               {
                 label: "Daily",
@@ -448,6 +436,8 @@ export function Home({ setView }: HomeProps) {
                   else if (feature.label === "Daily") setView("daily" as any);
                   else if (feature.label === "Tasbih")
                     setView("tasbeeh" as any);
+                  else if (feature.label === "Jantri")
+                    setView("jantri" as any);
                   else if (feature.label === "Share") setView("share" as any);
                   else if (feature.label.includes("Question"))
                     setView("Question & Answer" as any);

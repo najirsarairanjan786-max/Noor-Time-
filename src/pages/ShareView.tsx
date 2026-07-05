@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { ViewType } from '../App';
-import { Share2, BookOpen, VolumeX, Compass, CalendarCheck } from 'lucide-react';
+import { Share2, BookOpen, VolumeX, Compass, CalendarCheck } from "@/src/lib/icons";
 
 interface ShareViewProps {
   setView: (view: ViewType) => void;

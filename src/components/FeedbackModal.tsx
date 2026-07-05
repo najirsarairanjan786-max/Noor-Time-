@@ -1,4 +1,4 @@
-import { X, Send, MessageSquare } from 'lucide-react';
+import { X, Send, MessageSquare } from "@/src/lib/icons";
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';

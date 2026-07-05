@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { ArrowLeft, ShoppingBag, Book, Sparkles, Shirt } from "lucide-react";
+import { ArrowLeft, ShoppingBag, Book, Sparkles, Shirt } from "@/src/lib/icons";
 import { Dispatch, SetStateAction, useState } from "react";
 import { ViewType } from "../App";
 import { useTranslation } from "../lib/i18n";

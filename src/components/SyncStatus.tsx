@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Wifi, WifiOff, Cloud, CloudOff } from "lucide-react";
+import { Wifi, WifiOff, Cloud, CloudOff } from "@/src/lib/icons";
 import { motion, AnimatePresence } from "motion/react";
 
 export function SyncStatus() {

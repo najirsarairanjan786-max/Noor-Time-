@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sunrise, Sunset, Play, Pause, ChevronLeft } from 'lucide-react';
+import { Sunrise, Sunset, Play, Pause, ChevronLeft } from "@/src/lib/icons";
 import { type ViewType } from '../App';
 
 interface AdhkarViewProps {

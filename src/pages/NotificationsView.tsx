@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { ArrowLeft, Bell } from "lucide-react";
+import { ArrowLeft, Bell } from "@/src/lib/icons";
 import { Dispatch, SetStateAction, useState, useEffect } from "react";
 import { ViewType } from "../App";
 import { useTranslation } from "../lib/i18n";

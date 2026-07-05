@@ -14,7 +14,7 @@ import {
   Layers,
   ArrowRight,
   Search,
-} from "lucide-react";
+} from "@/src/lib/icons";
 import { type ViewType } from "../App";
 import { SAHIH_BUKHARI_HADEES } from "../data/hadees";
 

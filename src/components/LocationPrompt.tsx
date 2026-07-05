@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MapPinOff, X } from 'lucide-react';
+import { MapPinOff, X } from "@/src/lib/icons";
 import { useSettings } from '../hooks/useSettings';
 
 export function LocationPrompt() {

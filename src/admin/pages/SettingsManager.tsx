@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Save, Settings, Image as ImageIcon } from "lucide-react";
+import { Save, Settings, Image as ImageIcon } from "@/src/lib/icons";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 

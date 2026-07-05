@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { useData } from '../hooks/useData';
 import { useSettings } from '../hooks/useSettings';
-import { Compass, Book, Map, ChevronLeft } from 'lucide-react';
+import { Compass, Book, Map, ChevronLeft } from "@/src/lib/icons";
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 import { ViewType } from '../App';
 

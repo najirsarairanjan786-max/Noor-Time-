@@ -1,4 +1,4 @@
-import { ArrowLeft, Languages as LanguagesIcon } from "lucide-react";
+import { ArrowLeft, Languages as LanguagesIcon } from "@/src/lib/icons";
 import { type Dispatch, type SetStateAction } from "react";
 import { useSettings } from "../hooks/useSettings";
 import { cn } from "../lib/utils";

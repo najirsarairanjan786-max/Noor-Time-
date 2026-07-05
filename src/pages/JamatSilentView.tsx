@@ -1,5 +1,5 @@
 import { useState, Dispatch, SetStateAction } from "react";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft } from "@/src/lib/icons";
 import { useLocalStorage } from "usehooks-ts";
 import { useSettings } from "../hooks/useSettings";
 

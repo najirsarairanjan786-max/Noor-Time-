@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Upload, Smartphone, Save } from "lucide-react";
+import { Upload, Smartphone, Save } from "@/src/lib/icons";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 

@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { ArrowLeft, BookOpen, Search, Compass, Book } from 'lucide-react';
+import { ArrowLeft, BookOpen, Search, Compass, Book } from "@/src/lib/icons";
 import { Dispatch, SetStateAction } from 'react';
 
 type ViewType = 'home' | 'calendar' | 'settings' | 'prayer' | string;

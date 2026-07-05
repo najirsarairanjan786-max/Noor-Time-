@@ -13,7 +13,7 @@ import {
   Trash2,
   Edit3,
   FileText,
-} from "lucide-react";
+} from "@/src/lib/icons";
 import React, {
   Dispatch,
   SetStateAction,

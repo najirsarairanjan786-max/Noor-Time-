@@ -20,6 +20,7 @@ export interface AppSettings {
   pushNotificationsEnabled: boolean;
   customAlarms: Record<string, string>;
   prayerAlarmSounds: Record<string, string>;
+  anniversaryReminders: Record<string, boolean>;
   supabaseUrl: string;
   supabaseAnonKey: string;
   firebaseConfig?: {
@@ -50,6 +51,17 @@ const DEFAULT_SETTINGS: AppSettings = {
   silentMode: false,
   pushNotificationsEnabled: true,
   customAlarms: {},
+  anniversaryReminders: {
+    "1_9": true,
+    "1_10": true,
+    "10_12": true,
+    "1_1": true,
+    "10_1": true,
+    "12_3": true,
+    "27_9": true,
+    "15_8": true,
+    "8_12": true
+  },
   supabaseUrl: "",
   supabaseAnonKey: "",
 };

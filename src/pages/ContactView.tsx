@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, User, Send, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, User, Send, CheckCircle2 } from "@/src/lib/icons";
 import { ViewType } from '../App';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';

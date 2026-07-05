@@ -24,9 +24,12 @@ function getCalculationMethod(methodId: number) {
   }
 }
 
+import { getApps } from 'firebase-admin/app';
+
 export function startScheduler() {
   // Run at the start of every minute
   cron.schedule('* * * * *', async () => {
+    if (getApps().length === 0) return;
     try {
       console.log('Running prayer times scheduler...');
       const db = getFirestore(config.firestoreDatabaseId);

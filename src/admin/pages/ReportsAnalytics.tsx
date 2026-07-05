@@ -1,4 +1,4 @@
-import { BarChart as BarChartIcon } from "lucide-react";
+import { BarChart as BarChartIcon } from "@/src/lib/icons";
 
 export function ReportsAnalytics() {
   return (

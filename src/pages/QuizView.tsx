@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { ArrowLeft, CheckCircle2, XCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, XCircle } from "@/src/lib/icons";
 import { Dispatch, SetStateAction, useState } from 'react';
 
 type ViewType = 'home' | 'calendar' | 'settings' | 'prayer' | string;
