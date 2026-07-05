@@ -102,7 +102,7 @@ export function IslamicCalendar() {
   const upcomingEvents = days.filter(d => d.hijri.holidays && d.hijri.holidays.length > 0).flatMap(d => 
     d.hijri.holidays.map(h => ({
       name: h,
-      hijriDate: `${englishToUrduDigits(d.hijri.day)} ${d.hijri.month.en} ${englishToUrduDigits(d.hijri.year)}`,
+      hijriDate: `${englishToUrduDigits(d.hijri.day)} ${d.hijri.month.ar} ${englishToUrduDigits(d.hijri.year)}`,
       gregorianDate: `${d.gregorian.day} ${d.gregorian.month.en} ${d.gregorian.year}`
     }))
   );
@@ -121,8 +121,8 @@ export function IslamicCalendar() {
         <div className="text-center">
           <h2 className="text-lg font-bold text-white">{format(currentDate, "MMMM yyyy")}</h2>
           {days.length > 0 && !loading && (
-            <p className="text-emerald-300/80 text-sm">
-              {days[0].hijri.month.en} - {days[days.length - 1].hijri.month.en} {englishToUrduDigits(days[0].hijri.year)}
+            <p className="text-emerald-300/80 text-sm font-urdu">
+              {days[0].hijri.month.ar} - {days[days.length - 1].hijri.month.ar} {englishToUrduDigits(days[0].hijri.year)}
             </p>
           )}
         </div>

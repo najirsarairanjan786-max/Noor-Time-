@@ -1,31 +1,33 @@
 import express from 'express';
-import { initializeApp, cert, getApps } from 'firebase-admin/app';
+import { initializeApp, cert, getApps, applicationDefault } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getMessaging } from 'firebase-admin/messaging';
 import config from '../firebase-applet-config.json';
 
 // Initialize Firebase Admin
-// Important: You must provide a valid service account key. 
-// Set the FIREBASE_SERVICE_ACCOUNT_KEY environment variable to the JSON string of your service account key.
 const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
 let adminInitialized = false;
 
-if (serviceAccountKey) {
-  try {
-    const serviceAccount = JSON.parse(serviceAccountKey);
-    if (getApps().length === 0) {
+try {
+  if (getApps().length === 0) {
+    if (serviceAccountKey) {
+      const serviceAccount = JSON.parse(serviceAccountKey);
       initializeApp({
         credential: cert(serviceAccount),
         projectId: config.projectId
       });
+      console.log("Firebase Admin initialized with custom service account.");
+    } else {
+      initializeApp({
+        credential: applicationDefault(),
+        projectId: config.projectId
+      });
+      console.log("Firebase Admin initialized with applicationDefault.");
     }
-    adminInitialized = true;
-    console.log("Firebase Admin initialized successfully.");
-  } catch (error) {
-    console.error("Failed to initialize Firebase Admin:", error);
   }
-} else {
-  console.warn("FIREBASE_SERVICE_ACCOUNT_KEY environment variable not found. Push notifications will not work.");
+  adminInitialized = true;
+} catch (error) {
+  console.error("Failed to initialize Firebase Admin:", error);
 }
 
 const router = express.Router();

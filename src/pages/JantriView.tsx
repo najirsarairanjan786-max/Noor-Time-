@@ -21,7 +21,7 @@ export function JantriView({ setView }: { setView: Dispatch<SetStateAction<ViewT
   const { settings } = useSettings();
   const { timings, date } = useData(settings.location, settings.method, settings.school);
   const { t, isRTL } = useTranslation(settings.language);
-  const [activeTab, setActiveTab] = useState<"calendar" | "book" | "zakat" | "ramadan" | "anniversaries">("book");
+  const [activeTab, setActiveTab] = useState<"calendar" | "book" | "zakat" | "ramadan" | "anniversaries">("calendar");
 
   const tabs = [
     { id: "calendar", label: "Calendar", icon: HijriCalendarIcon },

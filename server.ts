@@ -1,6 +1,5 @@
 import express from "express";
 import path from "path";
-import { createServer as createViteServer } from "vite";
 import notificationRoutes from "./server/notifications";
 import { startScheduler } from "./server/scheduler";
 
@@ -17,11 +16,17 @@ async function startServer() {
   
   app.use(notificationRoutes);
 
-  // Start background cron jobs
-  startScheduler();
+  const isProd = process.env.NODE_ENV === "production" || 
+                 !!process.env.K_SERVICE || 
+                 (process.argv[1] && process.argv[1].endsWith('.cjs'));
+                 
+  if (isProd) {
+    process.env.NODE_ENV = "production";
+  }
 
-  // Vite middleware for development
-  if (process.env.NODE_ENV !== "production") {
+  if (!isProd) {
+    // Dynamic import to avoid loading Vite in production
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
@@ -35,9 +40,12 @@ async function startServer() {
     });
   }
 
+  // Start background cron jobs after middleware setup
+  startScheduler();
+
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
 }
 
-startServer();
+startServer().catch(console.error);
