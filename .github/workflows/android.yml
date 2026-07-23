@@ -14,42 +14,23 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: npm install
 
-      - name: Build Web App
+      - name: Build Web
         run: npm run build
-
-      - name: Install Capacitor
-        run: |
-          npm install @capacitor/core @capacitor/cli @capacitor/android
-
-      - name: Create Capacitor Config
-        run: |
-          cat > capacitor.config.ts <<EOF
-          import { CapacitorConfig } from '@capacitor/cli';
-
-          const config: CapacitorConfig = {
-            appId: 'com.noortime.app',
-            appName: 'Noor Time',
-            webDir: 'dist',
-            bundledWebRuntime: false
-          };
-
-          export default config;
-          EOF
-
-      - name: Add Android
-        run: |
-          npx cap add android
-          npx cap sync android
 
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
+
+      - name: Sync Capacitor
+        run: |
+          npx cap sync android
 
       - name: Build APK
         run: |
