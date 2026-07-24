@@ -17,7 +17,7 @@ async function startServer() {
   app.use(notificationRoutes);
 
   const isProd = process.env.NODE_ENV === "production" || 
-                 !!process.env.K_SERVICE || 
+                  
                  (process.argv[1] && process.argv[1].endsWith('.cjs'));
                  
   if (isProd) {
@@ -33,7 +33,10 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = __dirname;
+    // In CJS bundle, __dirname is the dist folder. 
+    // In dev mode (ESM), this branch won't execute, so __dirname is not needed.
+    // However, if it executes in ESM somehow, fallback to process.cwd() + '/dist'
+    const distPath = typeof __dirname !== 'undefined' ? __dirname : path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
