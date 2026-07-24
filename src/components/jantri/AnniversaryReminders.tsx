@@ -4,6 +4,7 @@ import { englishToUrduDigits } from "../../lib/utils";
 import { useSettings } from "../../hooks/useSettings";
 import { Bell, BellOff, Calendar as CalendarIcon, Info } from "@/src/lib/icons";
 import { useState } from "react";
+import { SmartReferenceLink } from "../../lib/referenceSystem/SmartReferenceLink";
 
 const ANNIVERSARY_EVENTS = [
   { id: "1_9", key: "ramadanStart", hijriDate: "1 Ramadan" },
@@ -53,9 +54,10 @@ export function AnniversaryReminders() {
           </div>
           <div>
             <h2 className="text-lg font-bold text-white">{t("anniversaryReminders")}</h2>
-            <p className="text-sm text-emerald-200/70 mt-1">
+            <p className="text-sm text-emerald-200/70 mt-1 mb-2">
               Enable push notifications for important Islamic dates. Reminders automatically sync with the Hijri calendar every year even when offline.
             </p>
+            <SmartReferenceLink topic="Islamic Anniversary" />
           </div>
         </div>
 

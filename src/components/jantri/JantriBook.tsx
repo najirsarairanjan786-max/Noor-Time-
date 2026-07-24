@@ -14,6 +14,8 @@ import { useJantriBook } from "../../hooks/useJantriBook";
 import { useSettings } from "../../hooks/useSettings";
 import { jantriCategories } from "../../data/jantriBookData";
 import { IslamicCalendar } from "./IslamicCalendar";
+import { SmartReferenceLink } from "../../lib/referenceSystem/SmartReferenceLink";
+import { ReferenceSystem } from "../../lib/referenceSystem/ReferenceSystem";
 import { useTranslation } from "../../lib/i18n";
 export function JantriBook() {
   const { data: jantriBookData, loading } = useJantriBook();
@@ -96,6 +98,7 @@ export function JantriBook() {
   const showCategoryGrid = !isSearchActive && !selectedCategory;
   const showList = isSearchActive || (selectedCategory && selectedCategory !== "calendar");
   const showCalendar = selectedCategory === "calendar" && !isSearchActive;
+  const showReferenceSystem = selectedCategory === "quran_hadith" && !isSearchActive;
 
   return (
     <motion.div
@@ -279,6 +282,13 @@ export function JantriBook() {
                             </p>
                           </div>
                         )}
+                        <SmartReferenceLink topic={
+                          chapter.category === "ramadan" ? "Ramadan Information" :
+                          chapter.category === "zakat" ? "Zakat" :
+                          chapter.category === "hajj_umrah" ? "Hajj" :
+                          chapter.category === "events" ? "Islamic Event" :
+                          chapter.category === "duas" ? "Dua" : ""
+                        } />
                       </div>
                     </motion.div>
                   )}
@@ -293,6 +303,21 @@ export function JantriBook() {
               </div>
             )}
           </div>
+        </motion.div>
+      )}
+      
+      {showReferenceSystem && (
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-3 mt-8 pt-8 border-t border-emerald-500/20"
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <h2 className="text-lg font-bold text-emerald-400">
+              Professional Reference Library
+            </h2>
+          </div>
+          <ReferenceSystem />
         </motion.div>
       )}
     </motion.div>

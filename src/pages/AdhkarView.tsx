@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sunrise, Sunset, Play, Pause, ChevronLeft } from "@/src/lib/icons";
 import { type ViewType } from '../App';
+import { SmartReferenceLink } from "../lib/referenceSystem/SmartReferenceLink";
 
 interface AdhkarViewProps {
   setView: (view: ViewType) => void;
@@ -100,6 +101,7 @@ export function AdhkarView({ setView }: AdhkarViewProps) {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-4 py-6 z-0">
+          <div className="mb-4"><SmartReferenceLink topic="Azkar" /></div>
           <AnimatePresence mode="wait">
             {!currentCategory ? (
               <motion.div

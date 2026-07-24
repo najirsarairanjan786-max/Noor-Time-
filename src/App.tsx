@@ -63,6 +63,8 @@ export type ViewType =
   | "jantri"
   | string;
 
+import { OfflineBanner } from "./components/OfflineBanner";
+
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewType>("calendar");
   const { settings } = useSettings();
@@ -149,6 +151,7 @@ export default function App() {
         <div className="absolute bottom-[20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-400/5 blur-[120px] pointer-events-none transition-colors duration-300"></div>
 
         <SyncStatus />
+        <OfflineBanner />
 
         <>
           <AnimatePresence mode="wait">

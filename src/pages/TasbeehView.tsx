@@ -1,3 +1,4 @@
+import { SmartReferenceLink } from "../lib/referenceSystem/SmartReferenceLink";
 import { motion, AnimatePresence } from 'motion/react';
 import { useLocalStorage } from 'usehooks-ts';
 import { RotateCcw, Vibrate, CheckCircle, ChevronLeft, BarChart3, X, Volume2, VolumeX, Undo2, Bell, BellOff, Settings2, Target, Clock, Trophy, Database, Globe } from "@/src/lib/icons";
@@ -235,7 +236,7 @@ export function TasbeehView({ setView }: { setView: (v: string) => void }) {
     >
       <div className="w-full max-w-sm bg-[#0f172a] rounded-3xl backdrop-blur-md border border-emerald-500/20 p-6 flex flex-col items-center shadow-2xl relative overflow-hidden">
         
-        {/* Header Controls */}
+        <div className="w-full mb-4"><SmartReferenceLink topic="Tasbih" /></div>{/* Header Controls */}
         <div className="w-full flex justify-between items-center mb-6 relative z-10">
           <button 
             onClick={() => setView('home')}
