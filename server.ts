@@ -5,7 +5,7 @@ import { startScheduler } from "./server/scheduler";
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 
   app.use(express.json());
 
@@ -16,9 +16,7 @@ async function startServer() {
   
   app.use(notificationRoutes);
 
-  const isProd = process.env.NODE_ENV === "production" || 
-                  
-                 (process.argv[1] && process.argv[1].endsWith('.cjs'));
+  const isProd = process.env.NODE_ENV === "production" || typeof __dirname !== 'undefined';
                  
   if (isProd) {
     process.env.NODE_ENV = "production";
