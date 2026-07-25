@@ -3543,7 +3543,7 @@ async function startServer() {
     res.json({ status: "ok" });
   });
   app.use(notifications_default);
-  const isProd = process.env.NODE_ENV === "production" || !!process.env.K_SERVICE || process.argv[1] && process.argv[1].endsWith(".cjs");
+  const isProd = process.env.NODE_ENV === "production" || process.argv[1] && process.argv[1].endsWith(".cjs");
   if (isProd) {
     process.env.NODE_ENV = "production";
   }
@@ -3555,7 +3555,7 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = __dirname;
+    const distPath = typeof __dirname !== "undefined" ? __dirname : import_path.default.join(process.cwd(), "dist");
     app.use(import_express2.default.static(distPath));
     app.get("*", (req, res) => {
       res.sendFile(import_path.default.join(distPath, "index.html"));
