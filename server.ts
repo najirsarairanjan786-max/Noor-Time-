@@ -1,6 +1,7 @@
 import express from "express";
 import path from "path";
 import notificationRoutes from "./server/notifications";
+import geminiRoutes from "./server/gemini";
 import { startScheduler } from "./server/scheduler";
 
 async function startServer() {
@@ -15,6 +16,7 @@ async function startServer() {
   });
   
   app.use(notificationRoutes);
+  app.use(geminiRoutes);
 
   const isProd = process.env.NODE_ENV === "production" || typeof __dirname !== 'undefined';
                  
