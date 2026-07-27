@@ -89,6 +89,13 @@ async function generate() {
     await sharp(Buffer.from(backgroundSvg)).resize(adaptiveSize, adaptiveSize).png().toFile(bgPath);
     console.log("Generated icons for " + density);
   }
+
+  // Generate web icons
+  const publicDir = path.join(__dirname, 'public');
+  if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir, { recursive: true });
+  await sharp(Buffer.from(svg)).resize(192, 192).png().toFile(path.join(publicDir, 'icon-192.png'));
+  await sharp(Buffer.from(svg)).resize(512, 512).png().toFile(path.join(publicDir, 'icon-512.png'));
+  console.log("Generated web icons in public folder");
   
   const anyDpiDir = path.join(baseDir, 'mipmap-anydpi-v26');
   if (!fs.existsSync(anyDpiDir)) fs.mkdirSync(anyDpiDir, { recursive: true });
