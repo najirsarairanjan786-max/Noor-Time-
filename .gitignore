@@ -5,3 +5,22 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Android / Gradle / Build Tools
+.gradle/
+android/.gradle/
+android/app/build/
+android/build/
+build-tools/
+platform-tools/
+cmdline-tools/
+emulator/
+licenses/
+system-images/
+local.properties
+*.lock
+*.bin
+caches/
+outputs/
+*.apk
+gradle.zip
