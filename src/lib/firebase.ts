@@ -2,7 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 import {
-  getFirestore,
+  initializeFirestore,
 } from "firebase/firestore";
 import { getMessaging, isSupported } from "firebase/messaging";
 import defaultFirebaseConfig from "../../firebase-applet-config.json";
@@ -57,7 +57,9 @@ if (finalConfig.projectId === defaultFirebaseConfig.projectId) {
 const app = initializeApp(finalConfig);
 
 // Initialize Firestore
-export const db = getFirestore(app, finalConfig.firestoreDatabaseId || "(default)");
+export const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true,
+}, finalConfig.firestoreDatabaseId || "(default)");
 
 export const auth = getAuth(app);
 export const storage = getStorage(app);
