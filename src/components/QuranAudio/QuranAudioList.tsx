@@ -1,20 +1,17 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Search, Play, Pause, Download, CheckCircle2, Clock, Trash2 } from "@/src/lib/icons";
 import { useQuranAudio } from "./QuranAudioContext";
+import { useDownloadManager } from "../../hooks/useDownloadManager";
 
 export const QuranAudioList: React.FC<{ surahs: any[] }> = ({ surahs }) => {
-  const { playSurah, playingSurahId, isPlaying, pause } = useQuranAudio();
+  const { playSurah, playingSurahId, isPlaying, pause, activeReciter } = useQuranAudio();
   const [searchQuery, setSearchQuery] = useState("");
-  const [downloadedSurahs, setDownloadedSurahs] = useState<number[]>([]);
   const [recentSurahs, setRecentSurahs] = useState<number[]>([]);
   const [favoriteSurahs, setFavoriteSurahs] = useState<number[]>([]);
-
-  const [downloadingSurah, setDownloadingSurah] = useState<number | null>(null);
-  const [downloadProgress, setDownloadProgress] = useState(0);
+  const { downloads, downloadSurah, deleteDownload } = useDownloadManager();
 
   // Load state
   useEffect(() => {
-    checkDownloads();
     setRecentSurahs(JSON.parse(localStorage.getItem("quran_recent_audio") || "[]"));
     setFavoriteSurahs(JSON.parse(localStorage.getItem("quran_favorite_audio") || "[]"));
   }, []);
@@ -39,125 +36,88 @@ export const QuranAudioList: React.FC<{ surahs: any[] }> = ({ surahs }) => {
     });
   };
 
-
-  const checkDownloads = async () => {
+  const handleDownload = async (surah: any, e: React.MouseEvent) => {
+    e.stopPropagation();
     try {
-      const cache = await caches.open("quran-audio-cache");
-      const keys = await cache.keys();
-      const surahIds = new Set<number>();
-      
-      // We store metadata in a separate localstorage array for simple querying
-      const stored = JSON.parse(localStorage.getItem("quran_downloaded_surahs") || "[]");
-      setDownloadedSurahs(stored);
-    } catch (e) {}
-  };
-
-  const downloadSurah = async (surah: any) => {
-    if (downloadingSurah !== null) return;
-    setDownloadingSurah(surah.number);
-    setDownloadProgress(0);
-
-    try {
-      const cache = await caches.open("quran-audio-cache");
-      const reciterId = localStorage.getItem("quran_reciter") || "ar.alafasy";
-      
-      // Fetch surah ayahs to know how many
       const res = await fetch(`https://api.alquran.cloud/v1/surah/${surah.number}`);
       const data = await res.json();
-      const ayahs = data.data.ayahs;
-      
-      let downloaded = 0;
-      for (const ayah of ayahs) {
-        const url = `https://cdn.islamic.network/quran/audio/128/${reciterId}/${ayah.number}.mp3`;
-        const req = new Request(url);
-        const exists = await cache.match(req);
-        if (!exists) {
-          await cache.add(req);
-        }
-        downloaded++;
-        setDownloadProgress(Math.floor((downloaded / ayahs.length) * 100));
-      }
-
-      const stored = JSON.parse(localStorage.getItem("quran_downloaded_surahs") || "[]");
-      if (!stored.includes(surah.number)) {
-        stored.push(surah.number);
-        localStorage.setItem("quran_downloaded_surahs", JSON.stringify(stored));
-      }
-      setDownloadedSurahs(stored);
-    } catch (e) {
+      await downloadSurah(surah.number, activeReciter.id, data.data.ayahs);
+    } catch(e) {
       console.error(e);
-      alert("Download failed. Please check your connection.");
-    } finally {
-      setDownloadingSurah(null);
-      setDownloadProgress(0);
+      alert("Could not fetch surah metadata for download.");
     }
   };
 
-  const deleteSurah = async (surah: any) => {
+  const handleDelete = async (surah: any, e: React.MouseEvent) => {
+    e.stopPropagation();
     try {
-      const cache = await caches.open("quran-audio-cache");
-      const reciterId = localStorage.getItem("quran_reciter") || "ar.alafasy";
-      
       const res = await fetch(`https://api.alquran.cloud/v1/surah/${surah.number}`);
       const data = await res.json();
-      const ayahs = data.data.ayahs;
-
-      for (const ayah of ayahs) {
-        const url = `https://cdn.islamic.network/quran/audio/128/${reciterId}/${ayah.number}.mp3`;
-        await cache.delete(new Request(url));
-      }
-
-      let stored = JSON.parse(localStorage.getItem("quran_downloaded_surahs") || "[]");
-      stored = stored.filter((id: number) => id !== surah.number);
-      localStorage.setItem("quran_downloaded_surahs", JSON.stringify(stored));
-      setDownloadedSurahs(stored);
+      await deleteDownload(surah.number, activeReciter.id, data.data.ayahs);
     } catch (e) {
       console.error(e);
     }
+  };
+  
+  const formatBytes = (bytes: number) => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   const filteredSurahs = useMemo(() => {
     if (!searchQuery) return surahs;
     return surahs.filter((s) =>
       s.englishName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.name.includes(searchQuery)
+      s.name.includes(searchQuery) ||
+      s.number.toString() === searchQuery
     );
-  }, [searchQuery, surahs]);
+  }, [surahs, searchQuery]);
+
+  const recentList = useMemo(() => {
+    return recentSurahs.map(id => surahs.find(s => s.number === id)).filter(Boolean);
+  }, [recentSurahs, surahs]);
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 pb-24 rounded-2xl overflow-hidden shadow-sm border border-gray-100">
-      {/* Search Bar */}
-      <div className="sticky top-0 z-10 bg-gray-50 p-4 border-b border-gray-200">
+    <div className="flex flex-col h-full bg-gray-50">
+      <div className="p-4 sm:p-6 pb-2">
         <div className="relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
           <input
             type="text"
-            placeholder="Search Surah for audio..."
+            placeholder="Search surahs..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white border border-gray-300 rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none focus:border-[#df4b4b] focus:ring-1 focus:ring-[#df4b4b]"
+            className="w-full bg-white border border-gray-200 rounded-2xl py-3 pl-12 pr-4 text-[15px] focus:outline-none focus:ring-2 focus:ring-[#df4b4b] focus:border-transparent transition-shadow"
           />
-          <Search className="w-5 h-5 text-gray-400 absolute left-3 top-3" />
         </div>
       </div>
 
-      {/* Surah List */}
-      <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
-        {recentSurahs.length > 0 && !searchQuery && (
-          <div className="mb-4">
-            <h4 className="text-sm font-bold text-gray-500 uppercase mb-2 ml-1">Recently Played</h4>
-            <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-              {recentSurahs.map(id => {
-                const s = surahs.find(x => x.number === id);
-                if (!s) return null;
-                const isPlayingThis = playingSurahId === s.number;
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 pt-2 pb-24 space-y-3">
+        {!searchQuery && recentList.length > 0 && (
+          <div className="mb-6">
+            <h4 className="text-sm font-bold text-gray-500 uppercase mb-3 flex items-center gap-2 ml-1">
+              <Clock className="w-4 h-4" /> Recent
+            </h4>
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar">
+              {recentList.map((s: any) => {
+                const isCurrentlyPlaying = playingSurahId === s.number;
                 return (
                   <button
-                    key={'recent-'+id}
-                    onClick={() => isPlayingThis && isPlaying ? pause() : playSurah(s.number)}
-                    className={`min-w-[120px] p-3 rounded-2xl border text-left transition-colors flex flex-col gap-2 ${isPlayingThis ? 'bg-red-50 border-[#df4b4b]' : 'bg-white border-gray-200'}`}
+                    key={'recent-'+s.number}
+                    onClick={() => isCurrentlyPlaying && isPlaying ? pause() : playSurah(s.number)}
+                    className={`flex-shrink-0 w-32 bg-white border rounded-2xl p-4 text-left transition-all ${
+                      isCurrentlyPlaying ? 'border-[#df4b4b] shadow-md ring-1 ring-[#df4b4b]' : 'border-gray-100 hover:border-gray-200'
+                    }`}
                   >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isPlayingThis ? 'bg-[#df4b4b] text-white' : 'bg-gray-100 text-gray-600'}`}>
-                      {isPlayingThis && isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
+                    <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center mb-3">
+                      {isCurrentlyPlaying && isPlaying ? (
+                        <Pause className="w-5 h-5 text-[#df4b4b] fill-current" />
+                      ) : (
+                        <Play className="w-5 h-5 text-[#df4b4b] fill-current ml-1" />
+                      )}
                     </div>
                     <div>
                       <h5 className="font-bold text-sm text-gray-900 truncate">{s.englishName}</h5>
@@ -172,10 +132,11 @@ export const QuranAudioList: React.FC<{ surahs: any[] }> = ({ surahs }) => {
         <h4 className="text-sm font-bold text-gray-500 uppercase mb-2 ml-1">{searchQuery ? "Search Results" : "All Surahs"}</h4>
         {filteredSurahs.map((surah) => {
           const isCurrentlyPlaying = playingSurahId === surah.number;
-          const isDownloaded = downloadedSurahs.includes(surah.number);
-          const isDownloadingThis = downloadingSurah === surah.number;
+          const downloadKey = `surah_${surah.number}_${activeReciter.id}`;
+          const dlState = downloads[downloadKey];
+          const isDownloaded = dlState?.status === 'downloaded';
+          const isDownloadingThis = dlState?.status === 'downloading';
           const isFavorite = favoriteSurahs.includes(surah.number);
-
 
           return (
             <div
@@ -207,16 +168,23 @@ export const QuranAudioList: React.FC<{ surahs: any[] }> = ({ surahs }) => {
 
               <div className="flex items-center gap-3">
                 {isDownloadingThis ? (
-                  <div className="flex items-center gap-2 text-xs font-bold text-[#df4b4b]">
-                    <div className="w-4 h-4 border-2 border-[#df4b4b] border-t-transparent rounded-full animate-spin"></div>
-                    {downloadProgress}%
+                  <div className="flex flex-col items-end gap-1 text-xs font-bold text-[#df4b4b]">
+                    <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-[#df4b4b] border-t-transparent rounded-full animate-spin"></div>
+                        {Math.floor(dlState.progress)}%
+                    </div>
+                    <span className="text-[9px] text-gray-400 font-normal">{formatBytes(dlState.sizeBytes)}</span>
                   </div>
                 ) : isDownloaded ? (
-                  <button onClick={() => deleteSurah(surah)} className="p-2 text-green-600 hover:bg-green-50 rounded-full" title="Delete Download">
-                    <Trash2 className="w-5 h-5 text-gray-400 hover:text-red-500 transition-colors" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-green-500" />
+                    <span className="text-[9px] text-gray-400 font-normal">{formatBytes(dlState.sizeBytes)}</span>
+                    <button onClick={(e) => handleDelete(surah, e)} className="p-2 text-green-600 hover:bg-green-50 rounded-full" title="Delete Download">
+                        <Trash2 className="w-5 h-5 text-gray-400 hover:text-red-500 transition-colors" />
+                    </button>
+                  </div>
                 ) : (
-                  <button onClick={() => downloadSurah(surah)} className="p-2 text-gray-400 hover:text-[#df4b4b] hover:bg-red-50 rounded-full" title="Download for offline">
+                  <button onClick={(e) => handleDownload(surah, e)} className="p-2 text-gray-400 hover:text-[#df4b4b] hover:bg-red-50 rounded-full" title="Download for offline">
                     <Download className="w-5 h-5" />
                   </button>
                 )}

@@ -1,8 +1,9 @@
 import { QariSelector } from "./QariSelector";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Play, Pause, X, SkipBack, SkipForward, ChevronUp, ChevronDown, Clock, Settings2 } from "@/src/lib/icons";
+import { Play, Pause, X, SkipBack, SkipForward, ChevronUp, ChevronDown, Clock, Settings2, Repeat } from "@/src/lib/icons";
 import { useQuranAudio, RECITERS } from "./QuranAudioContext";
+import { useOffline } from "../../lib/OfflineContext";
 
 export const MiniPlayer: React.FC = () => {
   const {
@@ -25,10 +26,14 @@ export const MiniPlayer: React.FC = () => {
     sleepTimerRemaining,
     currentAudioContext,
     playbackMode,
-    setPlaybackMode
+    setPlaybackMode,
+    setShowAudioSettings,
+    isRepeatingAyah,
+    toggleRepeatAyah
   } = useQuranAudio();
 
   const [expanded, setExpanded] = useState(false);
+  const { isOnline } = useOffline();
   const [showSettings, setShowSettings] = useState(false);
 
   if (playingSurahId === null && currentAudioContext.length === 0) return null;
@@ -50,7 +55,7 @@ export const MiniPlayer: React.FC = () => {
         initial={{ y: 100 }}
         animate={{ y: 0 }}
         exit={{ y: 100 }}
-        className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] z-[100]"
+        className="fixed bottom-[72px] left-1/2 -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-200 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] z-[100]"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <div className="relative">
@@ -73,6 +78,11 @@ export const MiniPlayer: React.FC = () => {
                 {(duration > 0 || playbackMode === 'translation') && (
                   <span className="font-mono text-[10px] bg-gray-100 px-1.5 py-0.5 rounded text-gray-400">
                     {playbackMode === 'translation' ? 'TTS' : `${formatTime(currentTime)} / ${formatTime(duration)}`}
+                  </span>
+                )}
+                {!isOnline && (
+                  <span className="font-bold text-[9px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded uppercase">
+                    Offline
                   </span>
                 )}
               </p>
