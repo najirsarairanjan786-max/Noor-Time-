@@ -64,7 +64,11 @@ const PARAS_DATA = [
   { id: 30, name: "عَمَّ يَتَسَاءَلُونَ", rukus: 14 },
 ];
 
-export function QuranView({ setView }: QuranViewProps) {
+import { QuranAudioProvider, useQuranAudio } from "../components/QuranAudio/QuranAudioContext";
+import { MiniPlayer } from "../components/QuranAudio/MiniPlayer";
+import { QuranAudioList } from "../components/QuranAudio/QuranAudioList";
+
+function QuranViewInner({ setView }: QuranViewProps) {
   const [translationTitle, setTranslationTitle] =
     useState<string>("Translation");
   const [activeTab, setActiveTab] = useState<
@@ -75,6 +79,7 @@ export function QuranView({ setView }: QuranViewProps) {
     | "BOOKMARKS"
     | "DOWNLOADS"
     | "NOTES"
+    | "AUDIO"
   >("QURAN");
   const [translationSubTab, setTranslationSubTab] = useState<"SURAH" | "PARAH">(
     "SURAH",
@@ -90,9 +95,8 @@ export function QuranView({ setView }: QuranViewProps) {
   );
   const [currentPageIndex, setCurrentPageIndex] = useState<number>(0);
   const [surahs, setSurahs] = useState<any[]>([]);
-  const [playingAyahIndex, setPlayingAyahIndex] = useState<number | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  // Removed local audio state in favor of global context
+  const { isPlaying, playingAyahIndex, playAyahSequence, pause, resume, currentAudioContext, playingSurahId, stop } = useQuranAudio();
   const [notes, setNotes] = useState<
     { id: string; text: string; date: string }[]
   >(() => {
@@ -356,97 +360,52 @@ export function QuranView({ setView }: QuranViewProps) {
   };
 
   useEffect(() => {
-    audioRef.current = new Audio();
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.removeAttribute("src");
-      }
-    };
-  }, []);
-
-  const allAyahs = pages.flatMap((p) => p.ayahs);
-
-  const performPlay = (audio: HTMLAudioElement) => {
-    // Attempt play without catching globally in a way that hides errors
-    const playPromise = audio.play();
-    if (playPromise !== undefined) {
-      playPromise.catch((e) => console.warn("Audio playback failed", e));
-    }
-  };
-
-  const playAyahIndex = useCallback(
-    (index: number) => {
-      if (index >= allAyahs.length || index < 0) {
-        setIsPlaying(false);
-        setPlayingAyahIndex(null);
-        return;
-      }
-
-      const audio = audioRef.current;
-      if (!audio) return;
-
-      audio.pause();
-
-      const ayahToPlay = allAyahs[index];
-      audio.src = `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${ayahToPlay.number}.mp3`;
-
-      // Determine which page this ayah belongs to and navigate to it automatically
+    if (playingAyahIndex !== null && currentAudioContext.length > 0 && pages.length > 0) {
       let globalCounter = 0;
       let targetPage = 0;
       for (let p = 0; p < pages.length; p++) {
-        if (index < globalCounter + pages[p].ayahs.length) {
+        if (playingAyahIndex < globalCounter + pages[p].ayahs.length) {
           targetPage = p;
           break;
         }
         globalCounter += pages[p].ayahs.length;
       }
       setCurrentPageIndex(targetPage);
+      const ayahToPlay = currentAudioContext[playingAyahIndex];
+      if (ayahToPlay) {
+        setTimeout(() => {
+          const elm = document.getElementById(`ayah-${ayahToPlay.number}`);
+          if (elm) elm.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 200);
+      }
+    }
+  }, [playingAyahIndex, currentAudioContext, pages]);
 
-      // Auto-scroll logic: Delay slightly to allow render
-      setTimeout(() => {
-        const elm = document.getElementById(`ayah-${ayahToPlay.number}`);
-        if (elm) elm.scrollIntoView({ behavior: "smooth", block: "center" });
-      }, 200);
+  const allAyahs = pages.flatMap((p) => p.ayahs);
 
-      performPlay(audio);
-      setPlayingAyahIndex(index);
-      setIsPlaying(true);
-
-      audio.onended = () => {
-        playAyahIndex(index + 1);
-      };
-      audio.onerror = () => {
-        setIsPlaying(false);
-        setPlayingAyahIndex(null);
-      };
+  const playAyahIndex = useCallback(
+    (index: number) => {
+      playAyahSequence(allAyahs, index, selectedSurah !== null ? selectedSurah : undefined);
     },
-    [allAyahs, pages],
+    [allAyahs, playAyahSequence, selectedSurah],
   );
 
   const togglePlay = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
     if (isPlaying) {
-      audio.pause();
-      setIsPlaying(false);
+      pause();
     } else {
-      if (playingAyahIndex !== null && audio.src) {
-        performPlay(audio);
-        setIsPlaying(true);
+      if (currentAudioContext.length > 0 && playingAyahIndex !== null) {
+        resume();
       } else if (allAyahs.length > 0) {
-        playAyahIndex(0);
+        playAyahSequence(allAyahs, 0, selectedSurah !== null ? selectedSurah : undefined);
       }
     }
   };
 
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
+    if (selectedSurah && playingSurahId !== selectedSurah) {
+      // Background audio continues playing.
     }
-    setIsPlaying(false);
-    setPlayingAyahIndex(null);
   }, [selectedPara, selectedSurah, isTranslationMode]);
 
   useEffect(() => {
@@ -756,24 +715,32 @@ export function QuranView({ setView }: QuranViewProps) {
                         id={`ayah-${ayah.number}`}
                         className={`flex flex-col border-b border-gray-100 pb-6 mb-6 last:border-b-0 last:mb-0 transition-colors ${isAyahPlaying ? "bg-[#df4b4b]/5 p-2 rounded" : ""}`}
                       >
-                        <div className="text-right">
-                          <span
-                            onClick={() => playAyahIndex(currentGlobalIndex)}
-                            className={`inline font-arabic text-2xl md:text-3xl leading-[2.2] md:leading-[2.5] text-black cursor-pointer px-1 rounded transition-colors ${isAyahPlaying ? "bg-[#df4b4b]/20" : "hover:bg-gray-50"}`}
+                        <div className="flex justify-between items-start gap-4 mb-2">
+                          <button
+                            onClick={() => isAyahPlaying && isPlaying ? pause() : playAyahIndex(currentGlobalIndex)}
+                            className={`w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full transition-colors ${isAyahPlaying && isPlaying ? 'bg-[#df4b4b] text-white' : 'bg-gray-100 text-gray-500 hover:bg-[#df4b4b] hover:text-white'}`}
                           >
-                            {ayah.text}
-                            <span className="inline-flex items-center justify-center text-black font-sans mx-1">
-                              ({ayah.numberInSurah})
-                            </span>
-                            <button
-                              onClick={(e) => toggleBookmark(ayah.number, e)}
-                              className="inline-flex items-center justify-center mx-1 p-1 hover:bg-black/5 rounded-full transition-colors active:scale-95 translate-y-1"
+                            {isAyahPlaying && isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
+                          </button>
+                          <div className="text-right flex-1">
+                            <span
+                              onClick={() => playAyahIndex(currentGlobalIndex)}
+                              className={`inline font-arabic text-2xl md:text-3xl leading-[2.2] md:leading-[2.5] text-black cursor-pointer px-1 rounded transition-colors ${isAyahPlaying ? "bg-[#df4b4b]/20" : "hover:bg-gray-50"}`}
                             >
-                              <Bookmark
-                                className={`w-[18px] h-[18px] transition-colors ${isBookmarked ? "fill-[#df4b4b] text-[#df4b4b]" : "text-gray-400"}`}
-                              />
-                            </button>
-                          </span>
+                              {ayah.text}
+                              <span className="inline-flex items-center justify-center text-black font-sans mx-1">
+                                ({ayah.numberInSurah})
+                              </span>
+                              <button
+                                onClick={(e) => toggleBookmark(ayah.number, e)}
+                                className="inline-flex items-center justify-center mx-1 p-1 hover:bg-black/5 rounded-full transition-colors active:scale-95 translate-y-1"
+                              >
+                                <Bookmark
+                                  className={`w-[18px] h-[18px] transition-colors ${isBookmarked ? "fill-[#df4b4b] text-[#df4b4b]" : "text-gray-400"}`}
+                                />
+                              </button>
+                            </span>
+                          </div>
                         </div>
                         <div
                           dir="ltr"
@@ -1046,7 +1013,9 @@ export function QuranView({ setView }: QuranViewProps) {
                   ? "Downloads"
                   : activeTab === "BOOKMARKS"
                     ? "Favorite"
-                    : "Recite Quran"}
+                    : activeTab === "AUDIO"
+                      ? "Quran Audio"
+                      : "Recite Quran"}
           </h1>
           <div className="w-9" />
         </div>
@@ -1055,11 +1024,12 @@ export function QuranView({ setView }: QuranViewProps) {
           {activeTab !== "TRANSLATION" &&
             activeTab !== "NOTES" &&
             activeTab !== "DOWNLOADS" &&
+            activeTab !== "AUDIO" &&
             activeTab !== "BOOKMARKS" && (
               <>
                 {/* Tabs */}
                 <div className="flex items-center justify-between bg-white/60 backdrop-blur-md rounded-full p-1 shadow-sm border border-gray-200/50 overflow-x-auto gap-1">
-                  {["QURAN", "SURAH", "PARAH"].map((tab) => (
+                  {["QURAN", "SURAH", "PARAH", "AUDIO"].map((tab) => (
                     <button
                       key={tab}
                       onClick={() => setActiveTab(tab as typeof activeTab)}
@@ -2222,6 +2192,8 @@ export function QuranView({ setView }: QuranViewProps) {
                 </>
               )}
             </div>
+          ) : activeTab === "AUDIO" ? (
+            <QuranAudioList surahs={surahs} />
           ) : null}
 
           <div className="w-full text-center py-4">
@@ -2281,11 +2253,26 @@ export function QuranView({ setView }: QuranViewProps) {
                 >
                   16 lines Quran
                 </button>
+                <button
+                  onClick={() => handleLastReadingOption("Audio")}
+                  className="w-full bg-[#fa6969] hover:bg-[#e75a5a] text-black font-extrabold text-[16px] py-3.5 rounded-full transition-colors active:scale-95 text-center shadow-sm"
+                >
+                  Last Played Audio
+                </button>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
     </motion.div>
+  );
+}
+
+export function QuranView(props: QuranViewProps) {
+  return (
+    <QuranAudioProvider>
+      <QuranViewInner {...props} />
+      <MiniPlayer />
+    </QuranAudioProvider>
   );
 }
