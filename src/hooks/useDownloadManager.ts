@@ -31,8 +31,32 @@ export function useDownloadManager() {
     localStorage.setItem("quran_downloads_meta_v2", JSON.stringify(newDownloads));
   };
 
-  const downloadSurah = async (surahId: number, reciterId: string, ayahs: any[]) => {
-    const key = `surah_${surahId}_${reciterId}`;
+  const downloadAyah = async (ayahNumber: number, reciterId: string, translationLanguage: "hi"|"ur"|"en") => {
+    try {
+      const cache = await caches.open("quran-audio-cache");
+      const arUrl = `https://cdn.islamic.network/quran/audio/128/${reciterId}/${ayahNumber}.mp3`;
+      const arRes = await fetch(arUrl);
+      if (arRes.ok) {
+          const blob = await arRes.blob();
+          await cache.put(arUrl, new Response(blob));
+      }
+      if (translationLanguage !== 'hi') {
+          const transReciter = translationLanguage === 'en' ? 'en.walk' : 'ur.khan';
+          const trUrl = `https://cdn.islamic.network/quran/audio/64/${transReciter}/${ayahNumber}.mp3`;
+          const trRes = await fetch(trUrl);
+          if (trRes.ok) {
+              const blob = await trRes.blob();
+              await cache.put(trUrl, new Response(blob));
+          }
+      }
+      return true;
+    } catch(e) {
+      return false;
+    }
+  };
+
+  const downloadSurah = async (surahId: number, reciterId: string, ayahs: any[], transLangs: string[] = ['ur', 'en'], onlyTranslation: boolean = false) => {
+    const key = onlyTranslation ? `surah_${surahId}_translation` : `surah_${surahId}_${reciterId}`;
     
     // Check if already downloaded
     if (downloads[key]?.status === 'downloaded') return;
@@ -65,16 +89,19 @@ export function useDownloadManager() {
         };
         saveMeta(currentMeta);
 
-        // Translation
-        const trUrl = `https://cdn.islamic.network/quran/audio/64/ur.khan/${ayah.number}.mp3`;
-        try {
-            const trRes = await fetch(trUrl);
-            if (trRes.ok) {
-                const blob = await trRes.blob();
-                totalBytes += blob.size;
-                await cache.put(trUrl, new Response(blob));
-            }
-        } catch(e) {}
+        // Translations
+        for (const lang of transLangs) {
+            const transReciter = lang === 'en' ? 'en.walk' : 'ur.khan';
+            const trUrl = `https://cdn.islamic.network/quran/audio/64/${transReciter}/${ayah.number}.mp3`;
+            try {
+                const trRes = await fetch(trUrl);
+                if (trRes.ok) {
+                    const blob = await trRes.blob();
+                    totalBytes += blob.size;
+                    await cache.put(trUrl, new Response(blob));
+                }
+            } catch(e) {}
+        }
         downloadedCount++;
 
         currentMeta = {
@@ -98,13 +125,17 @@ export function useDownloadManager() {
     }
   };
 
-  const deleteDownload = async (surahId: number, reciterId: string, ayahs: any[]) => {
-    const key = `surah_${surahId}_${reciterId}`;
+  const deleteDownload = async (surahId: number, reciterId: string, ayahs: any[], onlyTranslation: boolean = false) => {
+    const key = onlyTranslation ? `surah_${surahId}_translation` : `surah_${surahId}_${reciterId}`;
     try {
       const cache = await caches.open("quran-audio-cache");
       for (const ayah of ayahs) {
-        await cache.delete(`https://cdn.islamic.network/quran/audio/128/${reciterId}/${ayah.number}.mp3`);
-        await cache.delete(`https://cdn.islamic.network/quran/audio/64/ur.khan/${ayah.number}.mp3`);
+        if (!onlyTranslation) {
+            await cache.delete(`https://cdn.islamic.network/quran/audio/128/${reciterId}/${ayah.number}.mp3`);
+        } else {
+            await cache.delete(`https://cdn.islamic.network/quran/audio/64/ur.khan/${ayah.number}.mp3`);
+            await cache.delete(`https://cdn.islamic.network/quran/audio/64/en.walk/${ayah.number}.mp3`);
+        }
       }
       const newDownloads = { ...downloads };
       delete newDownloads[key];
@@ -112,5 +143,5 @@ export function useDownloadManager() {
     } catch (e) {}
   };
 
-  return { downloads, downloadSurah, deleteDownload };
+  return { downloads, downloadSurah, downloadAyah, deleteDownload };
 }

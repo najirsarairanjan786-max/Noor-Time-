@@ -8,6 +8,7 @@ import { useOffline } from "../../lib/OfflineContext";
 export const MiniPlayer: React.FC = () => {
   const {
     isPlaying,
+    isFetchingAudio,
     playingSurahId,
     playingAyahIndex,
     activeReciter,
@@ -28,15 +29,23 @@ export const MiniPlayer: React.FC = () => {
     playbackMode,
     setPlaybackMode,
     setShowAudioSettings,
+    translationLanguage,
+    setTranslationLanguage,
     isRepeatingAyah,
-    toggleRepeatAyah
+    toggleRepeatAyah,
+    repeatSurah,
+    setRepeatSurah,
+    autoContinue,
+    setAutoContinue
   } = useQuranAudio();
 
   const [expanded, setExpanded] = useState(false);
   const { isOnline } = useOffline();
   const [showSettings, setShowSettings] = useState(false);
 
-  if (playingSurahId === null && currentAudioContext.length === 0) return null;
+  const isEmpty = playingSurahId === null && currentAudioContext.length === 0;
+
+  if (isEmpty) return null;
 
   const ayah = playingAyahIndex !== null ? currentAudioContext[playingAyahIndex] : null;
   const title = playingSurahId ? `Surah ${playingSurahId}` : "Quran Audio";
@@ -70,17 +79,17 @@ export const MiniPlayer: React.FC = () => {
           <div className="flex items-center px-4 py-3">
             <div 
               className="flex-1 flex flex-col justify-center cursor-pointer overflow-hidden"
-              onClick={() => setExpanded(!expanded)}
+              onClick={() => !isEmpty && setExpanded(!expanded)}
             >
               <h4 className="font-bold text-sm text-gray-900 truncate">{title}</h4>
               <p className="text-xs text-gray-500 truncate flex items-center gap-2">
                 {subtitle}
-                {(duration > 0 || playbackMode === 'translation') && (
+                {!isEmpty && (duration > 0) && (
                   <span className="font-mono text-[10px] bg-gray-100 px-1.5 py-0.5 rounded text-gray-400">
-                    {playbackMode === 'translation' ? 'TTS' : `${formatTime(currentTime)} / ${formatTime(duration)}`}
+                    {`${formatTime(currentTime)} / ${formatTime(duration)}`}
                   </span>
                 )}
-                {!isOnline && (
+                {!isEmpty && !isOnline && (
                   <span className="font-bold text-[9px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded uppercase">
                     Offline
                   </span>
@@ -89,29 +98,36 @@ export const MiniPlayer: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-4 ml-4">
-              <button onClick={prevAyah} className="p-2 text-gray-600 hover:text-black">
+              <button onClick={prevAyah} disabled={isEmpty} className="p-2 text-gray-600 hover:text-black disabled:opacity-50">
                 <SkipBack className="w-5 h-5" />
               </button>
               
               <button 
                 onClick={isPlaying ? pause : resume}
-                className="w-10 h-10 flex items-center justify-center bg-[#df4b4b] text-white rounded-full hover:bg-[#c94343]"
+                disabled={isEmpty || isFetchingAudio}
+                className={`w-10 h-10 flex items-center justify-center text-white rounded-full hover:bg-[#c94343] disabled:opacity-50 ${isEmpty ? 'bg-gray-300' : 'bg-[#df4b4b]'}`}
               >
-                {isPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current ml-1" />}
+                {!isEmpty && isFetchingAudio ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : isPlaying ? (
+                    <Pause className="w-5 h-5 fill-current" />
+                ) : (
+                    <Play className="w-5 h-5 fill-current ml-1" />
+                )}
               </button>
 
-              <button onClick={nextAyah} className="p-2 text-gray-600 hover:text-black">
+              <button onClick={nextAyah} disabled={isEmpty} className="p-2 text-gray-600 hover:text-black disabled:opacity-50">
                 <SkipForward className="w-5 h-5" />
               </button>
             </div>
             
-            <button onClick={() => setExpanded(!expanded)} className="ml-2 p-2 text-gray-400 hover:text-gray-600">
+            <button onClick={() => !isEmpty && setExpanded(!expanded)} disabled={isEmpty} className="ml-2 p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50">
               {expanded ? <ChevronDown className="w-5 h-5" /> : <ChevronUp className="w-5 h-5" />}
             </button>
           </div>
 
           <AnimatePresence>
-            {expanded && (
+            {expanded && !isEmpty && (
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: "auto", opacity: 1 }}
@@ -131,11 +147,28 @@ export const MiniPlayer: React.FC = () => {
 
                   {/* Playback Mode */}
                   <div className="bg-white p-3 rounded-xl border border-gray-200">
+                    <label className="text-xs text-gray-500 font-bold uppercase mb-2 block">Translation Language</label>
+                    <div className="flex gap-2 mb-4">
+                      {[
+                        { id: 'hi', label: 'Hindi' },
+                        { id: 'ur', label: 'Urdu' },
+                        { id: 'en', label: 'English' }
+                      ].map(lang => (
+                        <button
+                          key={lang.id}
+                          onClick={() => setTranslationLanguage(lang.id as any)}
+                          className={`flex-1 py-1.5 text-[10px] uppercase font-bold rounded-lg transition-colors ${translationLanguage === lang.id ? 'bg-[#df4b4b] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                        >
+                          {lang.label}
+                        </button>
+                      ))}
+                    </div>
+                    
                     <label className="text-xs text-gray-500 font-bold uppercase mb-2 block">Audio Mode</label>
                     <div className="flex gap-2">
                       {[
-                        { id: 'arabic', label: 'Arabic' },
-                        { id: 'translation', label: 'Hindi' },
+                        { id: 'arabic', label: 'Arabic Only' },
+                        { id: 'translation', label: 'Hindi Only' },
                         { id: 'both', label: 'Arabic + Hindi' }
                       ].map(mode => (
                         <button
@@ -197,6 +230,24 @@ export const MiniPlayer: React.FC = () => {
                   </div>
 
                   {/* Reciter */}
+                  <div className="bg-white p-3 rounded-xl border border-gray-200">
+                    <label className="text-xs text-gray-500 font-bold uppercase mb-2 block">Playback Controls</label>
+                    <div className="flex flex-col gap-2">
+                        <label className="flex items-center gap-2 text-sm text-gray-700">
+                            <input type="checkbox" checked={isRepeatingAyah} onChange={() => toggleRepeatAyah()} className="w-4 h-4 text-[#df4b4b] rounded border-gray-300" />
+                            Repeat Ayah
+                        </label>
+                        <label className="flex items-center gap-2 text-sm text-gray-700">
+                            <input type="checkbox" checked={repeatSurah} onChange={(e) => setRepeatSurah(e.target.checked)} className="w-4 h-4 text-[#df4b4b] rounded border-gray-300" />
+                            Repeat Surah
+                        </label>
+                        <label className="flex items-center gap-2 text-sm text-gray-700">
+                            <input type="checkbox" checked={autoContinue} onChange={(e) => setAutoContinue(e.target.checked)} className="w-4 h-4 text-[#df4b4b] rounded border-gray-300" />
+                            Auto Continue to Next Surah
+                        </label>
+                    </div>
+                  </div>
+
                   <div className="bg-white p-3 rounded-xl border border-gray-200">
                     <label className="text-xs text-gray-500 font-bold uppercase mb-2 block">Reciter</label>
                     <QariSelector activeReciter={activeReciter} onSelect={setActiveReciter} />

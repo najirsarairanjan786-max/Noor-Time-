@@ -13,6 +13,10 @@ import {
   Trash2,
   Edit3,
   FileText,
+  Copy,
+  Share2,
+  Heart,
+  Repeat,
 } from "@/src/lib/icons";
 import React, {
   Dispatch,
@@ -65,7 +69,8 @@ const PARAS_DATA = [
 ];
 
 import { useQuranAudio } from "../components/QuranAudio/QuranAudioContext";
-import { Settings2 } from "@/src/lib/icons";
+import { useDownloadManager } from "../hooks/useDownloadManager";
+import { Settings2, Headphones } from "@/src/lib/icons";
 import { QuranAudioList } from "../components/QuranAudio/QuranAudioList";
 
 function QuranViewInner({ setView }: QuranViewProps) {
@@ -96,7 +101,8 @@ function QuranViewInner({ setView }: QuranViewProps) {
   const [currentPageIndex, setCurrentPageIndex] = useState<number>(0);
   const [surahs, setSurahs] = useState<any[]>([]);
   // Removed local audio state in favor of global context
-  const { isPlaying, playingAyahIndex, playAyahSequence, pause, resume, currentAudioContext, playingSurahId, stop, playSurah, setShowAudioSettings, isFetchingAudio, currentModePart } = useQuranAudio();
+  const { isPlaying, playingAyahIndex, playAyahSequence, pause, resume, currentAudioContext, playingSurahId, stop, playSurah, setShowAudioSettings, isFetchingAudio, currentModePart, translationLanguage, isRepeatingAyah, toggleRepeatAyah, setRepeatCount, repeatCount, activeReciter } = useQuranAudio();
+  const { downloadAyah } = useDownloadManager();
   const [notes, setNotes] = useState<
     { id: string; text: string; date: string }[]
   >(() => {
@@ -478,7 +484,7 @@ function QuranViewInner({ setView }: QuranViewProps) {
     if (selectedPara !== null || selectedSurah !== null) {
       const id = selectedPara !== null ? selectedPara : selectedSurah;
       const type = selectedPara !== null ? "juz" : "surah";
-      const cacheKey = `quran_${type}_${id}${isTranslationMode ? "_with_hindi" : ""}`;
+      const cacheKey = `quran_${type}_${id}_all_translations_v2`;
       const cachedData = localStorage.getItem(cacheKey);
 
       if (cachedData) {
@@ -493,69 +499,39 @@ function QuranViewInner({ setView }: QuranViewProps) {
       }
 
       setLoading(true);
-      if (isTranslationMode) {
-        let edition = "hi.hindi";
-        if (
-          translationTitle === "صراط الجنان" ||
-          translationTitle === "خزائن العرفان" ||
-          translationTitle.includes("اردو") ||
-          translationTitle === "Ifham-ul-Quran"
-        ) {
-          edition = "ur.jalandhry"; // Use an Urdu translation if an Urdu card is clicked
-        }
-
-        Promise.all([
-          fetch(
-            `https://api.alquran.cloud/v1/${type}/${id}/quran-uthmani`,
-          ).then((res) => res.json()),
-          fetch(`https://api.alquran.cloud/v1/${type}/${id}/${edition}`).then(
-            (res) => res.json(),
-          ),
-        ])
-          .then(([uthmaniData, hindiData]) => {
-            if (uthmaniData?.data && hindiData?.data) {
-              const ayahsWithTranslation = uthmaniData.data.ayahs.map(
-                (ayah: any, index: number) => ({
-                  ...ayah,
-                  hindiText: hindiData.data.ayahs[index]?.text || "",
-                }),
-              );
-              const mergedData = {
-                ...uthmaniData.data,
-                ayahs: ayahsWithTranslation,
-              };
-              try {
-                localStorage.setItem(cacheKey, JSON.stringify(mergedData));
-              } catch (e) {
-                console.warn("Could not cache data", e);
-              }
-              processData(mergedData);
+      Promise.all([
+        fetch(`https://api.alquran.cloud/v1/${type}/${id}/quran-uthmani`).then((res) => res.json()),
+        fetch(`https://api.alquran.cloud/v1/${type}/${id}/hi.hindi`).then((res) => res.json()),
+        fetch(`https://api.alquran.cloud/v1/${type}/${id}/ur.jalandhry`).then((res) => res.json()),
+        fetch(`https://api.alquran.cloud/v1/${type}/${id}/en.sahih`).then((res) => res.json()),
+      ])
+        .then(([uthmaniData, hiData, urData, enData]) => {
+          if (uthmaniData?.data) {
+            const ayahsWithTranslation = uthmaniData.data.ayahs.map(
+              (ayah: any, index: number) => ({
+                ...ayah,
+                hindiText: hiData?.data?.ayahs[index]?.text || "",
+                urduText: urData?.data?.ayahs[index]?.text || "",
+                englishText: enData?.data?.ayahs[index]?.text || "",
+              }),
+            );
+            const mergedData = {
+              ...uthmaniData.data,
+              ayahs: ayahsWithTranslation,
+            };
+            try {
+              localStorage.setItem(cacheKey, JSON.stringify(mergedData));
+            } catch (e) {
+              console.warn("Could not cache data", e);
             }
-            setLoading(false);
-          })
-          .catch((err) => {
-            console.warn(err);
-            setLoading(false);
-          });
-      } else {
-        fetch(`https://api.alquran.cloud/v1/${type}/${id}/quran-uthmani`)
-          .then((res) => res.json())
-          .then((data) => {
-            if (data && data.data) {
-              try {
-                localStorage.setItem(cacheKey, JSON.stringify(data.data));
-              } catch (e) {
-                console.warn("Could not cache data", e);
-              }
-              processData(data.data);
-            }
-            setLoading(false);
-          })
-          .catch((err) => {
-            console.warn(err);
-            setLoading(false);
-          });
-      }
+            processData(mergedData);
+          }
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.warn(err);
+          setLoading(false);
+        });
     } else {
       setParaData(null);
       setPages([]);
@@ -735,7 +711,8 @@ function QuranViewInner({ setView }: QuranViewProps) {
 
                   const isBookmarked = bookmarks.includes(ayah.number);
 
-                  if (ayah.hindiText) {
+                  if (isTranslationMode) {
+                    const transText = translationLanguage === 'ur' ? ayah.urduText : translationLanguage === 'en' ? ayah.englishText : ayah.hindiText;
                     return (
                       <div
                         key={ayah.number}
@@ -770,7 +747,7 @@ function QuranViewInner({ setView }: QuranViewProps) {
                           </div>
                         </div>
                         <div
-                          dir="ltr"
+                          dir={translationLanguage === 'ur' ? 'rtl' : 'ltr'}
                           className="flex items-start gap-4 mt-3"
                         >
                           <button
@@ -781,9 +758,79 @@ function QuranViewInner({ setView }: QuranViewProps) {
                           </button>
                           <div
                             onClick={() => playAyahIndex(currentGlobalIndex, "translation")}
-                            className={`flex-1 text-left font-sans text-[15px] text-gray-700 leading-relaxed cursor-pointer p-2 rounded transition-colors ${isAyahPlaying && currentModePart === 'translation' ? 'bg-blue-100' : 'hover:bg-gray-50'}`}
+                            className={`flex-1 ${translationLanguage === 'ur' ? 'text-right font-urdu text-[18px]' : 'text-left font-sans text-[15px]'} text-gray-700 leading-relaxed cursor-pointer p-2 rounded transition-colors ${isAyahPlaying && currentModePart === 'translation' ? 'bg-blue-100' : 'hover:bg-gray-50'}`}
                           >
-                            {ayah.hindiText}
+                            {transText}
+                          </div>
+                        </div>
+                        
+                        {/* Action Bar */}
+                        <div className="flex items-center justify-end gap-1 mt-4 border-t border-gray-50 pt-2" dir="ltr">
+                          <button
+                            onClick={() => {
+                                navigator.clipboard.writeText(ayah.text + " - " + transText);
+                                alert("Copied to clipboard");
+                            }}
+                            className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => alert("Share dialog would open here")}
+                            className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+                          >
+                            <Share2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => alert("Added to favorites")}
+                            className="p-2 text-gray-400 hover:text-[#df4b4b] hover:bg-red-50 rounded-full transition-colors"
+                          >
+                            <Heart className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => {
+                                downloadAyah(ayah.number, activeReciter.id, translationLanguage).then(res => {
+                                    if (res) alert("Ayah downloaded for offline use.");
+                                    else alert("Failed to download Ayah.");
+                                });
+                            }}
+                            className="p-2 text-gray-400 hover:text-[#df4b4b] hover:bg-red-50 rounded-full transition-colors"
+                          >
+                            <Download className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => alert("Ayah notes would open here")}
+                            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                          >
+                            <FileText className="w-4 h-4" />
+                          </button>
+                          <div className="relative group">
+                              <button
+                                onClick={() => {
+                                    if (!isAyahPlaying) return;
+                                    if (!isRepeatingAyah) {
+                                        toggleRepeatAyah();
+                                        setRepeatCount(0); // Infinite
+                                    } else {
+                                        if (repeatCount === 0) setRepeatCount(3);
+                                        else if (repeatCount === 3) setRepeatCount(5);
+                                        else if (repeatCount === 5) setRepeatCount(10);
+                                        else {
+                                            toggleRepeatAyah();
+                                            setRepeatCount(0);
+                                        }
+                                    }
+                                }}
+                                className={`p-2 rounded-full transition-colors relative ${isRepeatingAyah && isAyahPlaying ? 'text-green-600 bg-green-50' : 'text-gray-400 hover:text-green-600 hover:bg-green-50'}`}
+                                title={isRepeatingAyah && isAyahPlaying ? (repeatCount === 0 ? "Repeating Infinitely" : `Repeating ${repeatCount}x`) : "Repeat Ayah"}
+                              >
+                                <Repeat className="w-4 h-4" />
+                                {isRepeatingAyah && isAyahPlaying && repeatCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-green-600 text-white text-[9px] font-bold px-1 rounded-full">
+                                        {repeatCount}
+                                    </span>
+                                )}
+                              </button>
                           </div>
                         </div>
                       </div>
@@ -801,6 +848,15 @@ function QuranViewInner({ setView }: QuranViewProps) {
                       <span className="inline-flex items-center justify-center text-black font-sans mx-1">
                         ({ayah.numberInSurah})
                       </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          isAyahPlaying && isPlaying && currentModePart === 'arabic' ? pause() : playAyahIndex(currentGlobalIndex, "arabic");
+                        }}
+                        className={`inline-flex items-center justify-center mx-1 p-1 hover:bg-black/5 rounded-full transition-colors active:scale-95 translate-y-1 ${isAyahPlaying && isPlaying && currentModePart === 'arabic' ? 'text-[#df4b4b]' : 'text-gray-400'}`}
+                      >
+                        {isAyahPlaying && isPlaying && currentModePart === 'arabic' ? <Pause className="w-[18px] h-[18px] fill-current" /> : <Play className="w-[18px] h-[18px] fill-current ml-0.5" />}
+                      </button>
                       <button
                         onClick={(e) => toggleBookmark(ayah.number, e)}
                         className="inline-flex items-center justify-center mx-1 p-1 hover:bg-black/5 rounded-full transition-colors active:scale-95 translate-y-1"
@@ -973,16 +1029,12 @@ function QuranViewInner({ setView }: QuranViewProps) {
                       ? "Quran Audio"
                       : "Recite Quran"}
           </h1>
-          {activeTab === "AUDIO" || activeTab === "DOWNLOADS" ? (
-            <button
-              onClick={() => setShowAudioSettings(true)}
-              className="w-9 h-9 flex items-center justify-center rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
-            >
-              <Settings2 className="w-5 h-5" />
-            </button>
-          ) : (
-            <div className="w-9" />
-          )}
+          <button
+            onClick={() => setShowAudioSettings(true)}
+            className="w-9 h-9 flex items-center justify-center rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+          >
+            <Settings2 className="w-5 h-5" />
+          </button>
         </div>
 
         <div className="p-4 space-y-5">

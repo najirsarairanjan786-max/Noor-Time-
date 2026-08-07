@@ -57,9 +57,7 @@ if (finalConfig.projectId === defaultFirebaseConfig.projectId) {
 const app = initializeApp(finalConfig);
 
 // Initialize Firestore
-export const db = initializeFirestore(app, {
-  experimentalForceLongPolling: true,
-}, finalConfig.firestoreDatabaseId || "(default)");
+export const db = initializeFirestore(app, { experimentalForceLongPolling: true }, finalConfig.firestoreDatabaseId || "(default)");
 
 export const auth = getAuth(app);
 export const storage = getStorage(app);

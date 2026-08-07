@@ -3,14 +3,21 @@ import { GoogleGenAI } from "@google/genai";
 
 const router = Router();
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-  httpOptions: {
-    headers: {
-      'User-Agent': 'aistudio-build',
-    }
+let aiClient: GoogleGenAI | null = null;
+
+function getAI(): GoogleGenAI {
+  if (!aiClient) {
+    aiClient = new GoogleGenAI({
+      apiKey: process.env.GEMINI_API_KEY,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        }
+      }
+    });
   }
-});
+  return aiClient;
+}
 
 router.post("/api/gemini/chat", async (req, res) => {
   try {
@@ -20,6 +27,7 @@ router.post("/api/gemini/chat", async (req, res) => {
       return res.status(400).json({ error: "Prompt is required" });
     }
 
+    const ai = getAI();
     const chat = ai.chats.create({
       model: "gemini-3.6-flash",
       config: {

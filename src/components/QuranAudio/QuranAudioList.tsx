@@ -36,24 +36,28 @@ export const QuranAudioList: React.FC<{ surahs: any[] }> = ({ surahs }) => {
     });
   };
 
-  const handleDownload = async (surah: any, e: React.MouseEvent) => {
+  const handleDownload = async (surah: any, type: 'arabic'|'translation', e: React.MouseEvent) => {
     e.stopPropagation();
     try {
       const res = await fetch(`https://api.alquran.cloud/v1/surah/${surah.number}`);
       const data = await res.json();
-      await downloadSurah(surah.number, activeReciter.id, data.data.ayahs);
+      if (type === 'arabic') {
+          await downloadSurah(surah.number, activeReciter.id, data.data.ayahs, []);
+      } else {
+          await downloadSurah(surah.number, activeReciter.id, data.data.ayahs, ['ur', 'en'], true);
+      }
     } catch(e) {
       console.error(e);
       alert("Could not fetch surah metadata for download.");
     }
   };
 
-  const handleDelete = async (surah: any, e: React.MouseEvent) => {
+  const handleDelete = async (surah: any, type: 'arabic'|'translation', e: React.MouseEvent) => {
     e.stopPropagation();
     try {
       const res = await fetch(`https://api.alquran.cloud/v1/surah/${surah.number}`);
       const data = await res.json();
-      await deleteDownload(surah.number, activeReciter.id, data.data.ayahs);
+      await deleteDownload(surah.number, activeReciter.id, data.data.ayahs, type === 'translation');
     } catch (e) {
       console.error(e);
     }
@@ -132,10 +136,15 @@ export const QuranAudioList: React.FC<{ surahs: any[] }> = ({ surahs }) => {
         <h4 className="text-sm font-bold text-gray-500 uppercase mb-2 ml-1">{searchQuery ? "Search Results" : "All Surahs"}</h4>
         {filteredSurahs.map((surah) => {
           const isCurrentlyPlaying = playingSurahId === surah.number;
-          const downloadKey = `surah_${surah.number}_${activeReciter.id}`;
-          const dlState = downloads[downloadKey];
-          const isDownloaded = dlState?.status === 'downloaded';
-          const isDownloadingThis = dlState?.status === 'downloading';
+          const downloadKeyAr = `surah_${surah.number}_${activeReciter.id}`;
+          const dlStateAr = downloads[downloadKeyAr];
+          const isDownloadedAr = dlStateAr?.status === 'downloaded';
+          const isDownloadingAr = dlStateAr?.status === 'downloading';
+
+          const downloadKeyTr = `surah_${surah.number}_translation`;
+          const dlStateTr = downloads[downloadKeyTr];
+          const isDownloadedTr = dlStateTr?.status === 'downloaded';
+          const isDownloadingTr = dlStateTr?.status === 'downloading';
           const isFavorite = favoriteSurahs.includes(surah.number);
 
           return (
@@ -167,27 +176,48 @@ export const QuranAudioList: React.FC<{ surahs: any[] }> = ({ surahs }) => {
               </div>
 
               <div className="flex items-center gap-3">
-                {isDownloadingThis ? (
-                  <div className="flex flex-col items-end gap-1 text-xs font-bold text-[#df4b4b]">
-                    <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 border-2 border-[#df4b4b] border-t-transparent rounded-full animate-spin"></div>
-                        {Math.floor(dlState.progress)}%
-                    </div>
-                    <span className="text-[9px] text-gray-400 font-normal">{formatBytes(dlState.sizeBytes)}</span>
-                  </div>
-                ) : isDownloaded ? (
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-green-500" />
-                    <span className="text-[9px] text-gray-400 font-normal">{formatBytes(dlState.sizeBytes)}</span>
-                    <button onClick={(e) => handleDelete(surah, e)} className="p-2 text-green-600 hover:bg-green-50 rounded-full" title="Delete Download">
-                        <Trash2 className="w-5 h-5 text-gray-400 hover:text-red-500 transition-colors" />
-                    </button>
-                  </div>
-                ) : (
-                  <button onClick={(e) => handleDownload(surah, e)} className="p-2 text-gray-400 hover:text-[#df4b4b] hover:bg-red-50 rounded-full" title="Download for offline">
-                    <Download className="w-5 h-5" />
-                  </button>
-                )}
+                <div className="flex flex-col items-end gap-1">
+                <div className="flex items-center gap-2">
+                    {isDownloadingAr ? (
+                      <div className="flex items-center gap-1 text-[10px] font-bold text-[#df4b4b]">
+                        <div className="w-3 h-3 border-2 border-[#df4b4b] border-t-transparent rounded-full animate-spin"></div>
+                        {dlStateAr?.progress ? Math.floor(dlStateAr.progress) : 0}% AR
+                      </div>
+                    ) : isDownloadedAr ? (
+                      <div className="flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-green-500" />
+                        <span className="text-[9px] text-gray-400 font-normal">AR</span>
+                        <button onClick={(e) => handleDelete(surah, 'arabic', e)} className="p-1 text-green-600 hover:bg-green-50 rounded-full" title="Delete Arabic">
+                            <Trash2 className="w-3 h-3 text-gray-400 hover:text-red-500 transition-colors" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button onClick={(e) => handleDownload(surah, 'arabic', e)} className="px-2 py-1 text-[10px] font-bold text-gray-400 hover:text-[#df4b4b] hover:bg-red-50 rounded-lg flex items-center gap-1" title="Download Arabic">
+                        <Download className="w-3 h-3" /> AR
+                      </button>
+                    )}
+                </div>
+                <div className="flex items-center gap-2">
+                    {isDownloadingTr ? (
+                      <div className="flex items-center gap-1 text-[10px] font-bold text-[#df4b4b]">
+                        <div className="w-3 h-3 border-2 border-[#df4b4b] border-t-transparent rounded-full animate-spin"></div>
+                        {dlStateTr?.progress ? Math.floor(dlStateTr.progress) : 0}% TR
+                      </div>
+                    ) : isDownloadedTr ? (
+                      <div className="flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-green-500" />
+                        <span className="text-[9px] text-gray-400 font-normal">TR</span>
+                        <button onClick={(e) => handleDelete(surah, 'translation', e)} className="p-1 text-green-600 hover:bg-green-50 rounded-full" title="Delete Translation">
+                            <Trash2 className="w-3 h-3 text-gray-400 hover:text-red-500 transition-colors" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button onClick={(e) => handleDownload(surah, 'translation', e)} className="px-2 py-1 text-[10px] font-bold text-gray-400 hover:text-[#df4b4b] hover:bg-red-50 rounded-lg flex items-center gap-1" title="Download Translation">
+                        <Download className="w-3 h-3" /> TR
+                      </button>
+                    )}
+                </div>
+              </div>
                 <button onClick={(e) => toggleFavorite(surah.number, e)} className={`p-2 rounded-full transition-colors ${isFavorite ? 'text-[#df4b4b] bg-red-50' : 'text-gray-400 hover:text-[#df4b4b] hover:bg-red-50'}`}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill={isFavorite ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                 </button>

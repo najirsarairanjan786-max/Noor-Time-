@@ -220,3 +220,7 @@ export const Compass = LucideIcons.Compass;
 export const AlarmClock = LucideIcons.AlarmClock;
 export const AlertTriangle = LucideIcons.AlertTriangle;
 export const Camera = LucideIcons.Camera;
+export const Repeat = LucideIcons.Repeat;
+
+export const Headphones = LucideIcons.Headphones;export const SkipBack = LucideIcons.SkipBack;
+export const SkipForward = LucideIcons.SkipForward;
