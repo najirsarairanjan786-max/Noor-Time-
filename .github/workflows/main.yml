@@ -1,4 +1,4 @@
-name: Build iOS Project
+name: Build Noor-Time iOS IPA
 
 on:
   workflow_dispatch:
@@ -18,31 +18,53 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build web app
         run: npm run build
 
-      - name: Install Capacitor
-        run: npm install @capacitor/core @capacitor/cli @capacitor/ios
+      - name: Install Capacitor iOS
+        run: npm install @capacitor/ios
 
-      - name: Add iOS platform
-        run: |
-          if [ ! -d "ios" ]; then
-            npx cap add ios
-          fi
-
-      - name: Sync iOS
+      - name: Sync Capacitor iOS
         run: npx cap sync ios
 
-      - name: Create iOS ZIP
+      - name: Install CocoaPods
         run: |
-          mkdir -p output
-          zip -r output/Noor-Time-iOS.zip ios package.json package-lock.json capacitor.config.* 2>/dev/null || true
+          cd ios/App
+          pod install
 
-      - name: Upload iOS ZIP
+      - name: Build iOS app
+        run: |
+          xcodebuild \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO
+
+      - name: Create IPA
+        run: |
+          mkdir -p Payload
+
+          APP_PATH=$(find build/Build/Products/Release-iphoneos \
+            -maxdepth 1 \
+            -name "*.app" \
+            -type d | head -n 1)
+
+          if [ -z "$APP_PATH" ]; then
+            echo "ERROR: iOS .app file was not found."
+            exit 1
+          fi
+
+          cp -R "$APP_PATH" Payload/
+
+          zip -r Noor-Time-iOS.ipa Payload
+
+      - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
-          name: Noor-Time-iOS
-          path: output/Noor-Time-iOS.zip
-          if-no-files-found: error
+          name: Noor-Time-iOS-IPA
+          path: Noor-Time-iOS.ipa
