@@ -1,10 +1,10 @@
-name: Create iOS Project
+name: Build iOS Project
 
 on:
   workflow_dispatch:
 
 jobs:
-  create-ios:
+  build-ios:
     runs-on: macos-latest
 
     steps:
@@ -20,11 +20,17 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Install Capacitor iOS
-        run: npm install @capacitor/ios
+      - name: Build web app
+        run: npm run build
+
+      - name: Install Capacitor
+        run: npm install @capacitor/core @capacitor/cli @capacitor/ios
 
       - name: Add iOS platform
-        run: npx cap add ios || true
+        run: |
+          if [ ! -d "ios" ]; then
+            npx cap add ios
+          fi
 
       - name: Sync iOS
         run: npx cap sync ios
@@ -32,10 +38,11 @@ jobs:
       - name: Create iOS ZIP
         run: |
           mkdir -p output
-          zip -r output/Noor-Time-iOS-Project.zip ios
+          zip -r output/Noor-Time-iOS.zip ios package.json package-lock.json capacitor.config.* 2>/dev/null || true
 
-      - name: Upload iOS Project
+      - name: Upload iOS ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: Noor-Time-iOS-Project
-          path: output/Noor-Time-iOS-Project.zip
+          name: Noor-Time-iOS
+          path: output/Noor-Time-iOS.zip
+          if-no-files-found: error
