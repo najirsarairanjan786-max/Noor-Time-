@@ -3,6 +3,9 @@ name: Create iOS Project
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   create-ios:
     runs-on: macos-latest
@@ -18,13 +21,21 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+
+      - name: Build web application
+        run: npm run build
 
       - name: Install Capacitor iOS
-        run: npm install @capacitor/ios
+        run: npm install @capacitor/ios@^8.4.2
 
-      - name: Add iOS platform
-        run: npx cap add ios
+      - name: Create iOS platform if needed
+        run: |
+          if [ -d "ios" ]; then
+            echo "iOS platform already exists"
+          else
+            npx cap add ios
+          fi
 
       - name: Sync iOS
         run: npx cap sync ios
@@ -33,6 +44,12 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           git add ios package.json package-lock.json
-          git diff --cached --quiet || git commit -m "Add iOS platform"
-          git push
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Build and add iOS project"
+            git push
+          fi
