@@ -29,15 +29,15 @@ jobs:
       - name: Sync Capacitor iOS
         run: npx cap sync ios
 
-      - name: Install CocoaPods
+      - name: Check iOS project
         run: |
-          cd ios/App
-          pod install
+          echo "Checking iOS files..."
+          find ios -maxdepth 3 -type f | sort | head -100
 
       - name: Build iOS app
         run: |
           xcodebuild \
-            -workspace ios/App/App.xcworkspace \
+            -project ios/App/App.xcodeproj \
             -scheme App \
             -configuration Release \
             -sdk iphoneos \
@@ -55,7 +55,7 @@ jobs:
             -type d | head -n 1)
 
           if [ -z "$APP_PATH" ]; then
-            echo "ERROR: iOS .app file was not found."
+            echo "ERROR: .app file was not created."
             exit 1
           fi
 
