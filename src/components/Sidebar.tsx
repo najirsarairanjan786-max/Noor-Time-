@@ -40,7 +40,7 @@ export function Sidebar({ isOpen, onClose, setView }: SidebarProps) {
     { icon: HeartHandshake, label: t('donate') || 'Donate Us', view: 'donate' as ViewType, color: 'text-fuchsia-400' },
     { icon: MapPin, label: t('location') || 'Location', view: 'settings' as ViewType, color: 'text-yellow-400' },
     { icon: Cloud, label: t('sync') || 'Sync To Drive', color: 'text-green-500' },
-    { icon: Calculator, label: t('qazaCalculator') || 'Qaza Namaz Calculator', color: 'text-blue-500' },
+    { icon: Calculator, label: t('qazaCalculator') || 'Qaza Namaz Calculator', view: 'qaza_calculator' as ViewType, color: 'text-blue-500' },
     { icon: Compass, label: t('qiblaDirection') || 'Qibla Direction', view: 'qibla' as ViewType, color: 'text-cyan-400' },
     { icon: BookOpen, label: t('jantri') || 'Islamic Jantri', view: 'jantri' as ViewType, color: 'text-amber-300' },
     { icon: VolumeX, label: t('silentMode') || 'Silent Mode', isSilentMode: true, color: 'text-purple-400' },

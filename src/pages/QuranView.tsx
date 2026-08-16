@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import {
-  ChevronLeft,
+  ChevronLeft, Mic,
   BookOpen,
   Search,
   Loader2,
@@ -319,28 +319,52 @@ function QuranViewInner({ setView }: QuranViewProps) {
     const isDownloaded = downloads.some((d) => d.type === type && d.id === id);
     
     if (!isDownloaded) {
-      alert(`Downloading ${type} ${id} for offline listening... This will happen in the background.`);
+      alert(`Downloading ${type} ${id} for offline listening. This will download your selected reciter (${activeReciter?.name || 'Default'}) and translations in the background.`);
       
-      // Fetch surah ayahs
-      if (type === "SURAH") {
-        fetch(`https://api.alquran.cloud/v1/surah/${id}`)
-          .then(res => res.json())
-          .then(async (data) => {
-            if (data && data.data && data.data.ayahs) {
-              const cache = await caches.open("quran-audio-cache");
-              for (const ayah of data.data.ayahs) {
-                try {
-                  const req = new Request(`https://cdn.islamic.network/quran/audio/128/ar.alafasy/${ayah.number}.mp3`); // Using default reciter for offline or loop through all
-                  const res = await fetch(req);
-                  if (res.ok) {
-                    await cache.put(req, res);
-                  }
-                } catch(e) {}
+      const endpoint = type === "SURAH" 
+        ? `https://api.alquran.cloud/v1/surah/${id}` 
+        : `https://api.alquran.cloud/v1/juz/${id}/quran-uthmani`;
+
+      fetch(endpoint)
+        .then(res => res.json())
+        .then(async (data) => {
+          if (data && data.data && data.data.ayahs) {
+            const cache = await caches.open("quran-audio-cache");
+            const reciterId = activeReciter?.id || "ar.alafasy";
+            
+            // Sequential download to avoid rate-limiting/crashing
+            for (const ayah of data.data.ayahs) {
+              try {
+                // Arabic audio
+                const arUrl = `https://cdn.islamic.network/quran/audio/128/${reciterId}/${ayah.number}.mp3`;
+                const arRes = await fetch(arUrl);
+                if (arRes.ok) {
+                  const blob = await arRes.blob();
+                  await cache.put(arUrl, new Response(blob));
+                }
+
+                // English Translation
+                const enUrl = `https://cdn.islamic.network/quran/audio/64/en.walk/${ayah.number}.mp3`;
+                const enRes = await fetch(enUrl);
+                if (enRes.ok) {
+                  const blob = await enRes.blob();
+                  await cache.put(enUrl, new Response(blob));
+                }
+
+                // Urdu Translation
+                const urUrl = `https://cdn.islamic.network/quran/audio/64/ur.khan/${ayah.number}.mp3`;
+                const urRes = await fetch(urUrl);
+                if (urRes.ok) {
+                  const blob = await urRes.blob();
+                  await cache.put(urUrl, new Response(blob));
+                }
+              } catch(e) {
+                console.warn("Failed to cache ayah audio:", e);
               }
-              alert(`Download of ${type} ${id} complete!`);
             }
-          });
-      }
+            alert(`Download of ${type} ${id} complete!`);
+          }
+        });
     }
     
     setDownloads((prev) => {
@@ -1077,7 +1101,8 @@ function QuranViewInner({ setView }: QuranViewProps) {
             )}
 
           {activeTab === "QURAN" ? (
-            <>
+            <div className="flex flex-col gap-5">
+
               {/* Hero Banner */}
               <div className="relative w-full rounded-[18px] overflow-hidden shadow-md group min-h-[160px]">
                 {/* Quran Image Background Carousel */}
@@ -1586,8 +1611,60 @@ function QuranViewInner({ setView }: QuranViewProps) {
                     </span>
                   </div>
                 </div>
+                {/* Card 12 - Tilawat Check */}
+                <div
+                  onClick={() => setView("aipractice")}
+                  className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm border-b-[8px] border-[#fb6060] text-center gap-2 active:scale-95 transition-transform h-[170px] cursor-pointer relative"
+                >
+                  <span className="absolute top-2 right-2 bg-[#df4b4b] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                    New
+                  </span>
+                  <div className="flex-1 flex items-center justify-center mb-1 relative mt-2 text-[#fb6060]">
+                    <svg
+                      width="76"
+                      height="84"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      {/* Folder back solid */}
+                      <path d="M4 20C3.45 20 2.97917 19.8042 2.5875 19.4125C2.19583 19.0208 2 18.55 2 18V6C2 5.45 2.19583 4.97917 2.5875 4.5875C2.97917 4.19583 3.45 4 4 4H10L12 6H20C20.55 6 21.0208 6.19583 21.4125 6.5875C21.8042 6.97917 22 7.45 22 8V18C22 18.55 21.8042 19.0208 21.4125 19.4125C21.0208 19.8042 20.55 20 20 20H4Z" fill="#fb6060"/>
+                      {/* Mic inside */}
+                      <path d="M12 9V14" stroke="white" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M9 12C9 13.6569 10.3431 15 12 15C13.6569 15 15 13.6569 15 12" stroke="white" strokeWidth="2" strokeLinecap="round" />
+                    </svg>
+                  </div>
+                  <div className="w-full flex-col justify-end items-center flex pb-1">
+                    <hr className="w-[85%] border-black mb-1.5 border-[0.5px]" />
+                    <span className="font-extrabold text-black text-[14px] leading-tight tracking-tight whitespace-nowrap">
+                      Tilawat Check
+                    </span>
+                  </div>
+                </div>
+
+                {/* Card 13 - AI Quran Recitation */}
+                <div
+                  onClick={() => setView("khatamquran")}
+                  className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm border-b-[8px] border-[#fb6060] text-center gap-2 active:scale-95 transition-transform h-[170px] cursor-pointer relative"
+                >
+                  <span className="absolute top-2 right-2 bg-[#df4b4b] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                    New
+                  </span>
+                  <div className="flex-1 flex items-center justify-center mb-1 relative mt-2 text-[#fb6060]">
+                    <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#fb6060]">
+                      <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
+                      <path d="m9 10 2 2 4-4"></path>
+                    </svg>
+                  </div>
+                  <div className="w-full flex-col justify-end items-center flex pb-1">
+                    <hr className="w-[85%] border-black mb-1.5 border-[0.5px]" />
+                    <span className="font-extrabold text-black text-[14px] leading-tight tracking-tight whitespace-nowrap">
+                      Khatam-e-Quran
+                    </span>
+                  </div>
+                </div>
               </div>
-            </>
+            </div>
           ) : activeTab === "TRANSLATION" ? (
             <div className="flex flex-col gap-[14px]">
               <div className="flex bg-[#e4e4e4] rounded-full p-1.5 shadow-sm mb-2 max-w-[300px] mx-auto w-full">

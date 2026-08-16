@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --external:express --external:firebase-admin --external:firebase-admin/* --external:node-cron --external:vite --sourcemap --outfile=dist/server.cjs",
+    "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --external:express --external:firebase-admin --external:node-cron --external:vite --external:@google/genai --sourcemap --outfile=dist/server.cjs",
     "start": "node dist/server.cjs",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js server.cjs",
@@ -14,7 +14,6 @@
   "dependencies": {
     "@capacitor/android": "^8.4.2",
     "@capacitor/core": "^8.4.2",
-    "@capacitor/ios": "^8.5.0",
     "@google/genai": "^2.13.0",
     "@phosphor-icons/react": "^2.1.10",
     "@supabase/supabase-js": "^2.108.2",
@@ -40,8 +39,7 @@
     "react-leaflet": "^5.0.0",
     "recharts": "^3.8.1",
     "tailwind-merge": "^3.6.0",
-    "usehooks-ts": "^3.1.1",
-    "vite": "^6.2.3"
+    "usehooks-ts": "^3.1.1"
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",

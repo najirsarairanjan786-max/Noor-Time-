@@ -16,7 +16,7 @@ import { ThemeModal } from "../components/ThemeModal";
 import { useTranslation } from "../lib/i18n";
 import { useAuth } from "../hooks/useAuth";
 import { RamadanTracker } from "../components/RamadanTracker";
-import {
+import { Mic,
   Menu, Sun, CheckSquare, Clock, MessageCircle, Radio, Share2, Smartphone, BookText, Sunrise, UserCircle,
   Mosque, Kaaba, Compass, MoonStars, DotsThreeCircle, HandsPraying, HandCoins, StarAndCrescent, BellRing,
   CalendarBlank, BookOpenText, Moon, Settings, Globe, MapPin, CloudSun, Search, Bookmark, Heart, History,
@@ -348,6 +348,14 @@ export function Home({ setView }: HomeProps) {
           <div className="grid grid-cols-4 gap-y-6 gap-x-2 pb-8">
             {[
               {
+                label: "Noor AI Quran\nRecitation",
+                i18nKey: "aiPractice",
+                icon: <Mic />,
+                glowText: "text-emerald-400",
+                glowBg: "bg-emerald-500",
+                onClick: () => setView("aipractice" as any)
+              },
+              {
                 label: "Quran",
                 i18nKey: "alQuran",
                 icon: <BookOpenIcon />,
@@ -428,7 +436,8 @@ export function Home({ setView }: HomeProps) {
               <button
                 key={i}
                 onClick={() => {
-                  if (feature.label === "Quran") setView("Quran" as any);
+                  if (feature.onClick) feature.onClick();
+                  else if (feature.label === "Quran") setView("Quran" as any);
                   else if (feature.label === "Tajweed")
                     setView("Tajweed" as any);
                   else if (feature.label === "Adhkar") setView("Adhkar" as any);

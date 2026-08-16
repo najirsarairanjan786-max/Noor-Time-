@@ -18,6 +18,9 @@ import { DonateView } from "./pages/DonateView";
 import { ShareView } from "./pages/ShareView";
 import { DailyView } from "./pages/DailyView";
 import { TasbeehView } from "./pages/TasbeehView";
+import { AIPracticeView } from "./pages/AIPracticeView";
+import { QazaNamazCalculator } from "./pages/QazaNamazCalculator";
+import { KhatamQuranView } from "./pages/KhatamQuranView";
 import { JamatSilentView } from "./pages/JamatSilentView";
 import { Home2 } from "./pages/Home2";
 import { ProfileView } from "./pages/ProfileView";
@@ -60,7 +63,7 @@ export type ViewType =
   | "noor_ai"
   | "notifications"
   | "store"
-  | "jantri"
+  | "jantri" | "aipractice" | "qaza_calculator"
   | string;
 
 import { OfflineBanner } from "./components/OfflineBanner";
@@ -70,6 +73,14 @@ import { AudioSettingsModal } from "./components/QuranAudio/AudioSettingsModal";
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewType>("calendar");
+  const [previousView, setPreviousView] = useState<ViewType>("home");
+  
+  const navigateTo = (newView: ViewType) => {
+    if (newView !== currentView) {
+      setPreviousView(currentView);
+      setCurrentView(newView);
+    }
+  };
   const { settings } = useSettings();
   useDataSync();
   const { user, loading } = useAuth();
@@ -143,6 +154,8 @@ export default function App() {
     "store",
     "contact",
     "jantri",
+    "aipractice",
+    "qaza_calculator",
   ];
   const isFeatureView = !standardViews.includes(currentView);
 
@@ -159,73 +172,81 @@ export default function App() {
 
         <>
           <AnimatePresence mode="wait">
-            {currentView === "home" && <Home setView={setCurrentView} />}
-            {currentView === "home2" && <Home2 setView={setCurrentView} />}
+            {currentView === "home" && <Home setView={navigateTo} />}
+            {currentView === "home2" && <Home2 setView={navigateTo} />}
             {currentView === "calendar" && (
-              <CalendarView setView={setCurrentView} />
+              <CalendarView setView={navigateTo} />
             )}
             {currentView === "settings" && (
-              <SettingsView setView={setCurrentView} />
+              <SettingsView setView={navigateTo} />
             )}
             {currentView === "prayer" && (
-              <PrayerDetails setView={setCurrentView} />
+              <PrayerDetails setView={navigateTo} />
             )}
-            {currentView === "Quran" && <QuranView setView={setCurrentView} />}
+            {currentView === "Quran" && <QuranView setView={navigateTo} />}
             {currentView === "Hadees" && (
-              <HadeesView setView={setCurrentView} />
+              <HadeesView setView={navigateTo} />
             )}
             {currentView === "Tajweed" && (
-              <TajweedView setView={setCurrentView} />
+              <TajweedView setView={navigateTo} />
             )}
             {currentView === "Adhkar" && (
-              <AdhkarView setView={setCurrentView} />
+              <AdhkarView setView={navigateTo} />
             )}
             {currentView === "Question & Answer" && (
-              <QuizView setView={setCurrentView} />
+              <QuizView setView={navigateTo} />
             )}
             {currentView === "qibla" && (
-              <QiblaDirectionView setView={setCurrentView} />
+              <QiblaDirectionView setView={navigateTo} />
             )}
             {currentView === "languages" && (
-              <LanguagesView setView={setCurrentView} />
+              <LanguagesView setView={navigateTo} />
             )}
             {currentView === "donate" && (
-              <DonateView setView={setCurrentView} />
+              <DonateView setView={navigateTo} />
             )}
-            {currentView === "share" && <ShareView setView={setCurrentView} />}
-            {currentView === "daily" && <DailyView setView={setCurrentView} />}
+            {currentView === "share" && <ShareView setView={navigateTo} />}
+            {currentView === "daily" && <DailyView setView={navigateTo} />}
             {currentView === "tasbeeh" && (
-              <TasbeehView setView={setCurrentView} />
+              <TasbeehView setView={navigateTo} />
             )}
             {currentView === "profile" && (
-              <ProfileView setView={setCurrentView} />
+              <ProfileView setView={navigateTo} />
             )}
             {currentView === "jamat_silent" && (
-              <JamatSilentView setView={setCurrentView} />
+              <JamatSilentView setView={navigateTo} />
             )}
             {currentView === "noor_ai" && (
-              <NoorAIView setView={setCurrentView} />
+              <NoorAIView setView={navigateTo} />
             )}
             {currentView === "notifications" && (
-              <NotificationsView setView={setCurrentView} />
+              <NotificationsView setView={navigateTo} />
             )}
             {currentView === "store" && (
-              <StoreView setView={setCurrentView} />
+              <StoreView setView={navigateTo} />
             )}
             {currentView === "contact" && (
-              <ContactView setView={setCurrentView} />
+              <ContactView setView={navigateTo} />
             )}
             {currentView === "jantri" && (
-              <JantriView setView={setCurrentView} />
+              <JantriView setView={navigateTo} />
             )}
+            {currentView === "qaza_calculator" && <QazaNamazCalculator setView={navigateTo} />}
+            {currentView === "aipractice" && (
+              <AIPracticeView setView={navigateTo} previousView={previousView} />
+            )}
+            {currentView === "khatamquran" && (
+              <KhatamQuranView setView={navigateTo} />
+            )}
+
             {isFeatureView && (
-              <FeatureView title={currentView} setView={setCurrentView} />
+              <FeatureView title={currentView} setView={navigateTo} />
             )}
           </AnimatePresence>
 
           <LocationPrompt />
           <NotificationPrompt />
-          <Navigation view={currentView} setView={setCurrentView} />
+          <Navigation view={currentView} setView={navigateTo} />
         </>
         <MiniPlayer />
         <AudioSettingsModal />

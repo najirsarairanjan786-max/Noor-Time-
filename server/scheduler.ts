@@ -2,12 +2,8 @@ import cron from 'node-cron';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getMessaging } from 'firebase-admin/messaging';
 import config from '../firebase-applet-config.json';
-import { 
-  Coordinates, 
-  CalculationMethod, 
-  PrayerTimes, 
-  Madhab 
-} from 'adhan';
+import * as adhanPkg from 'adhan';
+const { Coordinates, CalculationMethod, PrayerTimes, Madhab } = adhanPkg;
 import { format, addMinutes, subMinutes } from 'date-fns';
 import { toZonedTime, formatInTimeZone } from 'date-fns-tz';
 

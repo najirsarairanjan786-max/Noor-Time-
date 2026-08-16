@@ -5,16 +5,16 @@ import { AdminApp } from './admin/AdminApp.tsx';
 import { AuthProvider } from './hooks/useAuth';
 import { OfflineProvider } from './lib/OfflineContext';
 import './index.css';
-import { registerSW } from 'virtual:pwa-register';
 
-const updateSW = registerSW({
-  onNeedRefresh() {
-    // We could show a toast here
-  },
-  onOfflineReady() {
-    console.log('App is ready to work offline');
-  },
-});
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(function(registrations) {
+    for(let registration of registrations) {
+      registration.unregister();
+    }
+  });
+}
+
+
 
 const isAdminRoute = window.location.pathname.startsWith('/admin');
 
