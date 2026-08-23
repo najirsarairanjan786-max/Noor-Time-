@@ -5,7 +5,9 @@ import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { auth } from '../lib/firebase';
 
+import { useSettings } from "./useSettings";
 export function useFCM() {
+  const { settings } = useSettings();
   useEffect(() => {
     const requestPermission = async () => {
       try {
@@ -16,7 +18,8 @@ export function useFCM() {
         }
 
         const messaging = getMessaging();
-        const permission = await Notification.requestPermission();
+        const permission = Notification.permission;
+        if (permission !== 'granted') return;
         if (permission === 'granted') {
           // Note: You need to replace this with your actual VAPID key
           const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY;
@@ -57,7 +60,7 @@ export function useFCM() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [settings.pushNotificationsEnabled]);
 
   useEffect(() => {
     const setupListener = async () => {
@@ -69,6 +72,7 @@ export function useFCM() {
         const unsubscribe = onMessage(messaging, (payload) => {
           console.log('Received foreground message:', payload);
           // Display a toast or handle the message
+          if (payload.data?.type === 'prayer_alarm') return;
           if (payload.notification) {
             // The browser will not show a push notification if the tab is in focus,
             // so we can show it manually or use a toast

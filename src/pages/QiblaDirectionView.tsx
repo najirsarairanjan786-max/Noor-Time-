@@ -120,7 +120,7 @@ export function QiblaDirectionView({ setView }: QiblaDirectionViewProps) {
       // @ts-ignore
       if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
         // @ts-ignore
-        const perm = await DeviceOrientationEvent.requestPermission();
+        const perm = await (DeviceOrientationEvent as any).requestPermission();
         if (perm === 'granted') {
           // Perm granted
         }

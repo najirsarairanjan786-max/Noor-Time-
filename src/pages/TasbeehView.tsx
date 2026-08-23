@@ -182,7 +182,7 @@ export function TasbeehView({ setView }: { setView: (v: string) => void }) {
 
   const handleToggleReminders = async () => {
     if (!remindersEnabled && "Notification" in window && Notification.permission !== "granted") {
-      const perm = await Notification.requestPermission();
+      const perm = Notification.permission as string;
       if (perm === "granted") {
         setRemindersEnabled(true);
       }

@@ -30,7 +30,7 @@ export function AnniversaryReminders() {
     
     // Request permission if enabling
     if (!isEnabled && "Notification" in window && Notification.permission !== "granted") {
-      await Notification.requestPermission();
+      
     }
 
     const newReminders = {

@@ -16,16 +16,14 @@ export function useAnniversaryAlarms() {
     const hijriDay = parseInt(date.hijri.day, 10);
     const hijriMonth = date.hijri.month.number;
     const hijriYear = date.hijri.year;
-
     const todayId = `${hijriDay}_${hijriMonth}`;
 
     // If today is one of the anniversary events and it's enabled
     if (currentReminders[todayId]) {
       const storageKey = `jantri_anniversary_alert_${todayId}_${hijriYear}`;
       const hasTriggered = localStorage.getItem(storageKey);
-
+      
       if (!hasTriggered) {
-        // Find the event name
         const EVENT_KEYS: Record<string, string> = {
           "1_9": "ramadanStart",
           "1_10": "eidUlFitr",
@@ -45,19 +43,9 @@ export function useAnniversaryAlarms() {
           if ("Notification" in window && Notification.permission === "granted") {
             showNotification(title, {
               body: `Today is ${title}.`,
-              icon: "/icon.png"
+              icon: "/icon-192.png"
             });
             localStorage.setItem(storageKey, "true");
-          } else if ("Notification" in window && Notification.permission !== "denied") {
-             Notification.requestPermission().then(permission => {
-               if (permission === "granted") {
-                 showNotification(title, {
-                   body: `Today is ${title}.`,
-                   icon: "/icon.png"
-                 });
-                 localStorage.setItem(storageKey, "true");
-               }
-             });
           }
         }
       }

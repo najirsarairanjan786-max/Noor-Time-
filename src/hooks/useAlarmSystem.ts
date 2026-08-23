@@ -7,20 +7,9 @@ import { useSettings } from './useSettings';
 
 export function useAlarmSystem(timings: PrayerTimings | null) {
   const { settings } = useSettings();
-  const [alarms] = useLocalStorage<Record<string, boolean>>('islamic-alarms-v2', {
-    'Fajr': true, 'Zuhr': true, 'Asr \u2014 Hanafi': true, 'Maghrib': true, 'Isha \u2014 Hanafi': true
-  });
+  const alarms = settings.prayerAlarms || { 'Fajr': true, 'Zuhr': true, 'Asr': true, 'Maghrib': true, 'Isha': true };
   
   const lastAlarmTime = useRef<string | null>(null);
-
-  useEffect(() => {
-    // Request permission if enabled
-    if (settings.pushNotificationsEnabled && typeof window !== 'undefined' && 'Notification' in window) {
-      if (Notification.permission === 'default') {
-        Notification.requestPermission();
-      }
-    }
-  }, [settings.pushNotificationsEnabled]);
 
   useEffect(() => {
     if (!settings.alarmsEnabled || !timings) return;
@@ -41,7 +30,9 @@ export function useAlarmSystem(timings: PrayerTimings | null) {
       const currentHm = format(now, 'HH:mm');
 
       for (const prayer of prayers) {
-        if (!alarms[prayer.name]) continue;
+        const baseNameMatch = prayer.name.match(/(Fajr|Zuhr|Asr|Maghrib|Isha)/i);
+        const baseName = baseNameMatch ? baseNameMatch[0] : prayer.name;
+        if (alarms[baseName] === false) continue;
 
         const prayerTimeStr = prayer.time.split(' ')[0]; // "15:30"
         
@@ -66,7 +57,7 @@ export function useAlarmSystem(timings: PrayerTimings | null) {
     const interval = setInterval(checkAlarms, 10000);
 
     return () => clearInterval(interval);
-  }, [settings.alarmsEnabled, settings.preAlarmMinutes, timings, alarms]);
+  }, [settings.alarmsEnabled, settings.preAlarmMinutes, timings, settings.prayerAlarms]);
 
   const triggerAlarm = (prayerName: string, message: string, isPreAlarm: boolean = false) => {
     const key = `${prayerName}-${isPreAlarm}-${format(new Date(), 'yyyy-MM-dd-HH-mm')}`;

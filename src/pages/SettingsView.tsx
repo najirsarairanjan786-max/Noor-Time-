@@ -1,3 +1,4 @@
+import { NotificationSettings } from "../components/NotificationSettings";
 import { motion } from "motion/react";
 import { showNotification } from "../lib/notifications";
 import { useSettings } from "../hooks/useSettings";
@@ -234,62 +235,7 @@ export function SettingsView({
 
         {settings.alarmsEnabled && (
           <>
-            <div className="p-4 flex items-center justify-between border-b border-emerald-800/40 bg-emerald-900/10">
-              <div className="flex items-center gap-3 text-emerald-100 ml-8">
-                <div className="font-medium text-sm">Push Notifications</div>
-              </div>
-              <button
-                onClick={() =>
-                  setSettings((p) => ({
-                    ...p,
-                    pushNotificationsEnabled: !p.pushNotificationsEnabled,
-                  }))
-                }
-                className={`w-12 h-6 rounded-full transition-colors relative ${settings.pushNotificationsEnabled ? "bg-emerald-500" : "bg-emerald-900"}`}
-              >
-                <div
-                  className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-all ${settings.pushNotificationsEnabled ? "left-7" : "left-1"}`}
-                ></div>
-              </button>
-            </div>
-
-            <div className="p-4 flex flex-col gap-2 border-b border-emerald-800/40 bg-emerald-900/10">
-              <button
-                onClick={() => {
-                  if ("Notification" in window) {
-                    Notification.requestPermission().then((permission) => {
-                      if (permission === "granted") {
-                        setSettings((p) => ({
-                          ...p,
-                          pushNotificationsEnabled: true,
-                        }));
-                        showNotification("Notifications Active", {
-                          body: "Prayer alerts are working perfectly.",
-                          icon: "/icon-192.png",
-                        });
-                      }
-                    });
-                  }
-                  if ("vibrate" in navigator) navigator.vibrate([100, 50, 100]);
-
-                  // Try playing a sound to unlock audio context
-                  try {
-                    let snd =
-                      settings.alarmSound === "beep"
-                        ? "https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3"
-                        : "https://assets.mixkit.co/sfx/preview/mixkit-positive-notification-951.mp3";
-                    new Audio(snd).play().catch(() => {});
-                  } catch (e) {}
-                }}
-                className="py-2.5 px-4 bg-emerald-600/30 font-semibold text-emerald-300 text-xs rounded-lg border border-emerald-500/30 hover:bg-emerald-600/40 transition active:scale-95 flex items-center justify-center gap-2"
-              >
-                <Bell className="w-4 h-4" /> Request Permission & Test Alert
-              </button>
-              <p className="text-[10px] text-emerald-400/60 text-center uppercase tracking-widest px-4">
-                Must be done manually to allow browser notifications and sound
-                to play
-              </p>
-            </div>
+            <div className="p-4 border-b border-emerald-800/40 bg-emerald-900/10"><NotificationSettings /></div>
 
             <div className="p-4 flex items-center justify-between border-b border-emerald-800/40 bg-emerald-900/10">
               <div className="flex items-center gap-3 text-emerald-100 ml-8">

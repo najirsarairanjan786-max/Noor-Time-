@@ -18,6 +18,13 @@ export interface AppSettings {
   customTimings: Record<string, string>;
   silentMode: boolean;
   pushNotificationsEnabled: boolean;
+  prayerAlarms: Record<string, boolean>;
+  sunriseReminder: boolean;
+  jummahReminder: boolean;
+  dailyReminder: boolean;
+  quranReminder: boolean;
+  dhikrReminder: boolean;
+  tasbeehReminder: boolean;
   customAlarms: Record<string, string>;
   prayerAlarmSounds: Record<string, string>;
   anniversaryReminders: Record<string, boolean>;
@@ -50,6 +57,13 @@ const DEFAULT_SETTINGS: AppSettings = {
   customTimings: {},
   silentMode: false,
   pushNotificationsEnabled: true,
+  prayerAlarms: { 'Fajr': true, 'Zuhr': true, 'Asr': true, 'Maghrib': true, 'Isha': true },
+  sunriseReminder: false,
+  jummahReminder: true,
+  dailyReminder: true,
+  quranReminder: true,
+  dhikrReminder: true,
+  tasbeehReminder: true,
   customAlarms: {},
   anniversaryReminders: {
     "1_9": true,
@@ -87,6 +101,13 @@ export function useSettings() {
             school: settings.school,
             alarmsEnabled: settings.alarmsEnabled,
             pushNotificationsEnabled: settings.pushNotificationsEnabled,
+            prayerAlarms: settings.prayerAlarms || {},
+            sunriseReminder: settings.sunriseReminder ?? false,
+            jummahReminder: settings.jummahReminder ?? true,
+            dailyReminder: settings.dailyReminder ?? true,
+            quranReminder: settings.quranReminder ?? true,
+            dhikrReminder: settings.dhikrReminder ?? true,
+            tasbeehReminder: settings.tasbeehReminder ?? true,
             prayerAlarmSounds: settings.prayerAlarmSounds || {},
             alarmSound: settings.alarmSound,
             preAlarmMinutes: settings.preAlarmMinutes,
