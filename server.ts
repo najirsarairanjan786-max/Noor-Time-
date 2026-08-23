@@ -6,7 +6,8 @@ import { startScheduler } from "./server/scheduler";
 
 async function startServer() {
   const app = express();
-  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+  const isProdEnv = process.env.NODE_ENV === "production";
+  const PORT = 3000;
 
   app.use(express.json());
 
@@ -18,11 +19,9 @@ async function startServer() {
   app.use(notificationRoutes);
   app.use(geminiRoutes);
 
-  const isProd = process.env.NODE_ENV === "production" || typeof __dirname !== 'undefined';
+  const isProd = process.env.NODE_ENV === "production";
                  
-  if (isProd) {
-    process.env.NODE_ENV = "production";
-  }
+
 
   if (!isProd) {
     // Dynamic import to avoid loading Vite in production
@@ -36,7 +35,7 @@ async function startServer() {
     // In CJS bundle, __dirname is the dist folder. 
     // In dev mode (ESM), this branch won't execute, so __dirname is not needed.
     // However, if it executes in ESM somehow, fallback to process.cwd() + '/dist'
-    const distPath = typeof __dirname !== 'undefined' ? __dirname : path.join(process.cwd(), 'dist');
+    const distPath = process.env.NODE_ENV === "production" ? __dirname : path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));

@@ -2,7 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 import {
-  initializeFirestore,
+  initializeFirestore, setLogLevel
 } from "firebase/firestore";
 import { getMessaging, isSupported } from "firebase/messaging";
 import defaultFirebaseConfig from "../../firebase-applet-config.json";
@@ -43,6 +43,8 @@ if (isComplete(settings.firebaseConfig)) {
 } else {
   console.log("🔥 Using Default AI Studio Firebase Config.");
 }
+
+setLogLevel('silent');
 
 // Sanitize projectId in case user accidentally pasted authDomain
 if (finalConfig.projectId && finalConfig.projectId.endsWith(".firebaseapp.com")) {

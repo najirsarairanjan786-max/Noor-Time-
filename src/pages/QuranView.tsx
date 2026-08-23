@@ -1131,6 +1131,39 @@ function QuranViewInner({ setView }: QuranViewProps) {
                 </div>
               </div>
 
+                            {/* Tilawat Check Banner */}
+              <div
+                onClick={() => setView("aipractice")}
+                className="bg-white rounded-2xl p-4 flex items-center shadow-sm border-b-[8px] border-[#fb6060] gap-4 active:scale-95 transition-transform cursor-pointer relative"
+              >
+                <div className="relative w-[72px] h-[72px] flex-shrink-0 flex items-center justify-center text-[#fb6060]">
+                    <BookOpen
+                      className="w-[72px] h-[72px] text-[#fb6060]"
+                      strokeWidth={1}
+                      style={{
+                        strokeLinejoin: "round",
+                        strokeLinecap: "round",
+                      }}
+                    />
+                    <div className="absolute w-[30px] h-[2.5px] bg-[#fb6060] rounded-full rotate-[-25deg] top-[48%] left-[24%]"></div>
+                    <div className="absolute w-[30px] h-[2.5px] bg-[#fb6060] rounded-full rotate-[25deg] top-[48%] right-[24%]"></div>
+                    <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-sm border border-gray-100">
+                      <Mic className="w-[20px] h-[20px] text-[#fb6060]" strokeWidth={2} />
+                    </div>
+                  </div>
+                <div className="flex flex-col flex-1">
+                  <div className="flex items-center justify-between w-full">
+                    <span className="font-extrabold text-black text-[18px] tracking-tight">Tilawat Check</span>
+                    <span className="font-arabic font-bold text-[#df4b4b] text-[18px]">تلاوت چیک کریں</span>
+                  </div>
+                  <hr className="w-full border-black mb-1.5 mt-1.5 border-[0.5px] opacity-20" />
+                  <span className="text-gray-500 text-[13px] font-bold leading-tight tracking-tight">Recite Quran and check your reading</span>
+                </div>
+                <span className="absolute top-0 right-0 bg-[#df4b4b] text-white text-[9px] font-bold px-2 py-0.5 rounded-bl-lg rounded-tr-lg uppercase tracking-wider">
+                  New
+                </span>
+              </div>
+
               {/* Grid */}
               <div className="grid grid-cols-2 gap-[14px]">
                 {/* Card 1 */}
@@ -1611,37 +1644,6 @@ function QuranViewInner({ setView }: QuranViewProps) {
                     </span>
                   </div>
                 </div>
-                {/* Card 12 - Tilawat Check */}
-                <div
-                  onClick={() => setView("aipractice")}
-                  className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm border-b-[8px] border-[#fb6060] text-center gap-2 active:scale-95 transition-transform h-[170px] cursor-pointer relative"
-                >
-                  <span className="absolute top-2 right-2 bg-[#df4b4b] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider">
-                    New
-                  </span>
-                  <div className="flex-1 flex items-center justify-center mb-1 relative mt-2 text-[#fb6060]">
-                    <svg
-                      width="76"
-                      height="84"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      {/* Folder back solid */}
-                      <path d="M4 20C3.45 20 2.97917 19.8042 2.5875 19.4125C2.19583 19.0208 2 18.55 2 18V6C2 5.45 2.19583 4.97917 2.5875 4.5875C2.97917 4.19583 3.45 4 4 4H10L12 6H20C20.55 6 21.0208 6.19583 21.4125 6.5875C21.8042 6.97917 22 7.45 22 8V18C22 18.55 21.8042 19.0208 21.4125 19.4125C21.0208 19.8042 20.55 20 20 20H4Z" fill="#fb6060"/>
-                      {/* Mic inside */}
-                      <path d="M12 9V14" stroke="white" strokeWidth="2" strokeLinecap="round" />
-                      <path d="M9 12C9 13.6569 10.3431 15 12 15C13.6569 15 15 13.6569 15 12" stroke="white" strokeWidth="2" strokeLinecap="round" />
-                    </svg>
-                  </div>
-                  <div className="w-full flex-col justify-end items-center flex pb-1">
-                    <hr className="w-[85%] border-black mb-1.5 border-[0.5px]" />
-                    <span className="font-extrabold text-black text-[14px] leading-tight tracking-tight whitespace-nowrap">
-                      Tilawat Check
-                    </span>
-                  </div>
-                </div>
-
                 {/* Card 13 - AI Quran Recitation */}
                 <div
                   onClick={() => setView("khatamquran")}
