@@ -1,3 +1,16 @@
+
+// URGENT CLEANUP: Run this before anything else to fix QuotaExceededError
+try {
+  const keysToRemove = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && (key.startsWith('firestore_') || key.startsWith('jantri_') || key.startsWith('quran_') || key.startsWith('adhan_') || key.startsWith('hijri_'))) {
+      keysToRemove.push(key);
+    }
+  }
+  keysToRemove.forEach(k => localStorage.removeItem(k));
+} catch(e) {}
+
 import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
