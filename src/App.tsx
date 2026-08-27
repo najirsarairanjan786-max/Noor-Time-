@@ -18,9 +18,6 @@ import { DonateView } from "./pages/DonateView";
 import { ShareView } from "./pages/ShareView";
 import { DailyView } from "./pages/DailyView";
 import { TasbeehView } from "./pages/TasbeehView";
-import { AIPracticeView } from "./pages/AIPracticeView";
-import { QazaNamazCalculator } from "./pages/QazaNamazCalculator";
-import { KhatamQuranView } from "./pages/KhatamQuranView";
 import { JamatSilentView } from "./pages/JamatSilentView";
 import { Home2 } from "./pages/Home2";
 import { ProfileView } from "./pages/ProfileView";
@@ -63,24 +60,11 @@ export type ViewType =
   | "noor_ai"
   | "notifications"
   | "store"
-  | "jantri" | "aipractice" | "qaza_calculator"
+  | "jantri"
   | string;
 
-import { OfflineBanner } from "./components/OfflineBanner";
-import { QuranAudioProvider } from "./components/QuranAudio/QuranAudioContext";
-import { MiniPlayer } from "./components/QuranAudio/MiniPlayer";
-import { AudioSettingsModal } from "./components/QuranAudio/AudioSettingsModal";
-
 export default function App() {
-  const [currentView, setCurrentView] = useState<ViewType>("calendar");
-  const [previousView, setPreviousView] = useState<ViewType>("home");
-  
-  const navigateTo = (newView: ViewType) => {
-    if (newView !== currentView) {
-      setPreviousView(currentView);
-      setCurrentView(newView);
-    }
-  };
+  const [currentView, setCurrentView] = useState<ViewType>("home");
   const { settings } = useSettings();
   useDataSync();
   const { user, loading } = useAuth();
@@ -154,104 +138,89 @@ export default function App() {
     "store",
     "contact",
     "jantri",
-    "aipractice",
-    "qaza_calculator",
   ];
   const isFeatureView = !standardViews.includes(currentView);
 
   return (
-    <QuranAudioProvider>
-      <div className="min-h-screen bg-slate-900 font-sans selection:bg-emerald-500/30 flex justify-center">
-        <main className="w-full max-w-md bg-emerald-950 min-h-[100dvh] relative overflow-hidden shadow-2xl">
+    <div className="min-h-screen bg-slate-900 font-sans selection:bg-emerald-500/30 flex justify-center">
+      <main className="w-full max-w-md bg-emerald-950 min-h-[100dvh] relative overflow-hidden shadow-2xl">
         {/* Animated Background Elements */}
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-emerald-600/10 blur-[100px] pointer-events-none transition-colors duration-300"></div>
         <div className="absolute bottom-[20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-400/5 blur-[120px] pointer-events-none transition-colors duration-300"></div>
 
         <SyncStatus />
-        <OfflineBanner />
 
         <>
           <AnimatePresence mode="wait">
-            {currentView === "home" && <Home setView={navigateTo} />}
-            {currentView === "home2" && <Home2 setView={navigateTo} />}
+            {currentView === "home" && <Home setView={setCurrentView} />}
+            {currentView === "home2" && <Home2 setView={setCurrentView} />}
             {currentView === "calendar" && (
-              <CalendarView setView={navigateTo} />
+              <CalendarView setView={setCurrentView} />
             )}
             {currentView === "settings" && (
-              <SettingsView setView={navigateTo} />
+              <SettingsView setView={setCurrentView} />
             )}
             {currentView === "prayer" && (
-              <PrayerDetails setView={navigateTo} />
+              <PrayerDetails setView={setCurrentView} />
             )}
-            {currentView === "Quran" && <QuranView setView={navigateTo} />}
+            {currentView === "Quran" && <QuranView setView={setCurrentView} />}
             {currentView === "Hadees" && (
-              <HadeesView setView={navigateTo} />
+              <HadeesView setView={setCurrentView} />
             )}
             {currentView === "Tajweed" && (
-              <TajweedView setView={navigateTo} />
+              <TajweedView setView={setCurrentView} />
             )}
             {currentView === "Adhkar" && (
-              <AdhkarView setView={navigateTo} />
+              <AdhkarView setView={setCurrentView} />
             )}
             {currentView === "Question & Answer" && (
-              <QuizView setView={navigateTo} />
+              <QuizView setView={setCurrentView} />
             )}
             {currentView === "qibla" && (
-              <QiblaDirectionView setView={navigateTo} />
+              <QiblaDirectionView setView={setCurrentView} />
             )}
             {currentView === "languages" && (
-              <LanguagesView setView={navigateTo} />
+              <LanguagesView setView={setCurrentView} />
             )}
             {currentView === "donate" && (
-              <DonateView setView={navigateTo} />
+              <DonateView setView={setCurrentView} />
             )}
-            {currentView === "share" && <ShareView setView={navigateTo} />}
-            {currentView === "daily" && <DailyView setView={navigateTo} />}
+            {currentView === "share" && <ShareView setView={setCurrentView} />}
+            {currentView === "daily" && <DailyView setView={setCurrentView} />}
             {currentView === "tasbeeh" && (
-              <TasbeehView setView={navigateTo} />
+              <TasbeehView setView={setCurrentView} />
             )}
             {currentView === "profile" && (
-              <ProfileView setView={navigateTo} />
+              <ProfileView setView={setCurrentView} />
             )}
             {currentView === "jamat_silent" && (
-              <JamatSilentView setView={navigateTo} />
+              <JamatSilentView setView={setCurrentView} />
             )}
             {currentView === "noor_ai" && (
-              <NoorAIView setView={navigateTo} />
+              <NoorAIView setView={setCurrentView} />
             )}
             {currentView === "notifications" && (
-              <NotificationsView setView={navigateTo} />
+              <NotificationsView setView={setCurrentView} />
             )}
             {currentView === "store" && (
-              <StoreView setView={navigateTo} />
+              <StoreView setView={setCurrentView} />
             )}
             {currentView === "contact" && (
-              <ContactView setView={navigateTo} />
+              <ContactView setView={setCurrentView} />
             )}
             {currentView === "jantri" && (
-              <JantriView setView={navigateTo} />
+              <JantriView setView={setCurrentView} />
             )}
-            {currentView === "qaza_calculator" && <QazaNamazCalculator setView={navigateTo} />}
-            {currentView === "aipractice" && (
-              <AIPracticeView setView={navigateTo} previousView={previousView} />
-            )}
-            {currentView === "khatamquran" && (
-              <KhatamQuranView setView={navigateTo} />
-            )}
-
             {isFeatureView && (
-              <FeatureView title={currentView} setView={navigateTo} />
+              <FeatureView title={currentView} setView={setCurrentView} />
             )}
           </AnimatePresence>
 
           <LocationPrompt />
           <NotificationPrompt />
-          <Navigation view={currentView} setView={navigateTo} />
+          <Navigation view={currentView} setView={setCurrentView} />
         </>
-        <MiniPlayer />
-        <AudioSettingsModal />
       </main>
     </div>
-    </QuranAudioProvider>
   );
 }

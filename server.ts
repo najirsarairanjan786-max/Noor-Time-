@@ -1,12 +1,11 @@
 import express from "express";
 import path from "path";
+import { createServer as createViteServer } from "vite";
 import notificationRoutes from "./server/notifications";
-import geminiRoutes from "./server/gemini";
 import { startScheduler } from "./server/scheduler";
 
 async function startServer() {
   const app = express();
-  const isProdEnv = process.env.NODE_ENV === "production";
   const PORT = 3000;
 
   app.use(express.json());
@@ -17,37 +16,28 @@ async function startServer() {
   });
   
   app.use(notificationRoutes);
-  app.use(geminiRoutes);
 
-  const isProd = process.env.NODE_ENV === "production";
-                 
+  // Start background cron jobs
+  startScheduler();
 
-
-  if (!isProd) {
-    // Dynamic import to avoid loading Vite in production
-    const { createServer: createViteServer } = await import("vite");
+  // Vite middleware for development
+  if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
     app.use(vite.middlewares);
   } else {
-    // In CJS bundle, __dirname is the dist folder. 
-    // In dev mode (ESM), this branch won't execute, so __dirname is not needed.
-    // However, if it executes in ESM somehow, fallback to process.cwd() + '/dist'
-    const distPath = process.env.NODE_ENV === "production" ? __dirname : path.join(process.cwd(), 'dist');
+    const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
 
-  // Start background cron jobs after middleware setup
-  startScheduler();
-
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
 }
 
-startServer().catch(console.error);
+startServer();

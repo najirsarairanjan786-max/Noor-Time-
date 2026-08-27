@@ -49,7 +49,6 @@ export function useJantriBook() {
             const finalChapters = [...mergedChapters, ...newLocalChapters];
 
             setData(finalChapters);
-            localStorage.setItem("jantri_book_data_v11", JSON.stringify(finalChapters));
           }
         }, (error) => {
           console.error("Error syncing Jantri book data:", error);

@@ -18,13 +18,6 @@ export interface AppSettings {
   customTimings: Record<string, string>;
   silentMode: boolean;
   pushNotificationsEnabled: boolean;
-  prayerAlarms: Record<string, boolean>;
-  sunriseReminder: boolean;
-  jummahReminder: boolean;
-  dailyReminder: boolean;
-  quranReminder: boolean;
-  dhikrReminder: boolean;
-  tasbeehReminder: boolean;
   customAlarms: Record<string, string>;
   prayerAlarmSounds: Record<string, string>;
   anniversaryReminders: Record<string, boolean>;
@@ -56,14 +49,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   hijriOffset: 0,
   customTimings: {},
   silentMode: false,
-  pushNotificationsEnabled: true,
-  prayerAlarms: { 'Fajr': true, 'Zuhr': true, 'Asr': true, 'Maghrib': true, 'Isha': true },
-  sunriseReminder: false,
-  jummahReminder: true,
-  dailyReminder: true,
-  quranReminder: true,
-  dhikrReminder: true,
-  tasbeehReminder: true,
+  pushNotificationsEnabled: true,  
   customAlarms: {},
   anniversaryReminders: {
     "1_9": true,
@@ -86,55 +72,6 @@ export function useSettings() {
     DEFAULT_SETTINGS,
   );
 
-  // Sync essential settings to Firestore for the background prayer time scheduler
-  useEffect(() => {
-    if (!auth.currentUser) return;
-    if (!settings.location) return;
-
-    const syncSettings = async () => {
-      try {
-        const userRef = doc(db, "users", auth.currentUser!.uid);
-        await setDoc(userRef, {
-          prayerSettings: {
-            location: settings.location,
-            method: settings.method,
-            school: settings.school,
-            alarmsEnabled: settings.alarmsEnabled,
-            pushNotificationsEnabled: settings.pushNotificationsEnabled,
-            prayerAlarms: settings.prayerAlarms || {},
-            sunriseReminder: settings.sunriseReminder ?? false,
-            jummahReminder: settings.jummahReminder ?? true,
-            dailyReminder: settings.dailyReminder ?? true,
-            quranReminder: settings.quranReminder ?? true,
-            dhikrReminder: settings.dhikrReminder ?? true,
-            tasbeehReminder: settings.tasbeehReminder ?? true,
-            prayerAlarmSounds: settings.prayerAlarmSounds || {},
-            alarmSound: settings.alarmSound,
-            preAlarmMinutes: settings.preAlarmMinutes,
-            customTimings: settings.customTimings || {},
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-          }
-        }, { merge: true });
-      } catch (err) {
-        console.error("Failed to sync settings to Firestore:", err);
-      }
-    };
-    
-    // Debounce the sync slightly
-    const timeout = setTimeout(syncSettings, 2000);
-    return () => clearTimeout(timeout);
-  }, [
-    settings.location, 
-    settings.method, 
-    settings.school, 
-    settings.alarmsEnabled, 
-    settings.pushNotificationsEnabled, 
-    settings.prayerAlarmSounds, 
-    settings.alarmSound, 
-    settings.preAlarmMinutes,
-    settings.customTimings
-  ]);
-
   // Helper to request geolocation
   const requestLocation = useCallback((): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -143,7 +80,6 @@ export function useSettings() {
           async (position) => {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
-
             try {
               // Optional: reverse geocode to get city name
               const res = await fetch(

@@ -1,10 +1,8 @@
 import { motion } from "motion/react";
 import { useTranslation } from "../../lib/i18n";
-import { englishToUrduDigits } from "../../lib/utils";
 import { useSettings } from "../../hooks/useSettings";
 import { Bell, BellOff, Calendar as CalendarIcon, Info } from "@/src/lib/icons";
 import { useState } from "react";
-import { SmartReferenceLink } from "../../lib/referenceSystem/SmartReferenceLink";
 
 const ANNIVERSARY_EVENTS = [
   { id: "1_9", key: "ramadanStart", hijriDate: "1 Ramadan" },
@@ -30,7 +28,7 @@ export function AnniversaryReminders() {
     
     // Request permission if enabling
     if (!isEnabled && "Notification" in window && Notification.permission !== "granted") {
-      
+      await Notification.requestPermission();
     }
 
     const newReminders = {
@@ -54,10 +52,9 @@ export function AnniversaryReminders() {
           </div>
           <div>
             <h2 className="text-lg font-bold text-white">{t("anniversaryReminders")}</h2>
-            <p className="text-sm text-emerald-200/70 mt-1 mb-2">
+            <p className="text-sm text-emerald-200/70 mt-1">
               Enable push notifications for important Islamic dates. Reminders automatically sync with the Hijri calendar every year even when offline.
             </p>
-            <SmartReferenceLink topic="Islamic Anniversary" />
           </div>
         </div>
 
@@ -76,7 +73,7 @@ export function AnniversaryReminders() {
                   </div>
                   <div>
                     <div className="text-sm font-semibold text-white">{t(event.key as any)}</div>
-                    <div className="text-xs text-emerald-200/60">{englishToUrduDigits(event.hijriDate)}</div>
+                    <div className="text-xs text-emerald-200/60">{event.hijriDate}</div>
                   </div>
                 </div>
                 

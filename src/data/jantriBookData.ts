@@ -18,7 +18,7 @@ export const jantriCategories = [
   { id: "calendar", label: "Islamic Calendar", icon: "Calendar" },
   { id: "months", label: "Islamic Months", icon: "Moon" },
   { id: "prayer", label: "Prayer Guide", icon: "Clock" },
-  { id: "ramadan", label: "Ramadan Guide", icon: "LanternCrescentIcon" },
+  { id: "ramadan", label: "Ramadan Guide", icon: "Star" },
   { id: "duas", label: "Daily Duas", icon: "Heart" },
   { id: "azkar", label: "Tasbih & Azkar", icon: "Activity" },
   { id: "zakat", label: "Zakat Guide", icon: "PieChart" },

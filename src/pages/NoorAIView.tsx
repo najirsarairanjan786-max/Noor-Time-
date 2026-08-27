@@ -60,27 +60,10 @@ export function NoorAIView({ setView }: { setView: (v: string) => void }) {
         createdAt: serverTimestamp(),
       });
 
-      // 2. Call Gemini API
-      const history = messages.map(msg => ({
-        role: msg.role === "assistant" ? "model" as const : "user" as const,
-        parts: [{ text: msg.content }]
-      }));
+      // 2. Mock AI response for now
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      const response = await fetch("/api/gemini/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          prompt: userContent,
-          history: history
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to get response from Noor AI");
-      }
-
-      const data = await response.json();
-      const assistantContent = data.text;
+      const assistantContent = `Masha Allah. I have remembered your message: "${userContent}". Insha Allah I will keep it in my memory.`;
 
       // 3. Save Assistant message to Firebase
       await addDoc(collection(db, "users", user.uid, "noor_messages"), {

@@ -4,29 +4,38 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="manifest" href="/manifest.json" />
-    <link rel="icon" type="image/png" href="/icon-192.png" />
     <meta name="theme-color" content="#064E3B" />
     <title>Islamic Home Screen</title>
-  
-    <script>
-      // EMERGENCY CLEANUP: Run before ANY ES modules or Firebase code loads
-      try {
-        var keysToRemove = [];
-        for (var i = 0; i < localStorage.length; i++) {
-          var key = localStorage.key(i);
-          if (key && (key.startsWith('firestore_') || key.startsWith('jantri_') || key.startsWith('quran_') || key.startsWith('adhan_') || key.startsWith('hijri_') || key.startsWith('islamic_'))) {
-            keysToRemove.push(key);
-          }
-        }
-        for (var j = 0; j < keysToRemove.length; j++) {
-          localStorage.removeItem(keysToRemove[j]);
-        }
-        console.log('Emergency pre-boot cleanup completed.');
-      } catch(e) {}
-    </script>
-</head>
+  </head>
   <body>
     <div id="root"></div>
+    <script>
+      // EMERGENCY STORAGE CLEANUP - RUNS BEFORE ANY BUNDLE
+      try {
+        var keysRemoved = 0;
+        for (var i = localStorage.length - 1; i >= 0; i--) {
+          var k = localStorage.key(i);
+          if (k && (
+            k.startsWith('quran_juz_') || 
+            k.startsWith('quran_surah_') || 
+            k.startsWith('quran_page_') ||
+            k.startsWith('calendar_') || 
+            k.startsWith('jantri_cal_') || 
+            k.startsWith('prayer_times_') ||
+            k.startsWith('hijri_date_') ||
+            k.startsWith('jantri_book_data_')
+          )) {
+            localStorage.removeItem(k);
+            keysRemoved++;
+          }
+        }
+        if (keysRemoved > 0) {
+          console.log("Emergency cleanup removed " + keysRemoved + " heavy items from localStorage.");
+        }
+      } catch (e) {
+        console.warn("Failed emergency cleanup", e);
+      }
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

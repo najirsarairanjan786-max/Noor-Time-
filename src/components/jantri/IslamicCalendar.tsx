@@ -5,7 +5,6 @@ import { format, addMonths, subMonths } from "date-fns";
 import { ChevronLeft, ChevronRight, Loader2, CrescentMoonIcon as Moon } from "@/src/lib/icons";
 import { useSettings } from "../../hooks/useSettings";
 import { useTranslation } from "../../lib/i18n";
-import { englishToUrduDigits } from "../../lib/utils";
 export const getMoonPhaseFromHijriDay = (hijriDay: number) => {
   if (hijriDay === 29 || hijriDay === 30 || hijriDay === 1) return "🌑";
   if (hijriDay >= 2 && hijriDay <= 6) return "🌒";
@@ -81,9 +80,6 @@ export function IslamicCalendar() {
             gregorian: d.date.gregorian
           }));
           setDays(formattedDays);
-          if (typeof window !== "undefined") {
-            localStorage.setItem(cacheKey, JSON.stringify(formattedDays));
-          }
         }
       } catch (e) {
         console.error("Failed to fetch calendar", e);
@@ -102,7 +98,7 @@ export function IslamicCalendar() {
   const upcomingEvents = days.filter(d => d.hijri.holidays && d.hijri.holidays.length > 0).flatMap(d => 
     d.hijri.holidays.map(h => ({
       name: h,
-      hijriDate: `${englishToUrduDigits(d.hijri.day)} ${d.hijri.month.ar} ${englishToUrduDigits(d.hijri.year)}`,
+      hijriDate: `${d.hijri.day} ${d.hijri.month.en} ${d.hijri.year}`,
       gregorianDate: `${d.gregorian.day} ${d.gregorian.month.en} ${d.gregorian.year}`
     }))
   );
@@ -121,8 +117,8 @@ export function IslamicCalendar() {
         <div className="text-center">
           <h2 className="text-lg font-bold text-white">{format(currentDate, "MMMM yyyy")}</h2>
           {days.length > 0 && !loading && (
-            <p className="text-emerald-300/80 text-sm font-urdu">
-              {days[0].hijri.month.ar} - {days[days.length - 1].hijri.month.ar} {englishToUrduDigits(days[0].hijri.year)}
+            <p className="text-emerald-300/80 text-sm">
+              {days[0].hijri.month.en} - {days[days.length - 1].hijri.month.en} {days[0].hijri.year}
             </p>
           )}
         </div>
@@ -155,7 +151,7 @@ export function IslamicCalendar() {
                   className={`h-14 p-1 rounded-lg border flex flex-col justify-between relative ${hasHoliday ? 'bg-amber-500/10 border-amber-500/30' : 'bg-emerald-950/40 border-emerald-500/10'}`}
                 >
                   <div className="flex justify-between items-start">
-                    <span className="text-[10px] text-emerald-200/50 leading-none">{englishToUrduDigits(day.hijri.day)}</span>
+                    <span className="text-[10px] text-emerald-200/50 leading-none">{day.hijri.day}</span>
                     <span className={`text-xs font-medium leading-none ${hasHoliday ? 'text-amber-400' : 'text-white'}`}>{day.gregorian.day}</span>
                   </div>
                   <div className="flex items-center justify-center mt-0.5">

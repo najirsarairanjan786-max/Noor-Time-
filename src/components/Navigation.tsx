@@ -1,10 +1,10 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { Home } from "lucide-react";
 import { Clock } from "@/src/lib/icons";
-import { 
+import {
   GearIcon as SettingsIcon,
   HijriCalendarIcon as CalendarDays,
   BookOpenIcon as BookOpen,
+  HomeIcon,
   UserIcon as UserCircle
 } from "@/src/lib/icons";
 import { Dispatch, SetStateAction, useState, useRef, useEffect } from "react";
@@ -34,7 +34,7 @@ export function Navigation({
     ? `${localProfile.firstName} ${localProfile.lastName}`.trim() : t("profile");
 
   const TABS = [
-    { id: "home", icon: Home, label: t("home") },
+    { id: "home", icon: HomeIcon, label: t("home") },
     { id: "prayer", icon: BookOpen, label: t("tajweed") },
     { id: "calendar", icon: CalendarDays, label: t("calendar") },
     { id: "settings", icon: SettingsIcon, label: t("settings") },

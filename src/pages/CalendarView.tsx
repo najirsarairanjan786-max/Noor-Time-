@@ -64,9 +64,6 @@ export function CalendarView({ setView }: { setView: Dispatch<SetStateAction<Vie
             const r = await fetch(`https://api.aladhan.com/v1/gToHCalendar/${m}/${y}`);
             const data = await r.json();
             if (!data || !Array.isArray(data.data)) throw new Error("Invalid data");
-            if (typeof window !== 'undefined' && data) {
-              localStorage.setItem(cacheKey, JSON.stringify(data));
-            }
             return data;
           } catch(err) {
             if (typeof window !== 'undefined') {

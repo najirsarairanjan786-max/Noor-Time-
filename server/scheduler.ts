@@ -2,8 +2,12 @@ import cron from 'node-cron';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getMessaging } from 'firebase-admin/messaging';
 import config from '../firebase-applet-config.json';
-import * as adhanPkg from 'adhan';
-const { Coordinates, CalculationMethod, PrayerTimes, Madhab } = adhanPkg;
+import { 
+  Coordinates, 
+  CalculationMethod, 
+  PrayerTimes, 
+  Madhab 
+} from 'adhan';
 import { format, addMinutes, subMinutes } from 'date-fns';
 import { toZonedTime, formatInTimeZone } from 'date-fns-tz';
 
@@ -20,12 +24,9 @@ function getCalculationMethod(methodId: number) {
   }
 }
 
-import { getApps } from 'firebase-admin/app';
-
 export function startScheduler() {
   // Run at the start of every minute
   cron.schedule('* * * * *', async () => {
-    if (getApps().length === 0) return;
     try {
       console.log('Running prayer times scheduler...');
       const db = getFirestore(config.firestoreDatabaseId);
@@ -65,7 +66,7 @@ export function startScheduler() {
             { name: 'Isha', time: prayerTimes.isha },
           ];
 
-          if (userDayOfWeek === 5 && settings.jummahReminder !== false) { // Friday
+          if (userDayOfWeek === 5) { // Friday
             const defaultKhutbahTimeString = formatInTimeZone(prayerTimes.dhuhr, timezone, 'HH:mm');
             const defaultJumaTime = addMinutes(prayerTimes.dhuhr, 30);
             const defaultJumaTimeString = formatInTimeZone(defaultJumaTime, timezone, 'HH:mm');
@@ -79,7 +80,7 @@ export function startScheduler() {
             prayers.push({ name: 'Dhuhr', time: prayerTimes.dhuhr });
           }
 
-          if (userDayOfWeek === 4 && settings.jummahReminder !== false) { // Thursday
+          if (userDayOfWeek === 4) { // Thursday
             const defaultJumaTime = addMinutes(prayerTimes.dhuhr, 30);
             const defaultJumaTimeString = formatInTimeZone(defaultJumaTime, timezone, 'HH:mm');
             const jumaTimeStr = settings.customTimings?.['Jumma'] || defaultJumaTimeString;
@@ -94,25 +95,6 @@ export function startScheduler() {
             return `${newH.toString().padStart(2, '0')}:${newM.toString().padStart(2, '0')}`;
           };
 
-          
-          if (settings.sunriseReminder) {
-            prayers.push({ name: 'Sunrise', time: prayerTimes.sunrise });
-          }
-          
-          // Daily Reminders
-          if (settings.dailyReminder && currentMinute === '10:00') {
-            await sendPrayerNotificationToUser(doc.id, 'Noor Time', 'Your daily Islamic reminder is ready.', settings.alarmSound || 'default');
-          }
-          if (settings.quranReminder && currentMinute === '11:00') {
-            await sendPrayerNotificationToUser(doc.id, 'Quran Reminder', 'Have you read the Quran today?', settings.alarmSound || 'default');
-          }
-          if (settings.dhikrReminder && (currentMinute === '08:00' || currentMinute === '17:00')) {
-            await sendPrayerNotificationToUser(doc.id, 'Dhikr Reminder', 'Take a moment for Dhikr and remember Allah.', settings.alarmSound || 'default');
-          }
-          if (settings.tasbeehReminder && currentMinute === '18:00') {
-            await sendPrayerNotificationToUser(doc.id, 'Tasbeeh Reminder', 'Keep your tongue moist with the remembrance of Allah.', settings.alarmSound || 'default');
-          }
-          
           for (const prayer of prayers) {
             if (!prayer.time && !prayer.localTimeString) continue;
             
@@ -146,9 +128,6 @@ export function startScheduler() {
             
             const soundPref = settings.prayerAlarmSounds?.[prayer.name] || settings.alarmSound || 'default';
             if (soundPref === 'off') continue;
-            
-            // Respect individual prayer toggles
-            if (settings.prayerAlarms && settings.prayerAlarms[prayer.name] === false) continue;
             
             if (isPrayerTime || isPreAlarmTime) {
               let message = '';

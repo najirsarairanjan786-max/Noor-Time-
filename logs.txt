@@ -1,3 +1,0 @@
-Firebase Admin initialized with custom service account.
-Prayer times background scheduler started.
-Server running on http://localhost:3000

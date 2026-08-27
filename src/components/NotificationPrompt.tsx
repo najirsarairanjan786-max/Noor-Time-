@@ -79,20 +79,20 @@ export function NotificationPrompt() {
                     Allow Notifications
                   </h3>
                   <p className="text-emerald-100/70 text-sm leading-relaxed mb-3">
-                    Allow notifications to receive prayer times, reminders and important Noor Time updates.
+                    Get timely alerts for prayer times and daily reminders.
                   </p>
                   <div className="flex gap-2">
                     <button
                       onClick={requestNotification}
                       className="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors"
                     >
-                      Allow Notifications
+                      Enable
                     </button>
                     <button
                       onClick={dismiss}
                       className="bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors"
                     >
-                      Cancel
+                      Not Now
                     </button>
                   </div>
                 </div>
