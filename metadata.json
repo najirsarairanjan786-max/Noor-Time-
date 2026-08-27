@@ -1,5 +1,5 @@
 {
-  "name": "Islamic Dashboard",
+  "name": "Noor time apps",
   "description": "Modern Islamic Home Screen with Prayer Times, Hijri Calendar, and Alarms",
   "requestFramePermissions": [
     "geolocation",
